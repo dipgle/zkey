@@ -39,3 +39,6 @@
 - [x] Cài/gỡ user-local (15/11 20:50): `scripts/install-user.py` + 6 bài kiểm (đột biến từng chốt ⇒ ĐỎ); gõ thật GTK3 bằng bản cài XANH; lõi hỏng ⇒ ĐỎ; gỡ sạch. Cài thật vào ~/.local: **chờ Hà**.
 - [x] Màn thiết lập (15/11 21:10): nghiệm thu trọn vòng hai vai (màn → ô gõ `hoà`→`hòa`), tệp hỏng không làm chết màn, `changes.log`; ảnh 3 trạng thái; đột biến ⇒ ĐỎ.
 - [ ] Gói .deb (chưa làm; gói user-local đã có).
+- [x] Cài thật ~/.local (15/11 21:30, Hà duyệt): gõ thật bằng bản cài XANH.
+- [x] Bộ gõ hệ thống CHUẨN BỊ (chưa bật, Hà chọn): `scripts/system-ime.py` + bài HOME giả + `probe-system-ime.py` XANH/đối chứng ĐỎ. Bật: `python3 scripts/system-ime.py enable` rồi đăng xuất/đăng nhập. Phiên GNOME thật sau bật: CHƯA ĐO.
+- [ ] Trình duyệt: Hà chọn bỏ qua 15/11 21:20 — KHÔNG ĐO ĐƯỢC.

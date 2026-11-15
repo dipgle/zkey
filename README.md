@@ -36,6 +36,12 @@ cargo build --offline --release
 - Không sửa `~/.bashrc` (dùng `scripts/install-shell.sh`), không cài component IBus (bộ gõ hệ thống; tuỳ chọn `--with-ibus-component`, cần thêm `IBUS_ENABLE_SYNC_MODE=1` cho phiên — chưa quyết).
 - Đã đo: cài vào tiền tố thử, gõ thật GTK3 bằng **bản đã cài** XANH (30/30 gõ dồn), lõi hỏng ⇒ ĐỎ, gỡ sạch 0 tệp sót.
 
+## Bộ gõ hệ thống (chuẩn bị sẵn, CHƯA bật)
+
+`scripts/system-ime.py status|enable|disable` — dùng zkey cho MỌI ứng dụng qua IBus thay fcitx5. `enable` (có hiệu lực sau đăng xuất/đăng nhập): cài kèm component IBus; `~/.config/environment.d/99-zkey.conf` (IBus + `IBUS_ENABLE_SYNC_MODE=1`, cần cho GTK4/X11); `~/.xinputrc` → `run_im ibus`; thêm nguồn nhập GNOME `('ibus','zkey')`. Mọi bản gốc được lưu trước ở `~/.local/state/zkey/system-ime/`; `disable` trả lại từng byte.
+
+Đã đo: HOME giả + gsettings trên keyfile riêng (6 bài, bật rồi tắt trả nguyên byte); `scripts/probe-system-ime.py` — ibus-daemon riêng tự tìm `zkey.xml`, tự chạy `bin/zkey --ibus` của bản cài, gõ thật GTK3 đúng (đối chứng thiếu component ⇒ ĐỎ). CHƯA đo: phiên GNOME thật sau khi bật (Wayland, GNOME Shell tự chạy IBus).
+
 ## Dành cho phát triển
 
 Cần Rust, Python hệ thống có `gi`, typelib IBus 1.0 và GTK 3. Không cần npm hoặc gói Rust từ mạng.

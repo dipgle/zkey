@@ -135,3 +135,7 @@
 ## 2026-11-15 21:10 +07 — màn thiết lập
 
 - settings: tệp hỏng không làm chết màn; changes.log. accept-settings trọn vòng (màn → ô gõ hoà→hòa) XANH, đột biến ĐỎ. accept-xvfb 7 bài XANH + MÁY NGUYÊN.
+
+## 2026-11-15 21:30 +07 — cài ~/.local; bộ gõ hệ thống chuẩn bị
+
+- Hà duyệt cài ~/.local: bản cài gõ thật XANH. Trình duyệt: Hà bỏ qua. Bộ gõ hệ thống: system-ime.py (bật/tắt có sao lưu, tests HOME giả + keyfile) + probe-system-ime (daemon tự chạy engine từ component, gõ đúng; đối chứng ĐỎ). Chưa bật trên máy.

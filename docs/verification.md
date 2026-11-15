@@ -8,6 +8,13 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 21:30 — cài thật ~/.local (Hà duyệt); bộ gõ hệ thống chuẩn bị sẵn
+
+- Hà duyệt cài ⇒ `install-user.py --prefix ~/.local`: 15 tệp, đích trống trước đó; `desktop-file-validate` OK; gõ thật GTK3 bằng `~/.local/lib/zkey` XANH (gõ dồn 30/30); mount desktop 1→1. Ngoại lệ có duyệt cho `zkey/CLAUDE.md:8`.
+- Trình duyệt: Hà chọn bỏ qua lúc này ⇒ P0-001 mục 1–2 vẫn KHÔNG ĐO ĐƯỢC.
+- Bộ gõ hệ thống: Hà chọn «chuẩn bị, chưa bật». `scripts/system-ime.py` + `tests/test_system_ime.py` (HOME giả; gsettings thật trên keyfile riêng): bật ⇒ env 99-zkey (sau 95-fcitx5), xinputrc ibus, nguồn nhập thêm zkey; tắt ⇒ từng byte gốc. Máy thật kiểm sau bài: nguồn GNOME `[('xkb','us')]` trước=sau, không có zkey.xml/99-zkey.conf, xinputrc vẫn fcitx5.
+- `scripts/probe-system-ime.py`: ibus-daemon riêng + `IBUS_COMPONENT_PATH` ⇒ liệt kê zkey, tự chạy `<prefix>/bin/zkey --ibus`, GTK3 `t…tiếng`, Space, ⌫⌫ ⇒ `tiến` đúng. Đối chứng `IBUS_COMPONENT_PATH` thiếu ⇒ 0 engine, ĐỎ.
+
 ## 15/11 21:10 — màn thiết lập: nghiệm thu trọn vòng hai vai
 
 - Sửa `zkey/settings.py`: tệp cấu hình hỏng không còn làm màn chết (trước: `load()` ném lỗi, không mở được); nay mở với mặc định + báo lỗi, chỉ ghi đè khi bấm Lưu. `config.record_change` ghi `changes.log` (giờ, người dùng, khoá cũ→mới; không nội dung gõ) — `tests/test_config.py`.

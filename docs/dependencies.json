@@ -27,9 +27,11 @@
     "scripts/open-editor-host.py",
     "scripts/private_bus.py",
     "scripts/probe-gtk4-native.py",
+    "scripts/probe-system-ime.py",
     "scripts/probe_ibus.py",
     "scripts/recheck-editor.py",
     "scripts/stage.py",
+    "scripts/system-ime.py",
     "scripts/verify-host.py",
     "scripts/x11_activation.py",
     "src/bin/bench.rs",
@@ -93,6 +95,12 @@
     "test::test_session.SessionTests.test_word_then_boundary_commits_exactly_once",
     "test::test_stage.StageTests.test_component_and_launcher_agree_on_prefix_with_spaces",
     "test::test_stage.StageTests.test_stage_rejects_outside_destination",
+    "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist",
+    "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte",
+    "test::test_system_ime.SystemImeTests.test_disable_without_enable_changes_nothing",
+    "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component",
+    "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend",
+    "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file",
     "tests/test_audit_measurements.py",
     "tests/test_config.py",
     "tests/test_engine.py",
@@ -103,6 +111,7 @@
     "tests/test_runtime.py",
     "tests/test_session.py",
     "tests/test_stage.py",
+    "tests/test_system_ime.py",
     "zkey/__init__.py",
     "zkey/config.py",
     "zkey/core.py",
@@ -383,6 +392,30 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_disable_without_enable_changes_nothing"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "scripts/impact.py",
       "tests/test_impact.py"
     ],
     [
@@ -404,6 +437,26 @@
     [
       "scripts/install-user.py",
       "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
     ],
     [
       "scripts/private_bus.py",
@@ -439,7 +492,51 @@
     ],
     [
       "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist"
+    ],
+    [
+      "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte"
+    ],
+    [
+      "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component"
+    ],
+    [
+      "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend"
+    ],
+    [
+      "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "scripts/stage.py",
       "tests/test_stage.py"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_disable_without_enable_changes_nothing"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
     ],
     [
       "src/bin/line.rs",
@@ -720,6 +817,30 @@
     [
       "tests/test_stage.py",
       "test::test_stage.StageTests.test_stage_rejects_outside_destination"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_disable_without_enable_changes_nothing"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
     ],
     [
       "zkey/config.py",
@@ -1360,10 +1481,16 @@
     "test::test_session.SessionTests.test_word_started_without_snapshot_composes_once_app_confirms",
     "test::test_session.SessionTests.test_word_then_boundary_commits_exactly_once",
     "test::test_stage.StageTests.test_component_and_launcher_agree_on_prefix_with_spaces",
-    "test::test_stage.StageTests.test_stage_rejects_outside_destination"
+    "test::test_stage.StageTests.test_stage_rejects_outside_destination",
+    "test::test_system_ime.SystemImeTests.test_disable_removes_xinputrc_that_did_not_exist",
+    "test::test_system_ime.SystemImeTests.test_disable_restores_every_original_byte_for_byte",
+    "test::test_system_ime.SystemImeTests.test_disable_without_enable_changes_nothing",
+    "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component",
+    "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend",
+    "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 57
+    "python_tests_run": 63
   }
 }
