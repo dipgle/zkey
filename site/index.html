@@ -1,0 +1,116 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zkey — gõ tiếng Việt trên Ubuntu, chữ hiện ngay từng phím</title>
+<meta name="description" content="zkey: bộ gõ Telex mã nguồn mở cho Ubuntu. Chữ vào ứng dụng ngay khi gõ, không gạch chân chờ; Backspace/Enter đúng thứ tự khi gõ nhanh; mật khẩu đi thẳng.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c2410c'/%3E%3Ctext x='32' y='44' font-family='sans-serif' font-size='36' font-weight='700' text-anchor='middle' fill='white'%3Ez%3C/text%3E%3C/svg%3E">
+<style>
+  :root { --ink:#1c1917; --muted:#57534e; --line:#e7e5e4; --bg:#fafaf9; --card:#fff; --accent:#c2410c; --ok:#15803d; --todo:#b45309; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:17px/1.6 system-ui, "Noto Sans", "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  a { color:var(--accent); }
+  .wrap { max-width:960px; margin:0 auto; padding:0 20px; }
+  header { border-bottom:1px solid var(--line); background:var(--card); }
+  header .wrap { display:flex; align-items:center; justify-content:space-between; height:60px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:20px; text-decoration:none; color:var(--ink); }
+  .logo { width:32px; height:32px; border-radius:8px; background:var(--accent); color:#fff; display:grid; place-items:center; font-weight:700; }
+  nav a { margin-left:18px; text-decoration:none; color:var(--muted); font-size:15px; }
+  .hero { padding:56px 0 40px; }
+  .hero h1 { font-size:clamp(28px, 5vw, 44px); line-height:1.15; margin:0 0 14px; }
+  .hero p { font-size:19px; color:var(--muted); max-width:680px; margin:0 0 24px; }
+  .demo { display:inline-flex; gap:8px; align-items:center; font:16px/1 ui-monospace, monospace; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; }
+  .demo .keys { color:var(--muted); } .demo .arrow { color:var(--accent); } .demo .out { font-weight:700; }
+  .cta { margin-top:22px; display:flex; gap:12px; flex-wrap:wrap; }
+  .btn { display:inline-block; padding:11px 18px; border-radius:8px; text-decoration:none; font-weight:600; border:1px solid var(--accent); }
+  .btn.primary { background:var(--accent); color:#fff; } .btn.ghost { color:var(--accent); background:transparent; }
+  section { padding:34px 0; border-top:1px solid var(--line); }
+  h2 { font-size:26px; margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .card h3 { margin:0 0 6px; font-size:18px; } .card p { margin:0; color:var(--muted); font-size:15.5px; }
+  pre { background:#1c1917; color:#f5f5f4; padding:16px; border-radius:10px; overflow:auto; font:14.5px/1.55 ui-monospace, monospace; }
+  .status { list-style:none; padding:0; margin:0; }
+  .status li { padding:8px 0 8px 30px; position:relative; border-bottom:1px dashed var(--line); }
+  .status li::before { position:absolute; left:0; top:8px; font-weight:700; }
+  .status .ok::before { content:"✓"; color:var(--ok); } .status .todo::before { content:"…"; color:var(--todo); }
+  .note { font-size:14.5px; color:var(--muted); }
+  footer { padding:28px 0 40px; border-top:1px solid var(--line); color:var(--muted); font-size:14.5px; }
+  @media (max-width:560px) { nav a { margin-left:12px; font-size:14px; } .hero { padding-top:36px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#"><span class="logo">z</span>zkey</a>
+    <nav><a href="#cai-dat">Cài đặt</a><a href="#trang-thai">Trạng thái</a><a href="https://github.com/dipgle/zkey">GitHub</a></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>Gõ tiếng Việt trên Ubuntu,<br>chữ hiện ngay từng phím.</h1>
+    <p>zkey là bộ gõ Telex mã nguồn mở. Chữ vào ứng dụng ngay khi bấm — không có chữ gạch chân chờ dấu cách — và dấu được sửa tại chỗ.</p>
+    <div class="demo" aria-label="Ví dụ gõ Telex"><span class="keys">tieengs vieetj</span><span class="arrow">→</span><span class="out">tiếng việt</span></div>
+    <div class="cta">
+      <a class="btn primary" href="#cai-dat">Cài đặt</a>
+      <a class="btn ghost" href="https://github.com/dipgle/zkey">Mã nguồn trên GitHub</a>
+    </div>
+  </div>
+
+  <section>
+    <h2>Điểm khác</h2>
+    <div class="grid">
+      <div class="card"><h3>Không chữ chờ</h3><p>Mỗi phím vào ứng dụng ngay. Thêm dấu thì zkey chỉ sửa đúng phần chữ nó vừa gõ, khi ứng dụng xác nhận chữ đó đứng ngay trước con trỏ.</p></div>
+      <div class="card"><h3>Gõ nhanh không xáo chữ</h3><p>Backspace và Enter xen giữa giữ đúng thứ tự: trong bài đo gõ dồn, 30/30 lượt ra giống hệt gõ chậm (GTK3 và GNOME Text Editor).</p></div>
+      <div class="card"><h3>Mật khẩu đi thẳng</h3><p>Ô mật khẩu, mã PIN và terminal nhận phím nguyên trạng: không biến đổi, không hiện chữ chờ.</p></div>
+      <div class="card"><h3>Dòng lệnh bash</h3><p>Plugin readline: tiếng Việt trong dấu nháy (<code>git commit -m "..."</code>), lệnh và đường dẫn giữ nguyên. Lệnh do máy gõ không bao giờ bị sửa.</p></div>
+      <div class="card"><h3>Lõi Rust</h3><p>Không phụ thuộc ngoài. Xử lý một phím ở lõi khoảng 0,1 µs (trung vị; chưa tính thời gian vẽ màn hình).</p></div>
+      <div class="card"><h3>Cài và gỡ sạch</h3><p>Cài cho một người dùng, không cần root. Gỡ chỉ xoá đúng tệp đã cài; bật/tắt bộ gõ hệ thống trả lại cấu hình cũ từng byte.</p></div>
+    </div>
+  </section>
+
+  <section id="cai-dat">
+    <h2>Cài đặt</h2>
+    <p>Cần Ubuntu có Rust (cargo), Python 3 với <code>gi</code>, IBus 1.0 và GTK 3.</p>
+<pre>git clone https://github.com/dipgle/zkey.git
+cd zkey
+cargo build --offline --release
+python3 scripts/install-user.py          # vào ~/.local, không cần root
+
+zkey --run                               # mở Text Editor gõ tiếng Việt
+zkey --run &lt;ứng dụng&gt;                    # hoặc một ứng dụng bất kỳ
+zkey --settings                          # thiết lập: cách đặt dấu (hoà / hòa)</pre>
+    <p><strong>Dùng cho mọi ứng dụng</strong> (thay bộ gõ hệ thống, thử nghiệm):</p>
+<pre>python3 scripts/system-ime.py enable     # rồi đăng xuất / đăng nhập, chọn zkey bằng Super+Space
+python3 scripts/system-ime.py disable    # trả lại bộ gõ cũ</pre>
+    <p><strong>Terminal (bash):</strong> <code>bash scripts/install-shell.sh</code>, mở terminal mới. Alt+Z đổi chế độ: trong nháy → mọi từ → tắt.</p>
+  </section>
+
+  <section id="trang-thai">
+    <h2>Trạng thái — nói thật</h2>
+    <p class="note">zkey đang thử nghiệm. Mọi dòng «đã kiểm» dưới đây là gõ phím thật vào ứng dụng thật trên màn hình X riêng, có đối chứng ngược.</p>
+    <ul class="status">
+      <li class="ok">GNOME Text Editor (GTK4) và ô nhập GTK3: từng phím, gõ dồn có Backspace/Enter, ô mật khẩu</li>
+      <li class="ok">Terminal VTE và ptyxis: mật khẩu <code>read -s</code> không lộ, không đổi; tiếng Việt trên dòng lệnh bash</li>
+      <li class="ok">Màn thiết lập: đổi cách đặt dấu thì ô gõ đổi theo</li>
+      <li class="ok">Bản cài user-local và đường bộ gõ hệ thống qua IBus</li>
+      <li class="todo">Desktop GNOME Wayland thật sau khi bật bộ gõ hệ thống — chưa kiểm</li>
+      <li class="todo">Trình duyệt (Firefox, Chrome) và ứng dụng Electron — chưa kiểm</li>
+      <li class="todo">vim và ứng dụng toàn màn hình trong terminal, zsh, SSH — chưa hỗ trợ</li>
+      <li class="todo">Câu tiếng Anh trong dấu nháy có thể bị đổi ở âm tiết hợp lệ (<code>us</code> → <code>ú</code>) — tắt bằng Alt+Z</li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    zkey — mã nguồn mở theo giấy phép <a href="https://github.com/dipgle/zkey/blob/master/LICENSE">AGPL-3.0-or-later</a>.
+    Dùng lại mã phải công khai mã nguồn theo cùng giấy phép và ghi nguồn:
+    <em>Dựa trên zkey — https://github.com/dipgle/zkey</em>.
+  </div>
+</footer>
+</body>
+</html>

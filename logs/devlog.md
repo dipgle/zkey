@@ -143,3 +143,8 @@
 ## 2026-11-15 22:25 +07 — bật bộ gõ hệ thống
 
 - Hà xác nhận «bật zkey cho cả máy». system-ime.py enable mã 0; kiểm lại env/xinputrc/component/gsettings + bản sao lưu fcitx5. Chưa đo phiên GNOME thật (cần Hà đăng nhập lại).
+
+## 2026-11-15 22:45 +07 — trang giới thiệu
+
+- Hà: web giới thiệu trên tfl5 tại zkey.dipgle.com, mở QR để Hà đăng nhập. Làm: site/index.html (1 tệp, 0 tài nguyên ngoài, nội dung theo số đo; mục «chưa kiểm» ghi rõ). render-site.py (WebKit2, Xvfb, bus riêng): 1280 + 390 px, 0 request ngoài, không tràn ngang; ảnh đã xem. Zip .tmp/zkey-site.zip.
+- KHÔNG đẩy lên tfl5: đẩy máy chủ thật bị luật workspace cấm cho Claude (ngoại lệ chỉ zigeel.com của remote); không mở trình duyệt/QR. Hà tự tải zip lên tfl5 + gắn tên miền.
