@@ -71,3 +71,9 @@
 - RED thật: GTK3 gõ dồn ra `tieseng vieetj` (phím native bị xếp sau commit). Hai lượt sửa trung gian lộ thêm: từ đầu sau reset không có vị trí ⇒ không ghép (`tiee`); dấu cách làm mất từ chờ ghép. Bản cuối: commit mọi phím in được, sở hữu theo hậu tố + ranh giới, ghép bù khi app cập nhật, giữ ≤3 từ chờ.
 - Tôi đã lỡ nuốt lỗi compose trong `target()`; test cấy lỗi bắt được, đã bỏ. Test mật khẩu mới ban đầu MÙ (đối chứng ngược xanh), đã sửa và đối chứng lại ĐỎ.
 - Kết quả: accept-xvfb 3/3 mã0; Python 44/44; Rust 7/7; clippy/release 0; impact record 0; audit 8 tệp/138 assertion 0. Chưa commit (repo chưa có commit nào).
+
+## 2026-11-15 09:00 +07 — repo public, AGPL, terminal an toàn XANH
+
+- Repo public https://github.com/dipgle/zkey; c7afd8a rồi e433bd9 (AGPL-3.0-or-later + NOTICE ghi công §7(b)) đẩy qua huba, đã đo `git ls-remote` trùng.
+- Terminal: bài VTE thật trên Xvfb XANH (phím nguyên, bí mật ECHO-off không lộ/không đổi); đối chứng compare/echo đều ĐỎ đúng lý do. Sửa cảnh báo IBus trong app (xin surrounding sớm) bằng xin lười mỗi focus; RED→GREEN + đối chứng.
+- Python 45/45; GTK4+GTK3 2/2; audit 140 assertion 0; impact record 0. Gõ tiếng Việt trong terminal: chờ chủ dự án chọn hướng.

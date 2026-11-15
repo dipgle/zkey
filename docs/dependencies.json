@@ -10,6 +10,7 @@
     "cargo::src/telex.rs::undo_and_replace",
     "cargo::src/telex.rs::vietnamese_words",
     "scripts/accept-editor.py",
+    "scripts/accept-terminal.py",
     "scripts/audit_measurements.py",
     "scripts/desktop-status.py",
     "scripts/editor-session.py",
@@ -40,6 +41,7 @@
     "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters",
     "test::test_engine.EngineTests.test_shift_only_does_not_split_word",
     "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit",
+    "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients",
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
@@ -174,6 +176,10 @@
     [
       "scripts/impact.py",
       "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
     ],
     [
       "scripts/impact.py",
@@ -408,6 +414,10 @@
       "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit"
     ],
     [
+      "tests/test_engine.py",
+      "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
       "tests/test_entrypoints.py",
       "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile"
     ],
@@ -581,6 +591,10 @@
     ],
     [
       "zkey/config.py",
+      "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/config.py",
       "test::test_session.SessionTests.test_app_update_after_zero_delay_burst_composes_whole_word"
     ],
     [
@@ -741,6 +755,10 @@
     ],
     [
       "zkey/core.py",
+      "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/core.py",
       "test::test_session.SessionTests.test_app_update_after_zero_delay_burst_composes_whole_word"
     ],
     [
@@ -889,11 +907,19 @@
     ],
     [
       "zkey/engine.py",
+      "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/engine.py",
       "tests/test_engine.py"
     ],
     [
       "zkey/launch.py",
       "scripts/editor-session.py"
+    ],
+    [
+      "zkey/runtime.py",
+      "scripts/accept-terminal.py"
     ],
     [
       "zkey/runtime.py",
@@ -942,6 +968,10 @@
     [
       "zkey/session.py",
       "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit"
+    ],
+    [
+      "zkey/session.py",
+      "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
     ],
     [
       "zkey/session.py",
@@ -1074,6 +1104,7 @@
     "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters",
     "test::test_engine.EngineTests.test_shift_only_does_not_split_word",
     "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit",
+    "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients",
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
@@ -1107,6 +1138,6 @@
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 44
+    "python_tests_run": 45
   }
 }

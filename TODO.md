@@ -2,6 +2,8 @@
 
 - [x] **Ghép đường kế nhiệm (15/11 05:55):** resolver mới đo đúng `/mnt/data/projects/zkey`, paths15/Linux7 tests đạt. Cổng host mã0, acc6 pane%8 CLI_PID120194 CLI_LIVE=1. Log `.tmp/open-successor-0555.log`; brief `.tmp/brief-core-ke-nhiem-20261115-0555.md`. Đây là mở phiên, chưa nghiệm thu sản phẩm.
 
+- [x] P0-001 vế an toàn (15/11 09:00): terminal VTE thật — phím đi nguyên, `read -s` không lộ/không biến đổi; cổng `scripts/accept-terminal.py` có đối chứng 2 chiều.
+- [ ] **P0-001 còn mở — CHỜ CHỦ DỰ ÁN chọn cách gõ tiếng Việt trong terminal** (VTE không cho xác nhận/sửa chữ đã gửi; Backspace giả bị cấm).
 - [ ] **P0-001 CHẶN PHÁT HÀNH:** thay đường giữ từ trong preedit; bảo đảm terminal tắt echo không lộ/biến đổi mật khẩu. InputPurpose PASSWORD/PIN chưa đủ. Hợp đồng và phép nghiệm thu: `docs/input-contract.md`.
 - [ ] Thăm dò đường sửa ký tự đã commit theo từng frontend; VTE cài trên máy không hỗ trợ surrounding-text rewrite. Chưa quyết định backend terminal.
 - [x] Viết đường commit từng phím + sửa suffix theo incoming surrounding/caret/selection. Python 33/33; chưa nghiệm thu UI bản mới.

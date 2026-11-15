@@ -22,6 +22,7 @@ class Engine(IBus.Engine):
         # Fail at startup, with a visible error, if the native library/config is invalid.
         self.session = Session(Core(), load())
         self.surrounding = None
+        self.requested = False
 
     def apply(self, result):
         if result.delete or result.commit:
@@ -51,6 +52,7 @@ class Engine(IBus.Engine):
         character = IBus.keyval_to_unicode(keyval)
         key = character if character and character.isprintable() else name
         try:
+            self.request_surrounding()
             LOG.debug("key-state supported=%s snapshot=%s protected=%s",
                       self.session.surrounding_supported, self.surrounding is not None, self.session.private)
             return self.apply(self.session.key(key, surrounding=self.surrounding,
@@ -67,6 +69,17 @@ class Engine(IBus.Engine):
         if not self.session.surrounding_supported:
             self.session.clear()
             self.surrounding = None
+
+    def request_surrounding(self):
+        """Ask the client for updates once per focus, at the first unprotected key.
+
+        Content type (TERMINAL/PASSWORD) is known by then. Asking earlier makes the
+        GTK IBus module query widgets that refuse (VTE) and warn inside the app
+        (measured 15/11: caps 41 -> 9 plus a warning). Cached return unused.
+        """
+        if self.session.surrounding_supported and not self.session.private and not self.requested:
+            self.requested = True
+            self.get_surrounding_text()
 
     def do_set_surrounding_text(self, text, cursor, anchor):
         LOG.debug("client surrounding update received")
@@ -88,8 +101,7 @@ class Engine(IBus.Engine):
         # IBus clients suppress their initial empty snapshot. This bootstrap can
         # insert the first letter only; apply() invalidates it before that edit.
         self.surrounding = ("", 0, 0)
-        # This requests client updates; its cached return is deliberately unused.
-        self.get_surrounding_text()
+        self.requested = False
 
     def do_set_content_type(self, purpose, hints):
         # Mandatory bypass until a cooperating terminal backend is verified:
@@ -110,7 +122,7 @@ class Engine(IBus.Engine):
         LOG.debug("focus-in")
         self.session.clear()
         self.surrounding = ("", 0, 0)
-        self.get_surrounding_text()
+        self.requested = False
         try:
             self.session.config = load()
         except (OSError, ValueError):

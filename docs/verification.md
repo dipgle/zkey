@@ -1,5 +1,12 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 15/11 09:00 — terminal VTE: vế AN TOÀN của P0-001 XANH; gõ tiếng Việt trong terminal CHƯA có
+
+- `scripts/accept-terminal.py` (chạy trong xvfb-run, `ZKEY_TEST_DISPLAY`): VTE 0.84 thật + bash. Lệnh `echo tieengs` đi nguyên; `read -s` với chuỗi giả dùng một lần `as`: không hiện trên màn, shell so khớp nguyên dạng (chuỗi không bao giờ in ra); engine thấy `purpose=10 protected=True`, 81 phím; 0 cảnh báo.
+- Đối chứng ngược hai chiều (`ZKEY_TERMINAL_MUTATE`): `compare` (shell chờ dạng Telex `á`) ⇒ ĐỎ «transformed»; `echo` (gõ khi ECHO bật) ⇒ ĐỎ «visible»; lành ⇒ XANH.
+- Sửa kèm (RED→GREEN + đối chứng): engine xin surrounding sớm ⇒ module IBus của GTK hỏi VTE, VTE từ chối, ứng dụng in cảnh báo và caps 41→9. Nay chỉ xin ở phím đầu tiên không được bảo vệ của mỗi focus. GTK4/GTK3 vẫn xanh 2/2.
+- CHƯA: Telex trong terminal (đang đi thẳng), ptyxis app, SSH/tmux, TUI raw.
+
 ## 15/11 08:00 — GTK4 + GTK3 gõ thật XANH trên Xvfb riêng (3/3 lượt)
 
 - Đường đo: `bash scripts/accept-xvfb.sh` → `.tmp/accept-xvfb.log` (GATE_EXIT 0/1/2). Xvfb 21.1.22 tải bằng `apt-get download` + `dpkg-deb -x` vào `.tmp/tools` (không cài hệ thống; sudo hết giờ). Phím XTest chỉ vào màn ảo, bus D-Bus/IBus riêng.

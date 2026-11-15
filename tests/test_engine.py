@@ -12,6 +12,7 @@ class Sink:
         self.session = Session(Core())
         self.session.surrounding_supported = True
         self.surrounding = ("", 0, 0)
+        self.requested = False
         self.document = ""
         self.cursor = 0
         self.results, self.preedits, self.commits, self.deletes = [], [], [], []
@@ -47,7 +48,11 @@ class Sink:
     def do_reset(self):
         Engine.do_reset(self)
 
+    def request_surrounding(self):
+        Engine.request_surrounding(self)
+
     def get_surrounding_text(self):
+        self.surrounding_requests = getattr(self, "surrounding_requests", 0) + 1
         return IBus.Text.new_from_string(""), 0, 0
 
 
@@ -187,6 +192,19 @@ class EngineTests(unittest.TestCase):
         self.sink.ack()
         self.assertEqual((self.sink.document, self.sink.deletes), ("as", []))
 
+    def test_surrounding_requested_only_from_capable_clients(self):
+        # VTE lacks the capability; asking anyway makes libibus warn in the app.
+        Engine.do_focus_in(self.sink)
+        Engine.do_enable(self.sink)
+        Engine.do_set_content_type(self.sink, IBus.InputPurpose.TERMINAL, 0)
+        for key in "as":
+            Engine.do_process_key_event(self.sink, ord(key), 0, 0)
+        self.assertEqual(getattr(self.sink, "surrounding_requests", 0), 0)
+        Engine.do_focus_in(self.sink)
+        Engine.do_set_content_type(self.sink, IBus.InputPurpose.FREE_FORM, 0)
+        for key in "as":
+            Engine.do_process_key_event(self.sink, ord(key), 0, 0)
+        self.assertEqual(self.sink.surrounding_requests, 1, "once per focus, at the first key")
 
 if __name__ == "__main__":
     unittest.main()
