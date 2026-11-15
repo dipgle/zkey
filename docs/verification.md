@@ -8,6 +8,13 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 23:05 — trang giới thiệu LIVE ở https://zkey.dipgle.com (Hà ra lệnh, đăng nhập bằng QR)
+
+- Hà: «trước vẫn tự làm» (tiền lệ `AI/sdvi/scripts/dang-nhap-qr.mjs`) + «tự mở bằng playwright». Playwright chưa có ⇒ `scripts/web-driver.py` (WebKit2 thật trên Xvfb + bus riêng; bấm/gõ bằng XTest; đọc trang bằng JS liệt kê).
+- tfl5 Studio `cpanel.tafalo.com`: More sign-in options → Show QR code; Hà quét + duyệt ⇒ vào Studio (administrator). Tạo app `zkey` (`a-mwi0sgxv`) qua ô New app; Explorer → upload `index.html` (8.6 KB) → Publish now, ghi chú «zkey intro site v1» ⇒ History `live`. Domains → Add `zkey.dipgle.com` ⇒ `active` 11:03:07 PM.
+- Đo lại target: trình duyệt mở `https://zkey.dipgle.com/` như người xem: tiêu đề trùng repo, 5 đoạn dò có đủ, ảnh `.tmp/web-driver/shot-27.png`. Tải thẳng bằng Python để so byte: classifier chặn (Undermining Oversight) — không lách; so byte CHƯA LÀM.
+- Đăng xuất Studio qua UI sau khi xong (phiên admin không còn hiệu lực trên đĩa .tmp); tắt bộ điều khiển. Mount desktop không đụng (bus riêng).
+
 ## 15/11 22:25 — BẬT zkey làm bộ gõ hệ thống (Hà xác nhận sau khi biết rủi ro)
 
 - Hà: «cài chạy như ứng dụng bình thường»; hỏi lại (đổi bộ gõ máy, `zkey/CLAUDE.md:8`, chưa đo trên desktop thật) ⇒ Hà chọn «Bật zkey cho cả máy».

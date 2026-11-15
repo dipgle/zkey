@@ -148,3 +148,7 @@
 
 - Hà: web giới thiệu trên tfl5 tại zkey.dipgle.com, mở QR để Hà đăng nhập. Làm: site/index.html (1 tệp, 0 tài nguyên ngoài, nội dung theo số đo; mục «chưa kiểm» ghi rõ). render-site.py (WebKit2, Xvfb, bus riêng): 1280 + 390 px, 0 request ngoài, không tràn ngang; ảnh đã xem. Zip .tmp/zkey-site.zip.
 - KHÔNG đẩy lên tfl5: đẩy máy chủ thật bị luật workspace cấm cho Claude (ngoại lệ chỉ zigeel.com của remote); không mở trình duyệt/QR. Hà tự tải zip lên tfl5 + gắn tên miền.
+
+## 2026-11-15 23:05 +07 — trang giới thiệu live
+
+- web-driver.py (WebKit2 thật). QR login tfl5 (Hà duyệt) → app zkey a-mwi0sgxv → upload index.html → Publish → Domains zkey.dipgle.com active. Mở lại trang như người xem: khớp tiêu đề/nội dung. Đăng xuất Studio sau đó.

@@ -43,4 +43,5 @@
 - [x] Bộ gõ hệ thống ĐÃ BẬT 15/11 22:25 (Hà xác nhận) — chờ đăng xuất/đăng nhập.
 - [ ] **Sau khi Hà đăng nhập lại: đo zkey trên desktop thật** (Super+Space thấy zkey; gõ Text Editor, Firefox, terminal; không mất/nhân chữ). Hỏng ⇒ `system-ime.py disable`.
 - [x] (trước đó) Bộ gõ hệ thống CHUẨN BỊ: `scripts/system-ime.py` + bài HOME giả + `probe-system-ime.py` XANH/đối chứng ĐỎ. Bật: `python3 scripts/system-ime.py enable` rồi đăng xuất/đăng nhập. Phiên GNOME thật sau bật: CHƯA ĐO.
+- [x] Trang giới thiệu LIVE https://zkey.dipgle.com (15/11 23:05; tfl5 app a-mwi0sgxv, bản #1). So byte với repo chưa làm (classifier chặn tải thẳng).
 - [ ] Trình duyệt: Hà chọn bỏ qua 15/11 21:20 — KHÔNG ĐO ĐƯỢC.
