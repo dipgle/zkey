@@ -2,7 +2,7 @@
 
 Bộ gõ Telex cho Ubuntu, lõi Rust và adapter IBus Python/GObject. Đường mới gửi chữ vào ứng dụng theo từng phím; khi thêm dấu, sửa phần chữ vừa gõ bằng surrounding-text đã được ứng dụng xác nhận.
 
-Gõ thật đã XANH trên GNOME Text Editor (GTK4) và ô nhập GTK3 trong màn X ảo riêng (15/11, 3/3 lượt, có vết engine private): gõ từng phím, gõ dồn, ô mật khẩu đi thẳng. CHƯA nghiệm thu: desktop Wayland-native, Chrome/Electron, terminal. Chưa có bằng chứng mượt hơn các bộ gõ khác.
+Gõ thật đã XANH trên GNOME Text Editor (GTK4) và ô nhập GTK3 trong màn X ảo riêng (15/11, 3/3 lượt, có vết engine private): gõ từng phím, gõ dồn, ô mật khẩu đi thẳng. Terminal (VTE thật): mật khẩu `read -s` không lộ/không đổi; gõ tiếng Việt trên dòng lệnh bash qua plugin `shell/zkey.bash`. CHƯA nghiệm thu: desktop Wayland-native, Chrome/Electron, vim/TUI, SSH, zsh. Chưa có bằng chứng mượt hơn các bộ gõ khác.
 
 **Phạm vi:** chỉ biến đổi Telex ở client hỗ trợ surrounding-text và có cập nhật xác nhận. Client thiếu khả năng này, PASSWORD/PIN/TERMINAL và private hints nhận phím nguyên trạng. Đây chưa phải bộ gõ Telex cho toàn bộ terminal hoặc toàn hệ thống. Không dùng bản thử cho bí mật thật khi chưa nghiệm thu đúng ứng dụng. Xem [hợp đồng nhập liệu và bảo mật](docs/input-contract.md).
 
@@ -40,6 +40,19 @@ cargo clippy --offline --all-targets -- -D warnings
 `scripts/probe-host.sh` là phép thăm dò protocol trên D-Bus/IBus riêng, không thay phiên desktop; kết quả phải đọc đến `GATE_EXIT` trong `.tmp/ibus-probe.log`. Đã xếp qua huba do sandbox không cho bind socket.
 
 Kết quả đã đo và phần chưa đo: [docs/verification.md](docs/verification.md).
+
+## Terminal (bash)
+
+Bộ gõ không sửa được chữ đã gửi vào terminal và không biết lúc nào terminal đang hỏi mật khẩu, nên trong terminal phím đi nguyên trạng. Tiếng Việt trên dòng lệnh do readline của bash làm: chữ hiện ngay, dấu sửa ngay trong dòng; `sudo`, `read -s`, ssh không đi qua đây.
+
+```bash
+cargo build --offline --release
+echo 'source /mnt/data/projects/zkey/shell/zkey.bash' >> ~/.bashrc   # rồi mở terminal mới
+```
+
+- Mặc định chỉ áp trong dấu nháy (`git commit -m "..."`, `echo "..."`); lệnh, cờ, đường dẫn giữ nguyên. **Alt+Z** đổi: trong nháy → mọi từ → tắt. `zkey-status` xem chế độ/lỗi.
+- Kết quả không phải âm tiết tiếng Việt thì giữ nguyên phím (`status`, `add`, `class`). Câu tiếng Anh trong nháy vẫn có thể đổi ở âm tiết hợp lệ (`us` → `ú`): tắt bằng Alt+Z.
+- Đo: ~330 µs/phím cho hàm plugin + lõi (`scripts/bench-shell.sh`, chưa gồm vẽ lại terminal). Chưa có: vim/TUI, zsh, SSH (cần plugin ở máy xa).
 
 ## Giấy phép
 

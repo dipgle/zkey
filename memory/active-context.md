@@ -8,6 +8,6 @@ Sửa gốc: phím trả native bị GTK async xếp sau commit ⇒ `tieseng`. `
 
 Xvfb: `.tmp/tools/root/usr/bin/Xvfb` (apt-get download + dpkg-deb -x; sudo hết giờ, không cài hệ thống). Desktop Xwayland `-enable-ei-portal` bắt hộp thoại RemoteDesktop mỗi phiên XTest; chủ máy xem qua zigeel không thấy ⇒ không dùng desktop để tự động.
 
-Việc kế: CHỜ chủ dự án chọn hướng Telex trong terminal (đã hỏi: plugin shell readline/zle [đề xuất] | phím tắt bật tạm + preedit | giữ nguyên). Vế an toàn XANH (`scripts/accept-terminal.py`). Sau đó: gõ dồn xen Backspace/Enter; Chrome/Electron; Wayland-native.
+Việc kế: terminal bash XANH qua plugin `shell/zkey.bash` (README mục Terminal; chưa thêm vào ~/.bashrc). Tiếp: tiếng Anh trong nháy, vim/TUI, zsh, SSH; gõ dồn xen Backspace/Enter; Chrome/Electron; Wayland-native. Chạy toàn bộ: `bash scripts/accept-xvfb.sh`.
 
 Nền: fixture desktop Text Editor PID94574/supervisor94548 vẫn mở từ 00:58 (marker `.tmp/editor-app.json`). Không job nền khác. Chạy lại: `bash /mnt/data/projects/zkey/scripts/accept-xvfb.sh`.

@@ -22,6 +22,8 @@ FAKE_SECRET = "as"  # One-time test string; Telex would turn it into "á".
 # the shell expect the Telex form, "echo" types the secret with ECHO on. Both
 # must turn this gate RED.
 MUTATE = os.environ.get("ZKEY_TERMINAL_MUTATE", "")
+# 1 = bash sources shell/zkey.bash: Telex done by readline on the command line.
+PLUGIN = os.environ.get("ZKEY_TERMINAL_PLUGIN") == "1"
 
 
 def inside():
@@ -44,10 +46,12 @@ def inside():
         handlers = [GLib.log_set_handler(domain, GLib.LogLevelFlags.LEVEL_WARNING | GLib.LogLevelFlags.LEVEL_CRITICAL,
                                          lambda _d, _l, message, _u: errors.append(message), None)
                     for domain in ("Gtk", "Gdk", "IBUS", "VTE")]
-        shell_env = [f"{k}={v}" for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "TERM")]
+        shell_env = [f"{k}={v}" for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "TERM", "ZKEY_MODE")]
         shell_env += ["PS1=$ ", "HISTFILE=/dev/null", "LANG=C.UTF-8"]
         spawned = []
-        terminal.spawn_async(Vte.PtyFlags.DEFAULT, str(ROOT / ".tmp"), ["/bin/bash", "--norc", "--noprofile", "-i"],
+        shell = (["/bin/bash", "--rcfile", str(ROOT / "shell/zkey.bash"), "-i"] if PLUGIN
+                 else ["/bin/bash", "--norc", "--noprofile", "-i"])
+        terminal.spawn_async(Vte.PtyFlags.DEFAULT, str(ROOT / ".tmp"), shell,
                              shell_env, GLib.SpawnFlags.DEFAULT, None, None, -1, None,
                              lambda _t, pid, error, *_: spawned.append((pid, error)))
         window.show_all()
@@ -120,7 +124,8 @@ def inside():
             # 2. ECHO-off secret prompt: nothing visible, nothing transformed.
             before = screen()
             # "compare": the Telex form of the secret, typed as ASCII escapes.
-            expected = "$'\\xc3\\xa1'" if MUTATE == "compare" else '"' + FAKE_SECRET + '"'
+            # Unquoted literal: the shell plugin (quoted mode) leaves it as typed.
+            expected = "$'\\xc3\\xa1'" if MUTATE == "compare" else FAKE_SECRET
             flag = "" if MUTATE == "echo" else "-s "
             command = "read " + flag + '-r p; [ "$p" = ' + expected + ' ] && echo SAME || echo DIFF; unset p\n'
             send(command)
@@ -136,6 +141,22 @@ def inside():
                      "the shell's comparison result")
             if "DIFF" in screen().split("unset p", 1)[-1]:
                 raise AssertionError("Secret typed with ECHO off reached the shell transformed")
+            if PLUGIN:
+                def prompt_line():
+                    lines = [line for line in screen().splitlines() if line.strip()]
+                    return lines[-1] if lines else ""
+                # 3. Per key inside quotes: the command line shows each prefix at once.
+                send('echo "')
+                for key, text in zip("tieengs", ("t", "ti", "tie", "tiê", "tiên", "tiêng", "tiếng")):
+                    send(key)
+                    wait_for(lambda: prompt_line().endswith('echo "' + text), f"prefix {text!r} on the command line")
+                send(' vieetj"\n')
+                wait_for(lambda: "\ntiếng việt" in screen(), "the Vietnamese phrase echoed by bash")
+                # 4. Outside quotes commands/English stay as typed.
+                send("echo status test\n")
+                wait_for(lambda: "\nstatus test" in screen(), "unquoted English kept as typed")
+                if "statú" in screen() or "tét" in screen():
+                    raise AssertionError("Unquoted English was transformed")
             engine_log = ROOT / ".tmp" / (Path(env["IBUS_ADDRESS"].split("unix:path=", 1)[1]).parent.name + ".log")
             trace = engine_log.read_text()
             if "purpose=10" not in trace or "protected=True" not in trace:
@@ -147,7 +168,12 @@ def inside():
                 raise RuntimeError("Toolkit warnings: " + "; ".join(errors))
             print(f"PASS VTE terminal: command keys unchanged; ECHO-off secret not shown and reached shell unchanged; "
                   f"engine saw purpose TERMINAL and {keys} keys; 0 toolkit warnings.")
-            print("NOT COVERED: Vietnamese typing inside terminals (bypassed), ptyxis app, SSH/tmux, raw/TUI.")
+            if PLUGIN:
+                print("PASS shell plugin: 7 per-key prefixes inside quotes on the real command line; "
+                      "'tiếng việt' reached bash; unquoted 'status test' kept as typed.")
+                print("NOT COVERED: ptyxis app, SSH/tmux, vim/TUI, zsh.")
+            else:
+                print("NOT COVERED: Vietnamese typing inside terminals (bypassed), ptyxis app, SSH/tmux, raw/TUI.")
             return 0
         finally:
             x11.XCloseDisplay(display)

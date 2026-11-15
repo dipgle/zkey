@@ -66,4 +66,11 @@ else
 fi
 kill -TERM -- "-$launcher" 2>/dev/null
 wait "$launcher" 2>/dev/null
+# Real VTE terminal: input-method bypass alone, then with the bash plugin.
+for plugin in 0 1; do
+  ZKEY_TERMINAL_PLUGIN=$plugin /usr/bin/python3 "$ROOT/scripts/accept-terminal.py" 2>&1 | grep -v '^dbus-daemon'
+  term=${PIPESTATUS[0]}
+  echo "terminal plugin=$plugin exit=$term"
+  if [ "$term" != 0 ] && [ "$code" != 1 ]; then code=$term; fi
+done
 exit "$code"

@@ -1,5 +1,12 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 15/11 10:00 — Telex trên dòng lệnh bash (plugin readline) XANH trên VTE thật
+
+- `shell/zkey.bash` + `zkey-line` (Rust, tiến trình thường trực qua coproc). Lõi thêm `valid_syllable` (RED→GREEN, Rust 8/8 + 1 test giao thức).
+- `accept-terminal.py` chế độ plugin: 7 tiền tố hiện ngay trên dòng lệnh trong dấu nháy; bash nhận `tiếng việt`; `echo status test` giữ nguyên; `read -s` vẫn không lộ/không đổi. Đối chứng ngược: `ZKEY_MODE=off` ⇒ ĐỎ ở `tiê`; `ZKEY_MODE=all` ⇒ ĐỎ (lệnh ngoài nháy bị đổi). Gộp vào `accept-xvfb.sh`: GTK4 + GTK3 + terminal ×2 mã 0.
+- Đo `scripts/bench-shell.sh`: 329/330/336 µs mỗi phím (1995 phím, 0 lỗi); không gồm vẽ lại terminal.
+- Hạn chế đã thấy khi đo: câu tiếng Anh trong dấu nháy bị đổi ở âm tiết hợp lệ (`us`→`ú`, `per`→`pẻ`). CHƯA: ptyxis app, tmux, SSH, vim/TUI, zsh; chưa thêm dòng vào ~/.bashrc (luật dự án cấm cài ngoài repo).
+
 ## 15/11 09:00 — terminal VTE: vế AN TOÀN của P0-001 XANH; gõ tiếng Việt trong terminal CHƯA có
 
 - `scripts/accept-terminal.py` (chạy trong xvfb-run, `ZKEY_TEST_DISPLAY`): VTE 0.84 thật + bash. Lệnh `echo tieengs` đi nguyên; `read -s` với chuỗi giả dùng một lần `as`: không hiện trên màn, shell so khớp nguyên dạng (chuỗi không bao giờ in ra); engine thấy `purpose=10 protected=True`, 81 phím; 0 cảnh báo.

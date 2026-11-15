@@ -2,10 +2,12 @@
   "nodes": [
     "Cargo.lock",
     "Cargo.toml",
+    "cargo::src/bin/line.rs::protocol",
     "cargo::src/lib.rs::ffi_boundaries",
     "cargo::src/telex.rs::all_tones_all_vowels_and_cases",
     "cargo::src/telex.rs::continue_editing_composed_vietnamese",
     "cargo::src/telex.rs::every_prefix_can_be_replayed_after_backspace",
+    "cargo::src/telex.rs::syllable_check_accepts_vietnamese_rejects_english_shapes",
     "cargo::src/telex.rs::tone_moves_when_coda_arrives",
     "cargo::src/telex.rs::undo_and_replace",
     "cargo::src/telex.rs::vietnamese_words",
@@ -25,6 +27,7 @@
     "scripts/verify-host.py",
     "scripts/x11_activation.py",
     "src/bin/bench.rs",
+    "src/bin/line.rs",
     "src/lib.rs",
     "src/telex.rs",
     "test::test_audit_measurements.AuditTests.test_broken_assertions_are_flagged_then_repaired_are_clear",
@@ -95,6 +98,10 @@
     ],
     [
       "Cargo.lock",
+      "src/bin/line.rs"
+    ],
+    [
+      "Cargo.lock",
       "src/lib.rs"
     ],
     [
@@ -104,6 +111,10 @@
     [
       "Cargo.toml",
       "src/bin/bench.rs"
+    ],
+    [
+      "Cargo.toml",
+      "src/bin/line.rs"
     ],
     [
       "Cargo.toml",
@@ -318,12 +329,20 @@
       "tests/test_stage.py"
     ],
     [
+      "src/bin/line.rs",
+      "cargo::src/bin/line.rs::protocol"
+    ],
+    [
       "src/lib.rs",
       "cargo::src/lib.rs::ffi_boundaries"
     ],
     [
       "src/lib.rs",
       "src/bin/bench.rs"
+    ],
+    [
+      "src/lib.rs",
+      "src/bin/line.rs"
     ],
     [
       "src/lib.rs",
@@ -340,6 +359,10 @@
     [
       "src/telex.rs",
       "cargo::src/telex.rs::every_prefix_can_be_replayed_after_backspace"
+    ],
+    [
+      "src/telex.rs",
+      "cargo::src/telex.rs::syllable_check_accepts_vietnamese_rejects_english_shapes"
     ],
     [
       "src/telex.rs",
@@ -1083,10 +1106,12 @@
     ]
   ],
   "tests": [
+    "cargo::src/bin/line.rs::protocol",
     "cargo::src/lib.rs::ffi_boundaries",
     "cargo::src/telex.rs::all_tones_all_vowels_and_cases",
     "cargo::src/telex.rs::continue_editing_composed_vietnamese",
     "cargo::src/telex.rs::every_prefix_can_be_replayed_after_backspace",
+    "cargo::src/telex.rs::syllable_check_accepts_vietnamese_rejects_english_shapes",
     "cargo::src/telex.rs::tone_moves_when_coda_arrives",
     "cargo::src/telex.rs::undo_and_replace",
     "cargo::src/telex.rs::vietnamese_words",

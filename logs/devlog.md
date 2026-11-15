@@ -77,3 +77,9 @@
 - Repo public https://github.com/dipgle/zkey; c7afd8a rồi e433bd9 (AGPL-3.0-or-later + NOTICE ghi công §7(b)) đẩy qua huba, đã đo `git ls-remote` trùng.
 - Terminal: bài VTE thật trên Xvfb XANH (phím nguyên, bí mật ECHO-off không lộ/không đổi); đối chứng compare/echo đều ĐỎ đúng lý do. Sửa cảnh báo IBus trong app (xin surrounding sớm) bằng xin lười mỗi focus; RED→GREEN + đối chứng.
 - Python 45/45; GTK4+GTK3 2/2; audit 140 assertion 0; impact record 0. Gõ tiếng Việt trong terminal: chờ chủ dự án chọn hướng.
+
+## 2026-11-15 10:00 +07 — Telex trên dòng lệnh bash
+
+- Chủ dự án giao tự quyết theo yêu cầu (chữ vào ngay, nhất quán, mật khẩu an toàn) ⇒ plugin readline; phím tắt+preedit trái yêu cầu nên loại.
+- Mới: `src/bin/line.rs` (zkey-line), `valid_syllable` trong lõi, `shell/zkey.bash`, `scripts/bench-shell.sh`; `accept-terminal.py` thêm chế độ plugin; `accept-xvfb.sh` chạy cả terminal.
+- Kết quả: accept-xvfb mã0 (GTK4+GTK3+terminal×2); đối chứng off/all ĐỎ; Rust 9 test, clippy 0; Python 45/45; bench ~330 µs/phím.

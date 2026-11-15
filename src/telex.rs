@@ -138,6 +138,56 @@ fn shape(word: &mut Vec<char>, key: char) -> bool {
     true
 }
 
+const ONSETS: [&str; 27] = [
+    "ngh", "ng", "nh", "ch", "gh", "kh", "ph", "th", "tr", "b", "c", "d", "đ", "g", "h", "k", "l",
+    "m", "n", "p", "q", "r", "s", "t", "v", "x", "",
+];
+const NUCLEI: &[&str] = &[
+    "a", "ă", "â", "e", "ê", "i", "o", "ô", "ơ", "u", "ư", "y", "ai", "ao", "au", "ay", "âu", "ây",
+    "eo", "êu", "ia", "iê", "iu", "oa", "oă", "oe", "oi", "oo", "ôi", "ơi", "ua", "uâ", "uê", "ui",
+    "uô", "uơ", "uy", "ưa", "ưi", "ươ", "ưu", "yê", "iêu", "yêu", "oai", "oay", "oeo", "uây",
+    "uôi", "ươi", "ươu", "uya", "uyê", "uyu",
+];
+const CODAS: [&str; 9] = ["", "c", "ch", "m", "n", "ng", "nh", "p", "t"];
+
+fn base(c: char) -> char {
+    let c = lower(c);
+    VOWELS
+        .iter()
+        .find(|row| row.contains(c))
+        .map_or(c, |row| row.chars().next().unwrap())
+}
+
+/// Plausible (possibly still being typed) Vietnamese syllable: onset, vowel
+/// nucleus from the Vietnamese set, final consonant. Used to keep English and
+/// command words as typed instead of turning e.g. "status" into "statú".
+pub fn valid_syllable(word: &str) -> bool {
+    let chars: Vec<char> = word.chars().map(base).collect();
+    let text: String = chars.iter().collect();
+    let next_is_vowel = |at: usize| chars.get(at).is_some_and(|c| is_vowel(*c));
+    // "gi"+vowel and "qu" act as one onset ("giá", "quá"); bare "gì" is g + i.
+    let onset_len = if (text.starts_with("gi") && next_is_vowel(2)) || text.starts_with("qu") {
+        2
+    } else {
+        ONSETS
+            .iter()
+            .find(|onset| text.starts_with(*onset))
+            .map_or(0, |onset| onset.chars().count())
+    };
+    let rest = &chars[onset_len..];
+    if rest.is_empty() {
+        return true; // Only an onset so far, or nothing.
+    }
+    let nucleus_len = rest.iter().take_while(|c| is_vowel(**c)).count();
+    if nucleus_len == 0 {
+        return false;
+    }
+    let nucleus: String = rest[..nucleus_len].iter().collect();
+    let coda: String = rest[nucleus_len..].iter().collect();
+    NUCLEI.contains(&nucleus.as_str())
+        && CODAS.contains(&coda.as_str())
+}
+
 /// Replay a single ASCII word. Callers bound input to MAX_KEYS on the interactive path.
 pub fn compose(raw: &str, modern: bool) -> String {
     let mut word = Vec::with_capacity(raw.len());
@@ -227,6 +277,21 @@ mod tests {
         ];
         for (raw, expected) in cases {
             assert_eq!(compose(raw, true), expected, "{raw}");
+        }
+    }
+
+    #[test]
+    fn syllable_check_accepts_vietnamese_rejects_english_shapes() {
+        for word in [
+            "tiếng", "Việt", "Điện", "đường", "được", "nguyễn", "thưởng", "quá", "giá", "gì",
+            "nghiêng", "NGUYỄN", "ắ", "mưa", "quăng", "hoà", "thuỷ", "khuya", "oanh", "ạ",
+            "tiê", "tiên", "ngh", "t", "",
+        ] {
+            assert!(valid_syllable(word), "{word}");
+        }
+        // Results Telex would produce from common English/shell words.
+        for word in ["statú", "ađ", "clá", "đd", "stá", "ăb", "tứo", "aaaá", "ês"] {
+            assert!(!valid_syllable(word), "{word}");
         }
     }
 
