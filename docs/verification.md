@@ -8,6 +8,13 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 16:00 — gõ dồn có phím native: gốc + sửa, XANH
+
+- Gốc: `im-ibus.so` GTK3 (ibus 1.5.34~rc2) bất đồng bộ; phím engine trả False bị `gdk_event_put` ra cuối hàng sự kiện, commit-text áp ngay ⇒ đảo thứ tự. Module GTK3 và GTK4 đều đọc `IBUS_ENABLE_SYNC_MODE`.
+- Sửa `zkey/runtime.py`: env ứng dụng do zkey mở có `IBUS_ENABLE_SYNC_MODE=1` (không đổi env hệ thống). GTK3 BURST+NATIVE 30/30 qua đường sản phẩm; đối chứng `ZKEY_CLIENT_SYNC_MODE=0` ⇒ 0/30 ĐỎ. `accept-xvfb.sh` 2 lượt × 6 bài XANH.
+- Chi phí (KEY-TO-TEXT, 3 lượt × 7 phím, trong tiến trình, không gồm vẽ màn): sync trung vị 6.0–6.4 ms, max 8.3; async 4.0–4.2, max 6.7.
+- CHƯA ĐO: GTK4 gõ dồn + phím native; app ngoài `zkey --run`; engine treo khi sync.
+
 ## 15/11 15:30 — gõ dồn có phím native xen giữa: ĐỎ
 
 - Pha BURST+NATIVE trong `scripts/native_acceptance.py` (GTK3, Xvfb riêng, 6 ca × 5 lượt, chuẩn = cùng phím gõ chậm; 2 ca ghim tay): 0/30 bằng gõ chậm; 2 chuẩn chậm khớp ghim. Ví dụ `tieengs⏎vieetj` → `tieengsvi⏎eetj`, `vieetj⌫t` → `vieetj`/`viêtt`. Log `.tmp/native-burst-1.log`. Chưa tìm gốc.

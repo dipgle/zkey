@@ -17,6 +17,7 @@ Gõ thật đã XANH trên GNOME Text Editor (GTK4) và ô nhập GTK3 trong mà
 - Backspace do ứng dụng xoá ký tự theo cách gốc; gõ tiếp vẫn giữ dấu. Chọn cách đặt dấu hiện đại/truyền thống.
 - Không giữ từ trong preedit. Engine tự commit mọi phím in được (chữ, dấu cách, dấu câu) để giữ đúng thứ tự khi gõ nhanh; chỉ phím không in được (Backspace, Enter, mũi tên) đi native. Chỉ xoá phần chữ do chính engine commit khi ảnh chụp của ứng dụng cho thấy nguyên văn phần đó ngay trước caret, không có vùng chọn và đứng sau ranh giới từ; gõ quá nhanh thì ghép bù khi ứng dụng xác nhận. Đổi focus/phím tắt không commit lại chữ đã nhận.
 - `bash scripts/accept-xvfb.sh` chạy nghiệm thu gõ thật (GTK4 Text Editor + GTK3) trên màn X ảo riêng, không đụng desktop.
+- Ứng dụng do zkey mở chạy IBus chế độ đồng bộ (`IBUS_ENABLE_SYNC_MODE=1`) để Backspace/Enter giữ đúng thứ tự khi gõ nhanh; thêm ~2 ms/phím (đo GTK3). Ứng dụng ngoài launcher chưa có bảo đảm này.
 - `bin/zkey --run` mở Text Editor trong phiên IBus riêng; `--run <ứng dụng> [tham số]` chạy ứng dụng chỉ định. Không đổi fcitx5/IBus toàn hệ thống. Tệp `zkey.desktop` mới nằm trong repo, chưa cài menu hệ thống.
 - Cấu hình TOML, màn thiết lập GTK3 và gói cài user-local được dựng thử trong `.tmp/stage`.
 

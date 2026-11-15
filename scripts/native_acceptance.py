@@ -183,9 +183,19 @@ def inside():
                 if errors:
                     raise RuntimeError("Native toolkit warnings: " + "; ".join(errors))
             expected = ("t", "ti", "tie", "tiê", "tiên", "tiêng", "tiếng")
+            delays = []
             for key, text in zip("tieengs", expected):
+                sent = time.monotonic()
                 send(key)
+                while entry.get_text() != text and time.monotonic() - sent < 3:
+                    while context.pending():
+                        context.iteration(False)
+                    time.sleep(0.0005)
+                delays.append((time.monotonic() - sent) * 1000)
                 expect(entry, text)
+            # Key-to-widget-text in this process (includes engine reply, not screen paint).
+            print(f"KEY-TO-TEXT ms: median={sorted(delays)[len(delays)//2]:.1f} max={max(delays):.1f} "
+                  f"(n={len(delays)}, sync={os.environ.get('IBUS_ENABLE_SYNC_MODE', 'unset')})", flush=True)
             send("space")
             expect(entry, "tiếng ")
             for key in "vieetj":

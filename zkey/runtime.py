@@ -86,6 +86,15 @@ def isolated_engine():
                                   # app (portals, document FUSE mount). A mismatch made ptyxis
                                   # exit within seconds (measured 15/11: 4/5 runs).
                                   XDG_RUNTIME_DIR=str(scratch / "runtime"))
+                # Key order. Async GTK3/GTK4 IBus modules re-queue keys the engine
+                # does not take (Backspace, Enter, arrows) at the END of the event
+                # queue with gdk_event_put, while our commits apply at once: a fast
+                # "tieengs⏎vieetj" became "tieengsvi⏎eetj" (measured 15/11: 0/30
+                # async, 30/30 sync, GTK3 on private Xvfb). Sync mode lets the
+                # toolkit handle a refused key in place. Cost: the app waits for
+                # the engine's reply per key (latency not yet measured).
+                # ZKEY_CLIENT_SYNC_MODE: test control only (reverse check "0").
+                client_env["IBUS_ENABLE_SYNC_MODE"] = os.environ.get("ZKEY_CLIENT_SYNC_MODE", "1")
                 if backend := os.environ.get("ZKEY_CLIENT_GDK_BACKEND"):
                     client_env["GDK_BACKEND"] = backend
                 if module := os.environ.get("ZKEY_CLIENT_IM_MODULE"):

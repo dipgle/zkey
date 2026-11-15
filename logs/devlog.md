@@ -99,3 +99,10 @@
 - Phiên mới (gốc ~/projects). Đo đầu: cây sạch, master=origin 1a1184a, không phiên zkey sống, PID nền cũ đã chết. Giờ trong devlog 11:00/11:30 lệch giờ commit (09:07) — không tin số giờ cũ.
 - Bài đo gõ dồn + Backspace/Enter (GTK3 Xvfb): ĐỎ 0/30 — ghi TODO/verification, chưa sửa.
 - huba báo (Hà giao): quoted mode đổi lệnh tmux send-keys (`git reset`→`git rết` trong --disallowedTools). RED tái hiện trong cổng mới `accept-shell-tmux.sh`; sửa `shell/zkey.bash` (hàng đợi còn byte ⇒ dòng nguyên văn; định danh/toàn hoa giữ nguyên). GREEN 5/5; đối chứng bỏ từng chốt ĐỎ đúng ca. VTE/ptyxis XANH; Python 45/45; Rust 9/9.
+
+## 2026-11-15 16:00 +07 — gõ dồn + Backspace/Enter: gốc và sửa
+
+- Hà dặn không ảnh hưởng máy đang chạy: mọi đo trên Xvfb/D-Bus/IBus riêng.
+- Gốc: im-ibus GTK bất đồng bộ đẩy phím engine không nhận (Backspace/Enter) ra cuối hàng sự kiện, commit áp ngay. Đối chứng chỉ bật IBUS_ENABLE_SYNC_MODE cho cửa sổ kiểm: 0/30 → 30/30.
+- Sửa runtime.py (env app do zkey mở). Đường sản phẩm 30/30; ZKEY_CLIENT_SYNC_MODE=0 ĐỎ 0/30. accept-xvfb 2/2 × 6 bài XANH; Python OK; audit 140/0. Phím→chữ trung vị 6 ms (async 4).
+- huba f3cfa32: pane huba mang ZKEY_MODE=off.
