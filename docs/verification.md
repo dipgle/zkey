@@ -8,6 +8,13 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 21:00 — GỐC THẬT sự cố portal desktop: accept-ptyxis.py (sửa kết luận 20:20)
+
+- `systemctl --user` cho thấy `xdg-document-portal` của desktop **failed lúc 20:37:45** (exit 21); `.tmp/ptyxis-session.log` (20:37:46) có bus riêng kích hoạt `org.freedesktop.portal.Documents`. `accept-ptyxis.py` chạy `dbus-run-session -- ptyxis` với `XDG_RUNTIME_DIR` thật, không qua `isolated_engine()` ⇒ portal riêng tranh `/run/user/1000/doc`. Bài này trong `accept-xvfb.sh` từ 11:00 ⇒ mọi lượt bộ đầy đủ (phiên này 16:00–20:37 và phiên trước) có thể đã làm hỏng portal desktop. Lệnh chẩn đoán tay 20:1x chỉ là MỘT lần; kết luận 20:20 «chỉ lệnh tay» là SAI/thiếu.
+- Chốt cả lớp: `scripts/private_bus.py` là đường DUY NHẤT mở bus riêng (daemon + dịch vụ kích hoạt luôn có runtime trong `.tmp`; `child_real_runtime` chỉ cho app cần systemd người dùng như ptyxis). `tests/test_private_bus.py` ĐỎ nếu có `dbus-run-session` gọi trực tiếp; chạy trên bản trước sửa bắt đúng `accept-ptyxis.py:46`, `native_acceptance.py:366`, `probe-host.sh:8`.
+- Cổng tác hại trong `accept-xvfb.sh`: mount `/run/user/UID/doc` + trạng thái portal desktop trước/sau. Lượt khi desktop chưa mount ⇒ `KHÔNG ĐO ĐƯỢC` mã 2 (đã thấy). Hà duyệt restart lần 2 (PID 365673) ⇒ lượt đầy đủ: 6 bài XANH, `MÁY NGUYÊN: active, mount 1->1`, PID không đổi. Nhánh ĐỎ của cổng chưa chạy (cấy hỏng = phá desktop thật).
+- ptyxis với runtime tách (daemon riêng, ptyxis runtime thật): XANH 2/2; portal riêng gắn ở `.tmp/bus-runtime-*/doc`; sau chạy 0 mount sót.
+
 ## 15/11 20:50 — gói cài user-local; `bin/zkey` thiếu quyền chạy
 
 - `bin/zkey` trong git là 100644 ⇒ `bin/zkey --run` (theo README) ra `Permission denied` (mã 126; `scripts/probe-run-ptyxis.sh` lộ). Đặt 100755. `zkey.desktop` gọi qua python3 nên không dính.

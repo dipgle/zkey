@@ -14,6 +14,7 @@
     "scripts/accept-editor.py",
     "scripts/accept-firefox.py",
     "scripts/accept-ptyxis.py",
+    "scripts/accept-settings.py",
     "scripts/accept-terminal.py",
     "scripts/audit_measurements.py",
     "scripts/desktop-status.py",
@@ -24,6 +25,7 @@
     "scripts/install-user.py",
     "scripts/native_acceptance.py",
     "scripts/open-editor-host.py",
+    "scripts/private_bus.py",
     "scripts/probe-gtk4-native.py",
     "scripts/probe_ibus.py",
     "scripts/recheck-editor.py",
@@ -36,6 +38,7 @@
     "src/telex.rs",
     "test::test_audit_measurements.AuditTests.test_broken_assertions_are_flagged_then_repaired_are_clear",
     "test::test_config.ConfigTests.test_bad_data_is_not_silently_defaulted",
+    "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user",
     "test::test_config.ConfigTests.test_explicit_preferences_survive_application_xdg_isolation",
     "test::test_config.ConfigTests.test_missing_uses_defaults_and_write_round_trip",
     "test::test_engine.EngineTests.test_composition_failure_passes_current_key_exactly_once",
@@ -58,6 +61,10 @@
     "test::test_install_user.InstallUserTests.test_reinstall_is_idempotent",
     "test::test_install_user.InstallUserTests.test_uninstall_keeps_an_edited_file_and_says_so",
     "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files",
+    "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir",
+    "test::test_private_bus.PrivateBusTests.test_no_harness_launches_dbus_run_session_itself",
+    "test::test_private_bus.PrivateBusTests.test_product_launcher_gives_its_bus_a_scratch_runtime",
+    "test::test_private_bus.PrivateBusTests.test_scanner_catches_the_15_11_shape_and_ignores_prose",
     "test::test_runtime.RuntimeTests.test_prune_keeps_newest_logs_and_never_touches_run_directories",
     "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing",
     "test::test_session.SessionTests.test_app_update_after_zero_delay_burst_composes_whole_word",
@@ -92,6 +99,7 @@
     "tests/test_entrypoints.py",
     "tests/test_impact.py",
     "tests/test_install_user.py",
+    "tests/test_private_bus.py",
     "tests/test_runtime.py",
     "tests/test_session.py",
     "tests/test_stage.py",
@@ -152,6 +160,10 @@
     [
       "scripts/impact.py",
       "test::test_config.ConfigTests.test_bad_data_is_not_silently_defaulted"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user"
     ],
     [
       "scripts/impact.py",
@@ -240,6 +252,22 @@
     [
       "scripts/impact.py",
       "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_private_bus.PrivateBusTests.test_no_harness_launches_dbus_run_session_itself"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_private_bus.PrivateBusTests.test_product_launcher_gives_its_bus_a_scratch_runtime"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_private_bus.PrivateBusTests.test_scanner_catches_the_15_11_shape_and_ignores_prose"
     ],
     [
       "scripts/impact.py",
@@ -378,6 +406,10 @@
       "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files"
     ],
     [
+      "scripts/private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir"
+    ],
+    [
       "scripts/stage.py",
       "test::test_install_user.InstallUserTests.test_install_ships_launcher_plugin_line_binary_and_desktop_entry"
     ],
@@ -471,6 +503,10 @@
     ],
     [
       "tests/test_config.py",
+      "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user"
+    ],
+    [
+      "tests/test_config.py",
       "test::test_config.ConfigTests.test_explicit_preferences_survive_application_xdg_isolation"
     ],
     [
@@ -556,6 +592,22 @@
     [
       "tests/test_install_user.py",
       "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files"
+    ],
+    [
+      "tests/test_private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir"
+    ],
+    [
+      "tests/test_private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_no_harness_launches_dbus_run_session_itself"
+    ],
+    [
+      "tests/test_private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_product_launcher_gives_its_bus_a_scratch_runtime"
+    ],
+    [
+      "tests/test_private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_scanner_catches_the_15_11_shape_and_ignores_prose"
     ],
     [
       "tests/test_runtime.py",
@@ -672,6 +724,10 @@
     [
       "zkey/config.py",
       "test::test_config.ConfigTests.test_bad_data_is_not_silently_defaulted"
+    ],
+    [
+      "zkey/config.py",
+      "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user"
     ],
     [
       "zkey/config.py",
@@ -1055,6 +1111,10 @@
     ],
     [
       "zkey/runtime.py",
+      "scripts/accept-settings.py"
+    ],
+    [
+      "zkey/runtime.py",
       "scripts/accept-terminal.py"
     ],
     [
@@ -1246,6 +1306,7 @@
     "cargo::src/telex.rs::vietnamese_words",
     "test::test_audit_measurements.AuditTests.test_broken_assertions_are_flagged_then_repaired_are_clear",
     "test::test_config.ConfigTests.test_bad_data_is_not_silently_defaulted",
+    "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user",
     "test::test_config.ConfigTests.test_explicit_preferences_survive_application_xdg_isolation",
     "test::test_config.ConfigTests.test_missing_uses_defaults_and_write_round_trip",
     "test::test_engine.EngineTests.test_composition_failure_passes_current_key_exactly_once",
@@ -1268,6 +1329,10 @@
     "test::test_install_user.InstallUserTests.test_reinstall_is_idempotent",
     "test::test_install_user.InstallUserTests.test_uninstall_keeps_an_edited_file_and_says_so",
     "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files",
+    "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir",
+    "test::test_private_bus.PrivateBusTests.test_no_harness_launches_dbus_run_session_itself",
+    "test::test_private_bus.PrivateBusTests.test_product_launcher_gives_its_bus_a_scratch_runtime",
+    "test::test_private_bus.PrivateBusTests.test_scanner_catches_the_15_11_shape_and_ignores_prose",
     "test::test_runtime.RuntimeTests.test_prune_keeps_newest_logs_and_never_touches_run_directories",
     "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing",
     "test::test_session.SessionTests.test_app_update_after_zero_delay_burst_composes_whole_word",
@@ -1299,6 +1364,6 @@
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 52
+    "python_tests_run": 57
   }
 }

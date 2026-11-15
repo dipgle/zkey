@@ -14,6 +14,8 @@ import time
 from x11_activation import activate, free_position, is_active
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import private_bus  # noqa: E402  (never dbus-run-session directly)
 # ZKEY_PACKAGE_ROOT: acceptance of an INSTALLED copy (scripts/install-user.py), e.g.
 # <prefix>/lib/zkey. Default = this repository.
 PACKAGE = Path(os.environ.get("ZKEY_PACKAGE_ROOT", ROOT)).resolve()
@@ -363,7 +365,7 @@ def main():
         return 2
     env.pop("IBUS_USE_PORTAL", None)
     env.update(ZKEY_ISOLATED_BUS="1", GTK_IM_MODULE="ibus", GDK_BACKEND="x11", NO_AT_BRIDGE="1", GIO_USE_VFS="local", ZKEY_TRACE="1")
-    return subprocess.call(["dbus-run-session", "--", sys.executable, str(Path(__file__).resolve()), "--inside"], env=env)
+    return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside"], env)
 
 
 if __name__ == "__main__":

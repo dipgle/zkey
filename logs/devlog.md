@@ -126,3 +126,8 @@
 
 - bin/zkey thiếu quyền chạy (126) ⇒ 100755. zkey --run ptyxis sống 18/18; lỗi cũ không tái hiện.
 - install-user.py (manifest SHA-256, gỡ an toàn) + tests; gõ thật GTK3 bằng bản cài XANH, lõi hỏng ĐỎ, gỡ sạch. Log bản cài giữ 50. Cài thật ~/.local chờ Hà.
+
+## 2026-11-15 21:00 +07 — gốc thật sự cố portal: accept-ptyxis
+
+- Portal desktop failed 20:37:45 đúng lúc bus riêng của accept-ptyxis kích hoạt portal.Documents với runtime thật. Kết luận 20:20 (chỉ lệnh tay) sai/thiếu.
+- Chốt lớp: private_bus.py (đường duy nhất), test_private_bus (bắt 3 chỗ cũ), cổng tác hại accept-xvfb. Hà duyệt restart lần 2; bộ đầy đủ XANH + MÁY NGUYÊN 1->1.

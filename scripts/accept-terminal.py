@@ -16,6 +16,8 @@ import time
 from x11_activation import activate, is_active
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import private_bus  # noqa: E402  (never dbus-run-session directly)
 sys.path.insert(0, str(ROOT))
 FAKE_SECRET = "as"  # One-time test string; Telex would turn it into "á".
 # Reverse control for this gate only (never product behaviour): "compare" makes
@@ -200,7 +202,7 @@ def main():
     env.pop("IBUS_USE_PORTAL", None)
     env.update(ZKEY_ISOLATED_BUS="1", GTK_IM_MODULE="ibus", GDK_BACKEND="x11", NO_AT_BRIDGE="1",
                GIO_USE_VFS="local", ZKEY_TRACE="1")
-    return subprocess.call(["dbus-run-session", "--", sys.executable, str(Path(__file__).resolve()), "--inside"], env=env)
+    return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside"], env)
 
 
 if __name__ == "__main__":

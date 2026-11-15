@@ -22,6 +22,8 @@ import time
 import urllib.parse
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import private_bus  # noqa: E402  (never dbus-run-session directly)
 sys.path.insert(0, str(ROOT))
 PAGE = ROOT / "scripts/fixtures/browser-input.html"
 MARK = "zkey-browser-probe|"
@@ -242,16 +244,9 @@ def main():
     env.pop("WAYLAND_DISPLAY", None)
     env.pop("IBUS_USE_PORTAL", None)
     env.update(ZKEY_ISOLATED_BUS="1", GTK_IM_MODULE="ibus", GDK_BACKEND="x11", NO_AT_BRIDGE="1",
-               GIO_USE_VFS="local", ZKEY_TRACE="1", ZKEY_REAL_RUNTIME_DIR=f"/run/user/{os.getuid()}")
-    # The private bus daemon must never see the real runtime dir: a service it
-    # activates (xdg-document-portal) would lazily unmount and replace the
-    # desktop's /run/user/UID/doc (happened 15/11 20:1x in a manual probe).
-    # Only the browser process gets the real one (ZKEY_REAL_RUNTIME_DIR).
-    with tempfile.TemporaryDirectory(prefix="bus-runtime-", dir=ROOT / ".tmp") as bus_runtime:
-        os.chmod(bus_runtime, 0o700)
-        env["XDG_RUNTIME_DIR"] = bus_runtime
-        return subprocess.call(["dbus-run-session", "--", sys.executable, str(Path(__file__).resolve()), "--inside"],
-                               env=env)
+               GIO_USE_VFS="local", ZKEY_TRACE="1")
+    # Real runtime dir only for the snap browser (ZKEY_REAL_RUNTIME_DIR); see private_bus.py.
+    return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside"], env)
 
 
 if __name__ == "__main__":

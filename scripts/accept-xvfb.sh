@@ -15,10 +15,29 @@ if [ "${1:-}" != "--inner" ]; then
     printf 'NOT_MEASURABLE: Xvfb/xvfb-run not installed\nGATE_EXIT=2\n' | tee "$LOG"
     exit 2
   fi
+  # Harm gate: these tests must leave the RUNNING desktop as it was. Measured
+  # case 15/11 20:37:45: a private bus took over /run/user/UID/doc and the
+  # desktop's xdg-document-portal failed. Compare before/after.
+  doc_mount=" /run/user/$(id -u)/doc "
+  doc_before=$(grep -c -- "$doc_mount" /proc/mounts)
+  portal_before=$(systemctl --user is-active xdg-document-portal.service 2>/dev/null)
   env -u WAYLAND_DISPLAY -u DISPLAY -u XAUTHORITY \
     xvfb-run -a -f "$ROOT/.tmp/xvfb.auth" -s "-screen 0 1280x800x24 -nolisten tcp" \
     bash "$0" --inner > "$LOG" 2>&1
   code=$?
+  doc_after=$(grep -c -- "$doc_mount" /proc/mounts)
+  portal_after=$(systemctl --user is-active xdg-document-portal.service 2>/dev/null)
+  if [ "$doc_before" -ge 1 ] && { [ "$doc_after" -lt "$doc_before" ] || [ "$portal_after" != "$portal_before" ]; }; then
+    printf '\nẢNH HƯỞNG MÁY: desktop document portal %s->%s, mount %s->%s\n' \
+      "$portal_before" "$portal_after" "$doc_before" "$doc_after" >> "$LOG"
+    code=1
+  elif [ "$doc_before" -lt 1 ]; then
+    printf '\nKHÔNG ĐO ĐƯỢC tác động lên máy: desktop chưa có mount %s trước khi chạy (portal %s)\n' \
+      "$doc_mount" "$portal_before" >> "$LOG"
+    [ "$code" = 0 ] && code=2
+  else
+    printf '\nMÁY NGUYÊN: desktop document portal %s, mount %s->%s\n' "$portal_after" "$doc_before" "$doc_after" >> "$LOG"
+  fi
   printf '\nGATE_EXIT=%s\n' "$code" >> "$LOG"
   cat "$LOG"
   exit "$code"

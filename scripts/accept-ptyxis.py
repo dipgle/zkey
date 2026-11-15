@@ -19,6 +19,8 @@ import time
 from x11_activation import activate
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import private_bus  # noqa: E402  (never dbus-run-session directly)
 OUT = ROOT / ".tmp/ptyxis-out.txt"
 MARKER = ROOT / ".tmp/ptyxis-app.json"
 SESSION_LOG = ROOT / ".tmp/ptyxis-session.log"
@@ -43,7 +45,7 @@ def main():
     # Telex. Not via `zkey --run` (its isolated session destabilises ptyxis on
     # Xvfb: measured 15/11, see docs/verification.md). Terminals bypass the IME.
     env.update(DISPLAY=display_name, GDK_BACKEND="x11", GTK_IM_MODULE="gtk-im-context-simple")
-    launcher = subprocess.Popen(["dbus-run-session", "--", "ptyxis", "--standalone"], cwd=ROOT, env=env,
+    launcher = private_bus.popen(["ptyxis", "--standalone"], env, child_real_runtime=True, cwd=ROOT,
                                 stdout=SESSION_LOG.open("w"), stderr=subprocess.STDOUT, start_new_session=True)
     deadline = time.monotonic() + 20
     while time.monotonic() < deadline:
