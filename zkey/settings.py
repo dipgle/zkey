@@ -3,11 +3,17 @@
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # noqa: E402
-from .config import Config, load, save  # noqa: E402
+from .config import Config, config_path, load, record_change, save  # noqa: E402
 
 
 def main():
-    config = load()
+    # A broken file must not lock the user out of the screen that fixes it:
+    # open with defaults, say so, overwrite only when the user presses Save.
+    try:
+        config, problem = load(), None
+    except (OSError, ValueError) as error:
+        config, problem = Config(), f"Tệp thiết lập {config_path()} lỗi ({error}); đang hiện mặc định — bấm Lưu để thay."
+    saved = [config if problem is None else None]
     window = Gtk.Window(title="zkey — Thiết lập Telex")
     window.set_border_width(20)
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -18,12 +24,17 @@ def main():
     modern.set_active(config.modern_tone)
     limit = Gtk.SpinButton.new_with_range(8, 256, 8)
     limit.set_value(config.max_word_keys)
-    status = Gtk.Label(label="Thiết lập áp dụng khi chuyển vào ô nhập tiếp theo.")
+    status = Gtk.Label(label=problem or "Thiết lập áp dụng khi chuyển vào ô nhập tiếp theo.")
+    status.set_line_wrap(True)
+    status.set_max_width_chars(60)
     button = Gtk.Button(label="Lưu thiết lập")
 
     def on_save(_):
         try:
-            save(Config(enabled.get_active(), modern.get_active(), limit.get_value_as_int()))
+            new = Config(enabled.get_active(), modern.get_active(), limit.get_value_as_int())
+            save(new)
+            record_change(saved[0] or Config(), new)
+            saved[0] = new
             status.set_text("Đã lưu. Chuyển sang ô nhập để áp dụng.")
         except (OSError, ValueError) as error:
             status.set_text(f"Không lưu được: {error}")

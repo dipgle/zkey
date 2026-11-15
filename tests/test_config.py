@@ -3,7 +3,8 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from zkey.config import Config, config_path, load, save
+from datetime import datetime, timedelta, timezone
+from zkey.config import Config, config_path, load, record_change, save
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,6 +22,14 @@ class ConfigTests(unittest.TestCase):
         save(expected, self.path)
         self.assertEqual(load(self.path), expected)
         self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
+
+    def test_change_log_records_only_changed_keys_with_time_and_user(self):
+        when = datetime(2026, 11, 15, 21, 0, tzinfo=timezone(timedelta(hours=7)))
+        with patch.dict("os.environ", {"USER": "tester"}):
+            line = record_change(Config(), Config(modern_tone=False), self.path, now=when)
+            self.assertIsNone(record_change(Config(), Config(), self.path, now=when))
+        self.assertEqual(line, "2026-11-15T21:00:00+07:00 tester modern_tone=true->false")
+        self.assertEqual((self.path.parent / "changes.log").read_text(), line + "\n")
 
     def test_bad_data_is_not_silently_defaulted(self):
         for data in ('enabled = "yes"', 'max_word_keys = 0', 'max_word_keys = true',

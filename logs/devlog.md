@@ -131,3 +131,7 @@
 
 - Portal desktop failed 20:37:45 đúng lúc bus riêng của accept-ptyxis kích hoạt portal.Documents với runtime thật. Kết luận 20:20 (chỉ lệnh tay) sai/thiếu.
 - Chốt lớp: private_bus.py (đường duy nhất), test_private_bus (bắt 3 chỗ cũ), cổng tác hại accept-xvfb. Hà duyệt restart lần 2; bộ đầy đủ XANH + MÁY NGUYÊN 1->1.
+
+## 2026-11-15 21:10 +07 — màn thiết lập
+
+- settings: tệp hỏng không làm chết màn; changes.log. accept-settings trọn vòng (màn → ô gõ hoà→hòa) XANH, đột biến ĐỎ. accept-xvfb 7 bài XANH + MÁY NGUYÊN.

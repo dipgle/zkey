@@ -37,4 +37,5 @@
 - [ ] Đo đối chiếu bộ gõ đang gây khó chịu và chuẩn Windows do chủ dự án cung cấp.
 - [ ] Kiểm corpus Telex rộng hơn, kiểu gõ dấu muộn; xác định chính sách tiếng Anh và VNI.
 - [x] Cài/gỡ user-local (15/11 20:50): `scripts/install-user.py` + 6 bài kiểm (đột biến từng chốt ⇒ ĐỎ); gõ thật GTK3 bằng bản cài XANH; lõi hỏng ⇒ ĐỎ; gỡ sạch. Cài thật vào ~/.local: **chờ Hà**.
-- [ ] Nghiệm thu màn thiết lập GTK bằng mắt; gói .deb; audit thay cấu hình trước phát hành.
+- [x] Màn thiết lập (15/11 21:10): nghiệm thu trọn vòng hai vai (màn → ô gõ `hoà`→`hòa`), tệp hỏng không làm chết màn, `changes.log`; ảnh 3 trạng thái; đột biến ⇒ ĐỎ.
+- [ ] Gói .deb (chưa làm; gói user-local đã có).

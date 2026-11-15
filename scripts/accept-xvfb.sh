@@ -102,6 +102,11 @@ else
 fi
 echo "ptyxis exit=$pty"
 if [ "$pty" != 0 ] && [ "$code" != 1 ]; then code=$pty; fi
+# Settings screen -> typing app, across roles (private config file).
+/usr/bin/python3 "$ROOT/scripts/accept-settings.py" 2>&1 | grep -vE '^dbus-daemon|SpiRegistry'
+settings=${PIPESTATUS[0]}
+echo "settings exit=$settings"
+if [ "$settings" != 0 ] && [ "$code" != 1 ]; then code=$settings; fi
 # Bash plugin vs machine-typed commands (private tmux server, no X needed).
 bash "$ROOT/scripts/accept-shell-tmux.sh"
 shell=$?

@@ -37,6 +37,22 @@ def load(path=None):
     return Config(**data)
 
 
+def record_change(old, new, path=None, now=None):
+    """Append who-changed-what to changes.log beside the config (settings only)."""
+    path = Path(path) if path is not None else config_path()
+    changed = {key: (value, getattr(new, key)) for key, value in asdict(old).items() if getattr(new, key) != value}
+    if not changed:
+        return None
+    from datetime import datetime
+    stamp = (now or datetime.now().astimezone()).isoformat(timespec="seconds")
+    user = os.environ.get("USER") or str(os.getuid())
+    line = f"{stamp} {user} " + " ".join(f"{k}={str(a).lower()}->{str(b).lower()}" for k, (a, b) in changed.items())
+    log = path.parent / "changes.log"
+    with log.open("a", encoding="utf-8") as stream:
+        stream.write(line + "\n")
+    return line
+
+
 def save(config, path=None):
     path = Path(path) if path is not None else config_path()
     path.parent.mkdir(parents=True, exist_ok=True)

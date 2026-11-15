@@ -8,6 +8,13 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 21:10 — màn thiết lập: nghiệm thu trọn vòng hai vai
+
+- Sửa `zkey/settings.py`: tệp cấu hình hỏng không còn làm màn chết (trước: `load()` ném lỗi, không mở được); nay mở với mặc định + báo lỗi, chỉ ghi đè khi bấm Lưu. `config.record_change` ghi `changes.log` (giờ, người dùng, khoá cũ→mới; không nội dung gõ) — `tests/test_config.py`.
+- `scripts/accept-settings.py` (Xvfb + bus/IBus riêng, cấu hình trong `.tmp`): ô GTK3 gõ `hoaf` → `hoà`; tệp hỏng ⇒ màn báo lỗi, mặc định hiện; CHỈ phím (Tab/Space) bỏ «Đặt dấu hiện đại» + Lưu ⇒ màn «Đã lưu», tệp `modern_tone = false`, `changes.log` `modern_tone=true->false`; mở lại hiện đúng; ô gõ lại `hoaf` → `hòa`. Đọc màn qua cây trợ năng, tiêu điểm bằng X (không hành động trợ năng). Ảnh `.tmp/settings-{error,saved,reopened}.png` đã xem.
+- Đối chứng: tắt nạp lại cấu hình khi focus-in (đột biến `engine.py`) ⇒ `after='hoà'`, ĐỎ; đã trả lại.
+- accept-xvfb nay 7 bài: XANH, MÁY NGUYÊN 1->1. Python 57/57.
+
 ## 15/11 21:00 — GỐC THẬT sự cố portal desktop: accept-ptyxis.py (sửa kết luận 20:20)
 
 - `systemctl --user` cho thấy `xdg-document-portal` của desktop **failed lúc 20:37:45** (exit 21); `.tmp/ptyxis-session.log` (20:37:46) có bus riêng kích hoạt `org.freedesktop.portal.Documents`. `accept-ptyxis.py` chạy `dbus-run-session -- ptyxis` với `XDG_RUNTIME_DIR` thật, không qua `isolated_engine()` ⇒ portal riêng tranh `/run/user/1000/doc`. Bài này trong `accept-xvfb.sh` từ 11:00 ⇒ mọi lượt bộ đầy đủ (phiên này 16:00–20:37 và phiên trước) có thể đã làm hỏng portal desktop. Lệnh chẩn đoán tay 20:1x chỉ là MỘT lần; kết luận 20:20 «chỉ lệnh tay» là SAI/thiếu.
