@@ -93,3 +93,9 @@
 ## 2026-11-15 11:30 +07 — `zkey --run`: sửa lệch XDG_RUNTIME_DIR
 
 - Chia đôi biến ⇒ gốc là runtime dir lệch giữa app và dịch vụ kích hoạt. D 4/5 chết → 3/3 sống; A 4/4 chết → 1/3 chết (nợ). accept-xvfb 2/2 mã0.
+
+## 2026-11-15 15:40 +07 — an ninh plugin bash: lệnh máy gõ bị viết lại
+
+- Phiên mới (gốc ~/projects). Đo đầu: cây sạch, master=origin 1a1184a, không phiên zkey sống, PID nền cũ đã chết. Giờ trong devlog 11:00/11:30 lệch giờ commit (09:07) — không tin số giờ cũ.
+- Bài đo gõ dồn + Backspace/Enter (GTK3 Xvfb): ĐỎ 0/30 — ghi TODO/verification, chưa sửa.
+- huba báo (Hà giao): quoted mode đổi lệnh tmux send-keys (`git reset`→`git rết` trong --disallowedTools). RED tái hiện trong cổng mới `accept-shell-tmux.sh`; sửa `shell/zkey.bash` (hàng đợi còn byte ⇒ dòng nguyên văn; định danh/toàn hoa giữ nguyên). GREEN 5/5; đối chứng bỏ từng chốt ĐỎ đúng ca. VTE/ptyxis XANH; Python 45/45; Rust 9/9.

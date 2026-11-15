@@ -1,5 +1,17 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 15/11 15:40 — plugin bash không còn viết lại lệnh do máy gõ
+
+- Báo từ huba: lệnh mở phiên gõ qua `tmux send-keys -l` vào bash ⇒ quoted mode đổi `Bash(git reset:*)` → `git rết` (thủng `--disallowedTools`), `PROJECTS_ROOT` → `RÔT`, `project_doc_max_bytes` → `mã`.
+- Cổng `scripts/accept-shell-tmux.sh` (tmux server riêng `-L`, bash thật + readline): trước sửa M1–M3 + I ĐỎ đúng nguyên văn báo, H (gõ người 60 ms/phím) XANH. Sau sửa 5/5 XANH.
+- Đối chứng ngược: bỏ chốt hàng đợi (`read -t 0`) ⇒ M1–M3 ĐỎ (`git rết`), I/H XANH; bỏ chốt định danh/toàn hoa ⇒ I ĐỎ (`mã`, `RÔT`), M/H XANH. H là đối chứng «plugin không bao giờ đổi».
+- Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
+- CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
+
+## 15/11 15:30 — gõ dồn có phím native xen giữa: ĐỎ
+
+- Pha BURST+NATIVE trong `scripts/native_acceptance.py` (GTK3, Xvfb riêng, 6 ca × 5 lượt, chuẩn = cùng phím gõ chậm; 2 ca ghim tay): 0/30 bằng gõ chậm; 2 chuẩn chậm khớp ghim. Ví dụ `tieengs⏎vieetj` → `tieengsvi⏎eetj`, `vieetj⌫t` → `vieetj`/`viêtt`. Log `.tmp/native-burst-1.log`. Chưa tìm gốc.
+
 ## 15/11 11:30 — gốc lỗi `zkey --run ptyxis`: lệch XDG_RUNTIME_DIR
 
 - Chia đôi biến môi trường (scratchpad): từng biến và cả nhóm biến của launcher, áp lên ptyxis ngoài launcher, đều sống 3/3. Gốc: `runtime.py` kích hoạt portal/document-portal với `run-…/runtime`, còn ứng dụng nhận `session-…/runtime`.

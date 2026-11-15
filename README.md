@@ -51,6 +51,7 @@ echo 'source /mnt/data/projects/zkey/shell/zkey.bash' >> ~/.bashrc   # rồi m�
 ```
 
 - Mặc định chỉ áp trong dấu nháy (`git commit -m "..."`, `echo "..."`); lệnh, cờ, đường dẫn giữ nguyên. **Alt+Z** đổi: trong nháy → mọi từ → tắt. `zkey-status` xem chế độ/lỗi.
+- Lệnh do **máy** gõ (tmux `send-keys`, trình mở phiên, tự động hoá — nhiều phím đã xếp hàng khi xử lý một phím) giữ **nguyên văn cả dòng** tới khi dòng được làm trống (Enter, Ctrl+U). Từ dính định danh/đường dẫn/biến (`doc_max`, `$HOME`, `a/b`, `x=y`) và từ TOÀN HOA (`ROOT`, `API`) không đổi — đổi lại, tiếng Việt gõ toàn hoa cũng giữ nguyên. Kiểm: `bash scripts/accept-shell-tmux.sh`.
 - Kết quả không phải âm tiết tiếng Việt thì giữ nguyên phím (`status`, `add`, `class`). Câu tiếng Anh trong nháy vẫn có thể đổi ở âm tiết hợp lệ (`us` → `ú`): tắt bằng Alt+Z.
 - Đo: ~330 µs/phím cho hàm plugin + lõi (`scripts/bench-shell.sh`, chưa gồm vẽ lại terminal). Chưa có: vim/TUI, zsh, SSH (cần plugin ở máy xa).
 

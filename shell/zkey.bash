@@ -55,6 +55,16 @@ __zkey_plain() {  # insert the key as typed
 
 __zkey_key() {
     local key=$1 left=${READLINE_LINE:0:READLINE_POINT} right=${READLINE_LINE:READLINE_POINT}
+    # Machine-typed input (tmux send-keys, launchers, automation) arrives as one
+    # write: more bytes are already queued while we handle this key. A person's
+    # next key is not. Such a line stays exactly as typed until it is emptied
+    # (Enter, Ctrl+U) — commands typed by programs must never be rewritten
+    # (15/11: `git reset` inside a quoted --disallowedTools became `git rết`).
+    [[ -z $READLINE_LINE ]] && ZKEY_LITERAL=
+    if [[ -n ${ZKEY_LITERAL-} ]] || read -r -t 0 2>/dev/null; then
+        ZKEY_LITERAL=1
+        __zkey_plain "$key"; return
+    fi
     if [[ $ZKEY_MODE == off ]] || { [[ $ZKEY_MODE == quoted ]] && ! __zkey_in_quotes "$left"; } \
             || [[ -z ${ZKEY_LINE[1]-} ]]; then
         __zkey_plain "$key"; return
@@ -62,6 +72,14 @@ __zkey_key() {
     [[ $left =~ ([[:alpha:]]*)$ ]]
     local word=${BASH_REMATCH[1]} raw reply text
     local prefix=${left:0:${#left}-${#word}}
+    # Part of an identifier/path/variable (`doc_max`, `$HOME`, `a/b`, `x=y`) or
+    # an ALL-CAPS token (`ROOT`, `API`): never a Vietnamese word. Trade-off:
+    # Vietnamese typed in all caps stays as typed.
+    local before=${prefix: -1}
+    if [[ -n $before && '_0123456789$={}/.:@%+~\-' == *"$before"* ]] \
+            || [[ ${#word} -ge 1 && $word$key != *[[:lower:]]* ]]; then
+        __zkey_plain "$key"; return
+    fi
     # Keep the raw keys while the line is exactly what we left it as.
     if [[ -n ${ZKEY_TEXT-} && $word == "$ZKEY_TEXT" && $READLINE_LINE == "$ZKEY_SEEN" \
             && $READLINE_POINT == "$ZKEY_POINT" ]]; then

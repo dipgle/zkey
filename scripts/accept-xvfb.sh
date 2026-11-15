@@ -83,4 +83,9 @@ else
 fi
 echo "ptyxis exit=$pty"
 if [ "$pty" != 0 ] && [ "$code" != 1 ]; then code=$pty; fi
+# Bash plugin vs machine-typed commands (private tmux server, no X needed).
+bash "$ROOT/scripts/accept-shell-tmux.sh"
+shell=$?
+echo "shell-tmux exit=$shell"
+if [ "$shell" != 0 ] && [ "$code" != 1 ]; then code=$shell; fi
 exit "$code"

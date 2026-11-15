@@ -1,13 +1,13 @@
-# zkey/core — 15/11/2026 08:00 +07 — CHƯA XONG (sản phẩm), mạch gõ GTK XANH
+# zkey/core — 15/11/2026 15:40 +07 — CHƯA XONG (sản phẩm)
 
-Phiên acc6 (CLI 120194). Repo public dipgle/zkey, master=8721a29 (đã đo ls-remote). Phiên Codex cũ PID9467 đã đóng 09:0x (đứng yên từ 05:56, cây sạch+đã đẩy; pts/5 còn bash).
+Phiên mở ở gốc ~/projects (CLI Claude). Đầu phiên: cây sạch, master=origin 1a1184a; không phiên zkey sống; PID fixture cũ (94574/94548) đã chết.
 
-ĐÃ ĐO (chạy thật): `bash scripts/accept-xvfb.sh` GATE_EXIT=0, 3/3 lượt — GTK4 Text Editor 7 tiền tố + «tiếng việt» (AT-SPI, engine 20 key-state, cổng ≥7); GTK3 7 tiền tố + 10 lượt gõ dồn 0 ms + Backspace/Home + ô mật khẩu đi thẳng + 0 preedit/warning. Ảnh `.tmp/native-gtk-render.png`. Python 44/44, Rust 7/7, clippy/release 0, impact record 0, audit 138 assertion 0. Chi tiết `docs/verification.md` mục 08:00.
+ĐÃ ĐO (chạy thật):
+- AN NINH plugin bash (huba báo, Hà giao): lệnh MÁY gõ (tmux send-keys) bị quoted mode viết lại (`git reset`→`git rết` trong --disallowedTools). Sửa `shell/zkey.bash`: còn byte trong hàng đợi (`read -t 0`) ⇒ cả dòng nguyên văn tới khi dòng trống; từ sau ký tự định danh/đường dẫn và từ toàn hoa giữ nguyên. Cổng `scripts/accept-shell-tmux.sh` RED→GREEN 5/5, đối chứng ngược bỏ từng chốt ĐỎ đúng ca. VTE plugin 0/1 + ptyxis thật XANH; Python 45/45; Rust 9/9; audit 140/0.
+- Gõ dồn GTK3 có Backspace/Enter xen giữa: ĐỎ 0/30 (pha BURST+NATIVE `scripts/native_acceptance.py`) ⇒ `accept-xvfb.sh` ĐỎ tới khi sửa. Ví dụ `tieengs⏎vieetj`→`tieengsvi⏎eetj`.
 
-Sửa gốc: phím trả native bị GTK async xếp sau commit ⇒ `tieseng`. `zkey/session.py` nay commit mọi phím in được; chưa xác nhận ⇒ commit nguyên dạng; ghép bù khi ảnh chụp app khớp nguyên văn (hậu tố + ranh giới, ≤3 từ/64 ký tự); `engine.py` ghép bù trong `do_set_surrounding_text`. Đối chứng ngược 2 chiều đã chạy.
+Việc kế: tìm gốc gõ dồn + phím native (phím Backspace/Enter đi native bị xếp lại so với commit của engine; `zkey/session.py` key()/`engine.py` apply). Nợ cũ: `zkey --run ptyxis` IBus chết 1/3; ô mật khẩu GTK3 đỏ 1/~12; tiếng Anh trong nháy; vim/TUI, zsh, SSH; Chrome/Electron (có firefox, chưa có chrome); P0-001.
 
-Xvfb: `.tmp/tools/root/usr/bin/Xvfb` (apt-get download + dpkg-deb -x; sudo hết giờ, không cài hệ thống). Desktop Xwayland `-enable-ei-portal` bắt hộp thoại RemoteDesktop mỗi phiên XTest; chủ máy xem qua zigeel không thấy ⇒ không dùng desktop để tự động.
+Chờ: huba chạy lại `/terminal`+`/type` để xác nhận phía họ; bash đã mở trước sửa giữ hàm cũ tới khi mở terminal mới.
 
-Việc kế: plugin bash ĐÃ CÀI (~/.bashrc, khối `# >>> zkey shell plugin >>>`), ptyxis thật XANH. Nợ mở: `zkey --run ptyxis` chết trên Xvfb; ô mật khẩu GTK3 đỏ 1/~12 lượt gộp; tiếng Anh trong nháy; vim/TUI, zsh, SSH; Chrome/Electron. Chạy toàn bộ: `bash scripts/accept-xvfb.sh` (6 bài).
-
-Nền: fixture desktop Text Editor PID94574/supervisor94548 vẫn mở từ 00:58 (marker `.tmp/editor-app.json`). Không job nền khác. Chạy lại: `bash /mnt/data/projects/zkey/scripts/accept-xvfb.sh`.
+Nền: không có. Chạy lại: `bash /mnt/data/projects/zkey/scripts/accept-shell-tmux.sh`; `bash /mnt/data/projects/zkey/scripts/accept-xvfb.sh`.
