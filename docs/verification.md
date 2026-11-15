@@ -8,6 +8,12 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 20:20 — trình duyệt: Firefox snap KHÔNG ĐO ĐƯỢC; sự cố portal desktop
+
+- Bài mới `scripts/accept-firefox.py` + trang `scripts/fixtures/browser-input.html`: trang tự ghi giá trị ô, số sự kiện input/composition vào tiêu đề; bài đọc tiêu đề X11. Chưa chạy được tới bước gõ.
+- Firefox máy này = snap 154. Trên Xvfb + bus riêng: cần scope `snap.firefox.firefox-<uuid>.scope` (đã thêm bằng `systemd-run --user --scope`), rồi dừng ở `Error: cannot open display` dù trong snap thấy socket X và đã thử `-ac`, bỏ XAUTHORITY. Không thấy AppArmor DENIED. ⇒ KHÔNG ĐO ĐƯỢC (mã 2). Đường kế: Firefox tarball chính thức trong `.tmp/tools` (`ZKEY_FIREFOX`) — tải bị classifier chặn, chờ Hà.
+- **SỰ CỐ (do phiên này):** một lệnh chẩn đoán gõ tay chạy `dbus-run-session` với `XDG_RUNTIME_DIR=/run/user/1000` ⇒ bus riêng kích hoạt `xdg-document-portal` thứ hai, nó gỡ lười rồi thay mount `/run/user/1000/doc` của desktop, thoát thì gỡ luôn ⇒ desktop mất mount (portal PID 1870 vẫn sống). Hà duyệt ⇒ `systemctl --user restart xdg-document-portal.service` 20:15:42; đo lại: 1 mount `fuse.portal`, PID 243901. Chốt lớp: bus riêng của `accept-firefox.py` luôn có `XDG_RUNTIME_DIR` trong `.tmp`; chỉ tiến trình trình duyệt nhận runtime thật. Đo lại sau chốt: mã 2 sạch, mount desktop 1.
+
 ## 15/11 16:50 — đối chứng engine xkb: GTK4 async mất phím là lỗi GTK4/IBus
 
 - Bộ đo `scripts/probe-gtk4-native.py`: GTK4 4.22.4 Entry trong tiến trình, X11 backend, Xvfb + D-Bus + IBus riêng; engine kiểm bằng `get_global_engine()`; 8 phím chậm 250 ms: a b c ⌫ Home x End ⌫ (chuẩn `xa`). Log `.tmp/probe-gtk4-native.log`.

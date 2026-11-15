@@ -21,6 +21,7 @@
 - [x] Đối chứng engine xkb (15/11 16:50, `scripts/probe-gtk4-native.py`, GTK4 Entry X11/Xvfb): `xkb:us::eng` async CŨNG mất Backspace/Home/End (chữ cái vẫn vào); sync đủ 8/8. Zkey y hệt ⇒ lỗi của GTK4 + IBus 1.5.34~rc2 ở chế độ async, KHÔNG phải zkey.
 - [ ] App ngoài `zkey --run` (bộ gõ hệ thống khi cài): không có cờ sync ⇒ GTK4 X11 mất phím native với MỌI engine. Cần quyết cách cài (đặt `IBUS_ENABLE_SYNC_MODE` cho phiên người dùng?) — chạm env toàn máy, chờ chủ dự án. GTK4 Wayland backend chưa đo. Engine treo khi sync (chưa đo).
 - [ ] Nghiệm thu trên desktop Wayland-native (ngoài Xwayland) và Chrome/Electron; cần đường nhập phím không qua hộp thoại.
+- [ ] **Trình duyệt (P0-001 mục 1–2):** `scripts/accept-firefox.py` sẵn; Firefox snap trên Xvfb riêng = KHÔNG ĐO ĐƯỢC (`cannot open display`). Cần Firefox tarball vào `.tmp/tools` (tải bị classifier chặn — **chờ Hà**), rồi `ZKEY_FIREFOX=<đường> python3 scripts/accept-firefox.py`.
 - [x] Giảm rủi ro P0 tại handler: bypass TERMINAL; gửi preedit rỗng khi vào protected context/reset. RED→GREEN; 27/27 Python, chỉ transport sink. Chưa nghiệm thu UI, chưa đóng P0.
 
 - [x] Lõi Telex thử nghiệm; 7 test Rust, gồm các hàng dấu/chữ hoa, ua/uo, FFI và sửa Unicode.

@@ -116,3 +116,8 @@
 
 - probe-gtk4-native.py (GTK4 Entry, X11/Xvfb, IBus riêng): xkb:us::eng async mất ⌫/Home/End, sync 8/8; zkey y hệt ⇒ lỗi GTK4 + IBus 1.5.34~rc2 async, không phải zkey.
 - Hệ quả: app ngoài zkey --run (khi cài làm bộ gõ hệ thống) cần cờ sync ở env phiên người dùng — chạm toàn máy, chờ chủ dự án quyết.
+
+## 2026-11-15 20:20 +07 — trình duyệt + sự cố portal
+
+- accept-firefox.py + fixture: Firefox snap trên Xvfb riêng dừng ở cannot open display ⇒ KHÔNG ĐO ĐƯỢC. Tải tarball qua huba bị classifier chặn (Undermining Oversight) ⇒ chờ Hà.
+- SỰ CỐ: lệnh chẩn đoán của tôi để bus riêng kích hoạt document-portal trên /run/user/1000 ⇒ desktop mất mount /run/user/1000/doc. Hà duyệt restart xdg-document-portal; đo lại 1 mount. Chốt: bus riêng luôn có runtime trong .tmp.

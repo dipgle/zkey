@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- zkey browser acceptance page. Synthetic data only. The page itself reports
+     what it received (value, input events, IME composition events) in
+     document.title, which the test reads from the X11 window title. -->
+<meta charset="utf-8">
+<title>zkey-browser-probe|start</title>
+<style>
+  body { margin: 0; font: 20px sans-serif; }
+  input { position: absolute; left: 20px; width: 500px; height: 40px; font-size: 20px; }
+  #text { top: 20px; }
+  #secret { top: 90px; }
+</style>
+<input id="text" autofocus autocomplete="off" spellcheck="false">
+<input id="secret" type="password" autocomplete="off">
+<script>
+  const state = { text: "", secret: "", inputs: 0, compText: 0, compSecret: 0, focus: "" };
+  const text = document.getElementById("text"), secret = document.getElementById("secret");
+  function report() {
+    state.text = text.value; state.secret = secret.value;
+    state.focus = document.activeElement ? document.activeElement.id : "";
+    document.title = "zkey-browser-probe|" + encodeURIComponent(JSON.stringify(state));
+  }
+  for (const [field, key] of [[text, "compText"], [secret, "compSecret"]]) {
+    field.addEventListener("input", () => { state.inputs++; report(); });
+    field.addEventListener("compositionstart", () => { state[key]++; report(); });
+    field.addEventListener("focus", report);
+  }
+  window.addEventListener("load", () => { text.focus(); report(); });
+</script>
