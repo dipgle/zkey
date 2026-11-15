@@ -1,0 +1,73 @@
+# Nhật ký
+
+## 2026-11-14 — mở dự án
+
+- Xác nhận gốc workspace `/mnt/data/projects`; tạo `zkey` theo yêu cầu.
+- Cổng `phien.sh mo zkey`: lượt đầu mã 2 trước khi có dự án; lượt sau mã 0 nhưng bỏ qua do chống dồn, không chứng minh khởi động thành công.
+- Thăm dò: rustc 1.97.1; IBus GI 1.5; GTK 3.24. Thiếu header/pkg-config IBus; không có biến desktop trong sandbox.
+- Startup template có đường macOS và có thể build sang dự án khác, nên thay bằng cấu trúc Ubuntu chỉ trong cây zkey.
+
+## 2026-11-14 22:45 — prototype, chưa nghiệm thu
+
+- Rust 7/7 + Python 25/25; clippy -D warnings/release build mã 0. Graph trích import/module + vết chạy test. Quét 7 tệp/79 assertion, 0 mẫu mù nhận diện được, có đối chứng ngược.
+- RED→GREEN: uwow; Backspace ký tự hiển thị (`tests/test_session.py:24`); ua+w (`src/telex.rs`). Chưa chứng minh hết corpus.
+- 100.000 mẫu core: p50 96 ns/p95 1.222 ns/p99 2.398 ns/max 39.652 ns. Không phải latency desktop.
+- Stage gói trong `.tmp/stage`; không cài/bật input source. Settings mới viết, chưa kiểm bằng mắt.
+- D-Bus socket bị sandbox chặn mã 127; huba lấy thư lúc 22:36:41, chưa có log. Tiếp tục bằng `bash /mnt/data/projects/zkey/scripts/probe-host.sh`; đây là thăm dò API, cần bù UI thật.
+- Không có job sản phẩm đang chạy. Chờ protocol/desktop + bộ gõ chuẩn từ chủ dự án; xem `TODO.md`, `docs/verification.md`.
+
+## 2026-11-14 — làm rõ input tức thì và mật khẩu terminal
+
+- Chủ dự án yêu cầu app nhận từng ký tự, báo mật khẩu terminal lộ trong preedit và so với ô mật khẩu browser/mobile.
+- Xác nhận prototype chưa đạt: `zkey/session.py:60` trả preedit, `zkey/engine.py:26–29` vẽ/commit tách biệt; gate purpose `:56` chưa đủ cho terminal.
+- Thăm dò config: fcitx5-unikey Telex, `ModifySurroundingText=False`/`DisplayUnderline=True` (`~/.config/fcitx5/conf/unikey.conf:20,22`); không chứng minh trạng thái live. Không sửa config ngoài repo.
+- VTE GTK4 binary hiện tại khai TERMINAL=10, retrieve/delete surrounding trả FALSE; ECHO riêng (`/usr/include/asm-generic/termbits.h:130`). Bằng chứng tĩnh, chưa nghiệm thu UI.
+- Ghi P0-001 CHẶN phát hành và hợp đồng `docs/input-contract.md`. Không vá bỏ underline, không giả Backspace. Chỉ đổi tài liệu/sổ, không thay mã hoặc tuyên bố kiểm UI. Việc nền sản phẩm: không có; yêu cầu huba cũ vẫn chưa có kết quả.
+
+## 2026-11-14 23:49 +07 — core, giảm rủi ro P0-001
+
+- Focus qua phien.sh mã 0; banner/daemon Linux không tính là phép kiểm xanh. Sổ phiên không thấy địa chỉ zkey, chưa chứng minh không có phiên khác. Cây chưa có commit/remote, đầu vào đều untracked; chỉ sửa trong zkey.
+- Root cause: TERMINAL chưa bypass; protected/reset chỉ hide nên chưa gửi yêu cầu xoá nội dung preedit phía client. Thêm bypass bắt buộc và Result(preedit=""), không commit chữ cũ (`zkey/engine.py:56`, `:85`).
+- Đã quan sát RED→GREEN: 2 test mới và test reset mở rộng (`tests/test_engine.py:67`, `:81`, `:97`). Sink gọi Engine.apply thật, thu update/commit. Phủ 6 loại phím giả + 5 protected contexts + trở lại FREE_FORM; không có dữ liệu người dùng.
+- Graph đổi 2 tệp ⇒ 9 nút/7 test; chạy handler rồi Python 27/27 mã 0, record trace 27/27 mã 0. Quét 7 tệp/101 assertion, 0 mẫu nhận diện, mã 0. Rust không đổi/không chạy lại.
+- Stage lại mã 0; SHA-256 nguồn/bundle 7/7 khớp mã 0. Stat mã/test 23:50 khớp sau sửa; sổ active-context 1520 byte, làn 1574 byte.
+- P0 vẫn mở: app nhận từng ký tự chưa đạt ngoài bypass; terminal khai FREE_FORM vẫn rủi ro. UI/client IBus/PTY ECHO-off chưa đo. QG chưa chạy, chưa gom commit/cài/phát hành. Việc kế: protocol host + UI dữ liệu giả + đo backend terminal. Việc nền sản phẩm: không có; thư huba cũ chưa thấy kết quả, không xếp trùng.
+
+## 2026-11-15 00:45 +07 — đang làm đường dùng thật
+
+- Chủ dự án yêu cầu tiếp tục đến kết quả dùng được. Đổi Session sang commit từng phím + suffix edit theo incoming surrounding; không dùng cache libibus để xác nhận. Không giả Backspace. Bypass terminal/private và client thiếu ack/capability.
+- Rust 7/7; clippy/release mã 0. Python 33/33; quét 8 tệp/114 assertion, mã 0. Session RED (chưa có contract surrounding)→GREEN; giữ kiểm stale/caret/selection/Unicode/native Backspace.
+- Host probe lần đầu lộ SyntaxError duplicate lambda arg, rồi đăng ký engine chưa đúng. Đã chữa, thêm test compile entrypoints. libibus floating Text warning: giữ GI Text wrappers trong probe; protocol 7 nhóm mã 0, 0 warning (`.tmp/ibus-probe.log`). Không coi probe là UI.
+- GTK3/XTest thật smoke đạt 7 prefixes + boundary/Backspace/caret/password giả. Ảnh XGetImage không có chữ child window; không coi ảnh trắng là visual pass. Bản burst 10 phrases/export typed widgets chưa có kết quả.
+- Đã mở Text Editor fixture PID 88612/supervisor 88588 qua launcher riêng. UI doc vẫn rỗng sau thử XTest; đang đo bounds/focused, chưa nghiệm thu GTK4. Không đổi bộ gõ hệ thống/cài ngoài repo. Launcher source thêm giám sát engine + cleanup, chưa chạy lại.
+- Nền: editor fixture trên; lệnh mở `python3 scripts/open-editor-host.py`, không mở trùng. Host queue phiên Codex `01a1daf3-b145-7860-b793-5dd5dc92ad91`. Không commit/remote/QG; P0 vẫn mở.
+
+## 2026-11-15 01:00 +07 — làm gọn/chuyển do nhắc ≥50%
+
+- ROOT CAUSE GTK: libibus kiểm IBUS_USE_PORTAL có tồn tại; '0' vẫn bật (binary 0x1c7ac–0x1c7c7). Đã unset trong runtime/launch/probe, cập nhật activation env bus riêng. Các GTK smoke cũ thiếu xác nhận engine: RÚT nghiệm thu, đã ghi rõ README/verification.
+- Lượt mới dừng trước gõ: compositor từ chối activation, target14680068/active4194307; GTK target10485763 cũng bị từ chối. Desktop LockedHint=no, GetActive=false; modifier đều false. Đã hỏi user bấm vùng soạn thảo. Chưa nhận phản hồi, không suy diễn đã duyệt/đã bấm.
+- Mã/kiểm: direct commit + owned suffix; Python/trace33/33 mã0; Rust7/7, clippy/release0; map43 nút/29 test; audit8 tệp/114 assertion0; stage SHA2569/9. Không gom/commit/đẩy: native chưa đạt, QG Linux chưa đo, repo chưa có commit/remote.
+- Nền: editor PID94574/supervisor94548 theo marker; log chưa GATE_EXIT vì còn mở. Không test nền. Lệnh tiếp qua huba `python3 /mnt/data/projects/zkey/scripts/accept-editor.py` sau user bấm; không mở fixture trùng. Chưa nghiệm thu burst/terminal/visual/cross-app.
+- Brief `.tmp/brief-core-ke-nhiem-20261115-0100.md` 1943 byte. Tự mở kế nhiệm bằng cổng acc-mo-vai; đọc mã thoát, không vượt cổng nếu từ chối.
+- Kết quả cổng: exit2, `KHONG DO DUOC: không có cây /home/user1/projects/dwork/zkey`; acc-mo-vai.sh:1035 ghép cố định cây dưới dwork. Kế nhiệm TẮC, chưa có id/pane mới; đã ghi nợ trong TODO, không mở tay vòng cổng.
+
+## 2026-11-15 05:55 +07 — mở lại kế nhiệm đúng dự án
+
+- User yêu cầu ghép lại đường. Đọc source hiện tại: helper paths/Linux đã được phiên khác thêm lúc05:48, cập nhật05:53; không ghi đè nguồn chung. Resolver đo thực `/mnt/data/projects/zkey`; paths15/Linux7 tests và bash -n mã0.
+- Chạy cổng nguyên bản trên host qua huba với brief0555: GATE_EXIT=0; acc6, PANE=%8 TTY=/dev/pts/9, CLI_PID=120194 CLI_LIVE=1, VIEW_LAUNCH_EXIT=0 (chỉ yêu cầu mở tab). Bằng chứng `.tmp/open-successor-0555.log`.
+- Wrapper lọc log thiếu rg trên host; đã thay bằng Python, không mở lại để tránh phiên trùng. Mở phiên đã được chứng minh bằng log gốc, không dựa riêng exit0 của wrapper.
+- Đã đóng nợ ghép dwork/zkey trong TODO, cập nhật active-context/brief0555. Sản phẩm chưa xong; kế nhiệm tiếp tục nghiệm thu đúng engine + UI. Phiên cũ dừng sửa mã. Nền sản phẩm/PID editor phải đo lại theo brief, không tin số01h.
+
+## 2026-11-15 07:30 +07 — kế nhiệm acc6: Text Editor XANH lần đầu; GTK3 burst chưa đo được
+
+- Gốc XTest: Xwayland 24.1.10 chạy `-enable-ei-portal` ⇒ phím/chuột XTest phải qua portal RemoteDesktop (hộp thoại «Allow Remote Interaction»). Không có quyền ⇒ phím bị bỏ (GTK3 ra '', engine 0 `key-state`); hộp thoại cướp focus ⇒ cổng dừng trước khi gõ.
+- Khi có quyền (~07:14): `accept-editor.py` PASS 7 tiền tố + «tiếng việt» qua AT-SPI tài liệu thật; vết engine riêng `run-rxycyr6x.log` 0→20 `key-state` (đối chứng ngược: lượt 05:56 không quyền = 0). Log `.tmp/accept-editor-0605b.log`.
+- GTK3 burst: Mutter từ chối `_NET_ACTIVE_WINDOW` (đồng hồ X = monotonic, lệch 0 ms ⇒ không phải timestamp). Đã thêm: timestamp server thật, user-time khi map, rơi về một cú bấm thật + đo số lần nhấn, đặt chỗ trống (`x11_activation.py`, `native_acceptance.py`). Lượt cuối hộp thoại quyền bật lại 07:17:54 ⇒ dừng an toàn; hộp thoại tự đóng 07:27:54 không cấp. Chủ máy xem qua zigeel từ xa, KHÔNG thấy hộp thoại ⇒ đường XTest+portal không dùng được để tự động.
+- Python 33/33 mã0 sau sửa. Rust/clippy chưa chạy lại (không đổi Rust). Chưa commit.
+
+## 2026-11-15 08:00 +07 — gõ thật GTK4+GTK3 XANH trên Xvfb riêng; sửa xáo chữ khi gõ nhanh
+
+- Chủ máy không thấy hộp thoại RemoteDesktop (xem qua zigeel). Cài xvfb qua sudo hết giờ ⇒ `apt-get download xvfb` + `dpkg-deb -x` vào `.tmp/tools` (phụ thuộc đủ, ldd 0 thiếu). Bài mới `scripts/accept-xvfb.sh`; `x11_activation`/`accept-editor`/`native_acceptance` chạy được khi không có WM (focus X trực tiếp, liệt kê cửa sổ theo cây gốc).
+- RED thật: GTK3 gõ dồn ra `tieseng vieetj` (phím native bị xếp sau commit). Hai lượt sửa trung gian lộ thêm: từ đầu sau reset không có vị trí ⇒ không ghép (`tiee`); dấu cách làm mất từ chờ ghép. Bản cuối: commit mọi phím in được, sở hữu theo hậu tố + ranh giới, ghép bù khi app cập nhật, giữ ≤3 từ chờ.
+- Tôi đã lỡ nuốt lỗi compose trong `target()`; test cấy lỗi bắt được, đã bỏ. Test mật khẩu mới ban đầu MÙ (đối chứng ngược xanh), đã sửa và đối chứng lại ĐỎ.
+- Kết quả: accept-xvfb 3/3 mã0; Python 44/44; Rust 7/7; clippy/release 0; impact record 0; audit 8 tệp/138 assertion 0. Chưa commit (repo chưa có commit nào).

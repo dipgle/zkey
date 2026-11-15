@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=zkey — Gõ tiếng Việt
+Comment=Mở Text Editor với Telex theo từng phím
+Exec=/usr/bin/python3 /mnt/data/projects/zkey/bin/zkey --run
+Icon=input-keyboard
+Terminal=false
+Categories=Utility;TextEditor;
+StartupNotify=true

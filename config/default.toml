@@ -1,0 +1,4 @@
+# User-local copy: ~/.config/zkey/config.toml. Defaults stay safe when absent.
+enabled = true
+modern_tone = true
+max_word_keys = 256

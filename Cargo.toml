@@ -1,0 +1,17 @@
+[package]
+name = "zkey-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+name = "zkey_core"
+crate-type = ["rlib", "cdylib"]
+
+[[bin]]
+name = "zkey-bench"
+path = "src/bin/bench.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1

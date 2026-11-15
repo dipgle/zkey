@@ -1,0 +1,14 @@
+#!/usr/bin/python3
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+if sys.argv[1:2] == ["--run"]:
+    sys.argv.pop(1)
+    from zkey.launch import main
+elif "--settings" in sys.argv:
+    from zkey.settings import main
+else:
+    from zkey.engine import main
+
+raise SystemExit(main())
