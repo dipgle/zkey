@@ -111,3 +111,8 @@
 
 - accept-editor.py: send() có pause; pha EDITOR BURST+NATIVE 6 ca × 5 lượt đọc AT-SPI. Sync 30/30; accept-xvfb 6 bài XANH.
 - Đối chứng sync=0: GTK4 (X11) mất hẳn phím engine trả False (Backspace/End/Ctrl+A, cả khi chậm 200 ms), engine vẫn thấy phím. Chưa biết lỗi zkey hay GTK4 — việc kế: đối chứng engine xkb.
+
+## 2026-11-15 16:50 +07 — đối chứng engine xkb
+
+- probe-gtk4-native.py (GTK4 Entry, X11/Xvfb, IBus riêng): xkb:us::eng async mất ⌫/Home/End, sync 8/8; zkey y hệt ⇒ lỗi GTK4 + IBus 1.5.34~rc2 async, không phải zkey.
+- Hệ quả: app ngoài zkey --run (khi cài làm bộ gõ hệ thống) cần cờ sync ở env phiên người dùng — chạm toàn máy, chờ chủ dự án quyết.

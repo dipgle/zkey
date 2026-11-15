@@ -8,6 +8,13 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 16:50 — đối chứng engine xkb: GTK4 async mất phím là lỗi GTK4/IBus
+
+- Bộ đo `scripts/probe-gtk4-native.py`: GTK4 4.22.4 Entry trong tiến trình, X11 backend, Xvfb + D-Bus + IBus riêng; engine kiểm bằng `get_global_engine()`; 8 phím chậm 250 ms: a b c ⌫ Home x End ⌫ (chuẩn `xa`). Log `.tmp/probe-gtk4-native.log`.
+- `xkb:us::eng` sync=0: `abcx` — mất ⌫/Home/End, chữ cái vẫn vào; sync=1: đủ 8/8. zkey: y hệt cả hai chế độ.
+- Kết luận trong phạm vi đo: GTK4 + IBus 1.5.34~rc2 chế độ async (X11) mất phím không in được mà engine trả lại, với cả engine gốc của IBus — không do zkey. Bộ đo đổi được trạng thái (sync 0/1 cho hai kết quả ngược nhau).
+- CHƯA ĐO: GTK4 Wayland backend; desktop thật (không Xvfb); bản IBus khác.
+
 ## 15/11 16:30 — GTK4 Text Editor: gõ dồn + phím native
 
 - Pha EDITOR BURST+NATIVE (`scripts/accept-editor.py`, đọc tài liệu thật qua AT-SPI, 6 ca × 5 lượt, giống GTK3): sync 30/30 XANH; `accept-xvfb.sh` 6 bài XANH (lượt cuối `.tmp/accept-xvfb-gtk4-final.log`).

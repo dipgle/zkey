@@ -18,7 +18,8 @@
 - [ ] Plugin bash: từ gõ xong rồi mới thêm `_`/`=` phía sau (`mas_x`) vẫn đã bị đổi; người gõ nhanh hơn thời gian xử lý (máy chậm) ⇒ dòng thành nguyên văn (an toàn, kém tiện).
 - [x] **Gõ dồn có Backspace/Enter xen giữa (15/11 16:00):** gốc = module IBus GTK3/GTK4 chế độ bất đồng bộ đẩy phím engine không nhận ra CUỐI hàng sự kiện (`gdk_event_put`), còn commit vào ngay. `runtime.py` đặt `IBUS_ENABLE_SYNC_MODE=1` cho ứng dụng do zkey mở. GTK3 0/30 → 30/30; đối chứng `ZKEY_CLIENT_SYNC_MODE=0` ĐỎ 0/30; accept-xvfb 2/2 XANH 6/6 bài. Chi phí: phím→chữ trung vị 4 → 6 ms (tối đa 8.3).
 - [x] Gõ dồn + phím native trên GTK4 Text Editor (15/11 16:30, X11 backend, Xvfb): pha EDITOR BURST+NATIVE trong `accept-editor.py` 30/30 XANH với sync. Đối chứng sync=0: Text Editor **MẤT HẲN** mọi phím engine không nhận (Backspace/End/Ctrl+A, kể cả chậm 200 ms) ⇒ ĐỎ.
-- [ ] App ngoài `zkey --run` (bộ gõ hệ thống khi cài — env người dùng không có cờ sync): GTK4 async mất phím native. Chưa biết do zkey hay GTK4/IBus: đo đối chứng với engine IBus có sẵn (xkb). GTK4 Wayland backend chưa đo. Engine treo ⇒ app chờ phản hồi từng phím (chưa đo).
+- [x] Đối chứng engine xkb (15/11 16:50, `scripts/probe-gtk4-native.py`, GTK4 Entry X11/Xvfb): `xkb:us::eng` async CŨNG mất Backspace/Home/End (chữ cái vẫn vào); sync đủ 8/8. Zkey y hệt ⇒ lỗi của GTK4 + IBus 1.5.34~rc2 ở chế độ async, KHÔNG phải zkey.
+- [ ] App ngoài `zkey --run` (bộ gõ hệ thống khi cài): không có cờ sync ⇒ GTK4 X11 mất phím native với MỌI engine. Cần quyết cách cài (đặt `IBUS_ENABLE_SYNC_MODE` cho phiên người dùng?) — chạm env toàn máy, chờ chủ dự án. GTK4 Wayland backend chưa đo. Engine treo khi sync (chưa đo).
 - [ ] Nghiệm thu trên desktop Wayland-native (ngoài Xwayland) và Chrome/Electron; cần đường nhập phím không qua hộp thoại.
 - [x] Giảm rủi ro P0 tại handler: bypass TERMINAL; gửi preedit rỗng khi vào protected context/reset. RED→GREEN; 27/27 Python, chỉ transport sink. Chưa nghiệm thu UI, chưa đóng P0.
 
