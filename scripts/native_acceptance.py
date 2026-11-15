@@ -14,10 +14,17 @@ import time
 from x11_activation import activate, free_position, is_active
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+# ZKEY_PACKAGE_ROOT: acceptance of an INSTALLED copy (scripts/install-user.py), e.g.
+# <prefix>/lib/zkey. Default = this repository.
+PACKAGE = Path(os.environ.get("ZKEY_PACKAGE_ROOT", ROOT)).resolve()
+sys.path.insert(0, str(PACKAGE))
 
 
 def inside():
+    import zkey.runtime
+    if not Path(zkey.runtime.__file__).resolve().is_relative_to(PACKAGE):
+        raise RuntimeError(f"Loaded {zkey.runtime.__file__}, not the package under test {PACKAGE}")
+    print(f"PACKAGE: {PACKAGE}", flush=True)
     from zkey.runtime import isolated_engine
     with isolated_engine() as (env, _bus, _children):
         os.environ.update(env)
@@ -297,7 +304,7 @@ def inside():
                 raise RuntimeError("Native toolkit warnings: " + "; ".join(errors))
             if any(visible_preedits):
                 raise AssertionError("Visible preedit in direct/password mode")
-            engine_log = ROOT / ".tmp" / (Path(env["IBUS_ADDRESS"].split("unix:path=", 1)[1]).parent.name + ".log")
+            engine_log = PACKAGE / ".tmp" / (Path(env["IBUS_ADDRESS"].split("unix:path=", 1)[1]).parent.name + ".log")
             observed = engine_log.read_text().count("key-state ")
             if observed < len("tieengs"):
                 raise AssertionError(f"Wrong input engine: private zkey observed only {observed} key calls")

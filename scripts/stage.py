@@ -10,20 +10,40 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def desktop_quote(argument):
+    """Desktop Entry Exec quoting: double quotes only; escape " ` $ \\ inside."""
+    if not any(c in argument for c in ' \t\n"\'\\><~|&;$*?#()`'):
+        return argument
+    return '"' + "".join("\\" + c if c in '"`$\\' else c for c in argument) + '"'
+
+
 def stage(destination, prefix):
     destination = Path(destination).resolve()
     prefix = Path(prefix).expanduser().resolve()
     if not destination.is_relative_to(ROOT / ".tmp"):
         raise ValueError("Staging destination must be under zkey/.tmp")
     library = ROOT / "target/release/libzkey_core.so"
-    if not library.is_file():
-        raise FileNotFoundError("Build release core before staging")
+    line = ROOT / "target/release/zkey-line"
+    if not library.is_file() or not line.is_file():
+        raise FileNotFoundError("Build release core and zkey-line before staging (cargo build --release)")
     package = destination / "lib/zkey"
     (package / "zkey").mkdir(parents=True, exist_ok=True)
     (package / "target/release").mkdir(parents=True, exist_ok=True)
+    (package / "shell").mkdir(parents=True, exist_ok=True)
     for source in (ROOT / "zkey").glob("*.py"):
         shutil.copy2(source, package / "zkey" / source.name)
     shutil.copy2(library, package / "target/release/libzkey_core.so")
+    # Shell plugin finds zkey-line at <its dir>/../target/release (shell/zkey.bash).
+    shutil.copy2(line, package / "target/release/zkey-line")
+    shutil.copy2(ROOT / "shell/zkey.bash", package / "shell/zkey.bash")
+    for notice in ("LICENSE", "NOTICE.md"):
+        shutil.copy2(ROOT / notice, package / notice)
+    desktop = destination / "share/applications/zkey.desktop"
+    desktop.parent.mkdir(parents=True, exist_ok=True)
+    desktop.write_text("[Desktop Entry]\nType=Application\nName=zkey — Gõ tiếng Việt\n"
+                       "Comment=Mở Text Editor với Telex theo từng phím\n"
+                       f"Exec={desktop_quote(str(prefix / 'bin/zkey'))} --run\n"
+                       "Icon=input-keyboard\nTerminal=false\nCategories=Utility;TextEditor;\nStartupNotify=true\n")
     launcher = destination / "bin/zkey"
     launcher.parent.mkdir(parents=True, exist_ok=True)
     launcher.write_text("#!/usr/bin/python3\nimport sys\nsys.path.insert(0, "

@@ -12,6 +12,18 @@ import time
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
+KEEP_LOGS = 50  # Engine logs (no typed text) kept per install; older ones are removed.
+
+
+def prune_logs(directory, keep=KEEP_LOGS):
+    """Bound engine logs: one run-*.log per launch would otherwise grow forever.
+
+    Only *.log files are touched; run directories of live sessions are not.
+    """
+    logs = sorted(Path(directory).glob("run-*.log"), key=lambda p: p.stat().st_mtime, reverse=True)
+    for old in logs[keep:]:
+        old.unlink(missing_ok=True)
+    return max(0, len(logs) - keep)
 
 
 @contextmanager
@@ -19,6 +31,10 @@ def isolated_engine():
     if os.environ.get("ZKEY_ISOLATED_BUS") != "1":
         raise RuntimeError("This runtime requires a new dbus-run-session")
     (ROOT / ".tmp").mkdir(exist_ok=True)
+    if not (ROOT / ".git").exists():
+        # Installed copy: bounded. The development tree keeps every log because
+        # docs/verification.md and logs/devlog.md cite them as evidence.
+        prune_logs(ROOT / ".tmp")
     with tempfile.TemporaryDirectory(prefix="run-", dir=ROOT / ".tmp") as temporary:
         scratch = Path(temporary)
         for name in ("config", "cache", "runtime", "data"):

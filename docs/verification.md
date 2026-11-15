@@ -8,6 +8,15 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 20:50 — gói cài user-local; `bin/zkey` thiếu quyền chạy
+
+- `bin/zkey` trong git là 100644 ⇒ `bin/zkey --run` (theo README) ra `Permission denied` (mã 126; `scripts/probe-run-ptyxis.sh` lộ). Đặt 100755. `zkey.desktop` gọi qua python3 nên không dính.
+- `zkey --run ptyxis --standalone`: sống 6/6 (IBus sync), 6/6 (IBus async), 6/6 (không IBus), mỗi lượt 12 s. Lỗi chết 1/3 cũ không tái hiện; phép đo chưa từng ĐỎ ⇒ chưa phải bằng chứng đã sửa.
+- `scripts/install-user.py`: cài theo manifest SHA-256 (từ chối đè tệp lạ; gỡ chỉ tệp nguyên vẹn; dọn log/bytecode do zkey sinh). `tests/test_install_user.py` 5 bài; đột biến bỏ chốt «tệp lạ» và «tệp đã sửa» ⇒ đúng bài ĐỎ.
+- Gõ thật bằng bản cài (`ZKEY_PACKAGE_ROOT=<prefix>/lib/zkey scripts/native_acceptance.py`, kiểm module nạp đúng từ bản cài): XANH, BURST+NATIVE 30/30. Cấy lõi hỏng ⇒ `Engine registration failed`, mã 1. Gỡ ⇒ 0 tệp sót.
+- Log engine bản cài giữ 50 (`runtime.prune_logs`, `tests/test_runtime.py`); cấy 55 + 1 lượt ⇒ còn 51. Cây phát triển (có `.git`) không cắt: 192 → 196.
+- accept-xvfb 6 bài XANH; Python 52/52.
+
 ## 15/11 20:20 — trình duyệt: Firefox snap KHÔNG ĐO ĐƯỢC; sự cố portal desktop
 
 - Bài mới `scripts/accept-firefox.py` + trang `scripts/fixtures/browser-input.html`: trang tự ghi giá trị ô, số sự kiện input/composition vào tiêu đề; bài đọc tiêu đề X11. Chưa chạy được tới bước gõ.

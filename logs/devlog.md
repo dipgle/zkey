@@ -121,3 +121,8 @@
 
 - accept-firefox.py + fixture: Firefox snap trên Xvfb riêng dừng ở cannot open display ⇒ KHÔNG ĐO ĐƯỢC. Tải tarball qua huba bị classifier chặn (Undermining Oversight) ⇒ chờ Hà.
 - SỰ CỐ: lệnh chẩn đoán của tôi để bus riêng kích hoạt document-portal trên /run/user/1000 ⇒ desktop mất mount /run/user/1000/doc. Hà duyệt restart xdg-document-portal; đo lại 1 mount. Chốt: bus riêng luôn có runtime trong .tmp.
+
+## 2026-11-15 20:50 +07 — gói cài user-local
+
+- bin/zkey thiếu quyền chạy (126) ⇒ 100755. zkey --run ptyxis sống 18/18; lỗi cũ không tái hiện.
+- install-user.py (manifest SHA-256, gỡ an toàn) + tests; gõ thật GTK3 bằng bản cài XANH, lõi hỏng ĐỎ, gỡ sạch. Log bản cài giữ 50. Cài thật ~/.local chờ Hà.

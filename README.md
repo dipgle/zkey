@@ -18,10 +18,23 @@ Gõ thật đã XANH trên GNOME Text Editor (GTK4) và ô nhập GTK3 trong mà
 - Không giữ từ trong preedit. Engine tự commit mọi phím in được (chữ, dấu cách, dấu câu) để giữ đúng thứ tự khi gõ nhanh; chỉ phím không in được (Backspace, Enter, mũi tên) đi native. Chỉ xoá phần chữ do chính engine commit khi ảnh chụp của ứng dụng cho thấy nguyên văn phần đó ngay trước caret, không có vùng chọn và đứng sau ranh giới từ; gõ quá nhanh thì ghép bù khi ứng dụng xác nhận. Đổi focus/phím tắt không commit lại chữ đã nhận.
 - `bash scripts/accept-xvfb.sh` chạy nghiệm thu gõ thật (GTK4 Text Editor + GTK3) trên màn X ảo riêng, không đụng desktop.
 - Ứng dụng do zkey mở chạy IBus chế độ đồng bộ (`IBUS_ENABLE_SYNC_MODE=1`) để Backspace/Enter giữ đúng thứ tự khi gõ nhanh; thêm ~2 ms/phím (đo GTK3). Ứng dụng ngoài launcher chưa có bảo đảm này.
-- `bin/zkey --run` mở Text Editor trong phiên IBus riêng; `--run <ứng dụng> [tham số]` chạy ứng dụng chỉ định. Không đổi fcitx5/IBus toàn hệ thống. Tệp `zkey.desktop` mới nằm trong repo, chưa cài menu hệ thống.
+- `bin/zkey --run` (hoặc bản cài `~/.local/bin/zkey --run`) mở Text Editor trong phiên IBus riêng; `--run <ứng dụng> [tham số]` chạy ứng dụng chỉ định. Không đổi fcitx5/IBus toàn hệ thống. Tệp `zkey.desktop` mới nằm trong repo, chưa cài menu hệ thống.
 - Cấu hình TOML, màn thiết lập GTK3 và gói cài user-local được dựng thử trong `.tmp/stage`.
 
 Chưa có VNI, tự kiểm chính tả, phục hồi từ trước lần đổi focus hoặc kiểm chứng toàn bộ biến thể Telex. Escape sau khi bắt đầu từ chuyển từ đó sang nguyên trạng (hữu ích khi nhập tiếng Anh/đường dẫn). Chưa thử màn thiết lập bằng mắt. Chưa nên thay bộ gõ đang dùng cho toàn hệ thống.
+
+## Cài cho một người dùng (không cần root, không đổi bộ gõ hệ thống)
+
+```bash
+cargo build --offline --release
+/usr/bin/python3 scripts/install-user.py              # vào ~/.local
+/usr/bin/python3 scripts/install-user.py --uninstall  # gỡ đúng tệp đã cài
+```
+
+- Cài `~/.local/bin/zkey`, `~/.local/lib/zkey/` (engine, launcher, lõi Rust, `zkey-line`, plugin bash) và mục menu **zkey — Gõ tiếng Việt** (`~/.local/share/applications/zkey.desktop`). Dùng: `~/.local/bin/zkey --run [ứng dụng]`.
+- Mỗi tệp ghi SHA-256 trong `lib/zkey/MANIFEST.json`. Cài từ chối đè tệp không phải của zkey; gỡ chỉ xoá tệp còn nguyên, tệp đã sửa giữ lại và báo. Log engine của bản cài giữ 50 bản mới nhất.
+- Không sửa `~/.bashrc` (dùng `scripts/install-shell.sh`), không cài component IBus (bộ gõ hệ thống; tuỳ chọn `--with-ibus-component`, cần thêm `IBUS_ENABLE_SYNC_MODE=1` cho phiên — chưa quyết).
+- Đã đo: cài vào tiền tố thử, gõ thật GTK3 bằng **bản đã cài** XANH (30/30 gõ dồn), lõi hỏng ⇒ ĐỎ, gỡ sạch 0 tệp sót.
 
 ## Dành cho phát triển
 

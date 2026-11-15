@@ -7,7 +7,7 @@
 - [ ] Terminal còn thiếu: vim/TUI, zsh, SSH (plugin máy xa), ptyxis app thật, tmux; câu tiếng Anh trong nháy bị đổi ở âm tiết hợp lệ.
 - [x] Plugin đã cài vào ~/.bashrc (15/11, `scripts/install-shell.sh`); ptyxis thật + ~/.bashrc XANH 2/2, đối chứng ĐỎ.
 - [x] `zkey --run`: ứng dụng và dịch vụ kích hoạt dùng hai XDG_RUNTIME_DIR khác nhau ⇒ ptyxis thoát. Sửa `runtime.py`: launcher không IBus 4/5 chết → 3/3 sống.
-- [ ] `zkey --run ptyxis` với IBus: còn chết 1/3 (trước sửa 4/4). Chưa tìm gốc phần dính IBus.
+- [x] `zkey --run ptyxis` (15/11 20:40, `scripts/probe-run-ptyxis.sh`): lỗi thật là `bin/zkey` thiếu quyền chạy (`Permission denied`, mã 126) — đã đặt 100755. Sau đó sống 18/18 lượt 12 s (IBus sync, async, không IBus). Lỗi chết 1/3 cũ KHÔNG tái hiện; chưa có đối chứng đỏ ⇒ không khẳng định đã sửa, mở lại nếu thấy.
 - [ ] Bước ô mật khẩu GTK3 trong lượt gộp đỏ 1/~12 (phím mất) khi còn cửa sổ GTK4 trên màn không WM. Tìm gốc.
 - [ ] **P0-001 CHẶN PHÁT HÀNH:** thay đường giữ từ trong preedit; bảo đảm terminal tắt echo không lộ/biến đổi mật khẩu. InputPurpose PASSWORD/PIN chưa đủ. Hợp đồng và phép nghiệm thu: `docs/input-contract.md`.
 - [ ] Thăm dò đường sửa ký tự đã commit theo từng frontend; VTE cài trên máy không hỗ trợ surrounding-text rewrite. Chưa quyết định backend terminal.
@@ -35,4 +35,5 @@
 - [ ] Nghiệm thu gõ thật trên GTK, Chrome/Electron, terminal, Wayland/X11; kiểm mất/nhân chữ và đổi focus.
 - [ ] Đo đối chiếu bộ gõ đang gây khó chịu và chuẩn Windows do chủ dự án cung cấp.
 - [ ] Kiểm corpus Telex rộng hơn, kiểu gõ dấu muộn; xác định chính sách tiếng Anh và VNI.
-- [ ] Nghiệm thu settings GTK, cài/gỡ user-local và gói Ubuntu. Hoàn thiện audit thay cấu hình trước phát hành.
+- [x] Cài/gỡ user-local (15/11 20:50): `scripts/install-user.py` + 6 bài kiểm (đột biến từng chốt ⇒ ĐỎ); gõ thật GTK3 bằng bản cài XANH; lõi hỏng ⇒ ĐỎ; gỡ sạch. Cài thật vào ~/.local: **chờ Hà**.
+- [ ] Nghiệm thu màn thiết lập GTK bằng mắt; gói .deb; audit thay cấu hình trước phát hành.
