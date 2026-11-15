@@ -1,11 +1,14 @@
-# zkey/core — 15/11/2026 16:50 +07 — CHƯA XONG (sản phẩm)
+# zkey/core — 15/11/2026 21:15 +07 — gói dùng được, chờ Hà 3 quyết định
 
-Phiên mở ở gốc ~/projects (CLI Claude). Hà dặn 15:45: làm KHÔNG ảnh hưởng máy đang chạy ⇒ chỉ Xvfb/D-Bus/IBus/tmux riêng, không đụng desktop/IBus hệ thống.
+Phiên Claude mở ở gốc ~/projects. Hà: «làm ra sản phẩm cuối, đừng dừng»; «không ảnh hưởng máy đang chạy».
 
-ĐÃ ĐO (chạy thật):
-- AN NINH plugin bash (1335266, đã đẩy): lệnh máy gõ không còn bị viết lại; cổng `scripts/accept-shell-tmux.sh` 5/5, đối chứng từng chốt ĐỎ. huba (f3cfa32) nay mở pane với `ZKEY_MODE=off` ⇒ đường huba không còn đo được zkey; khoá hành vi bằng cổng của zkey.
-- Gõ dồn + Backspace/Enter: gốc = module IBus GTK bất đồng bộ đẩy phím không nhận ra cuối hàng (`gdk_event_put`). `runtime.py` đặt `IBUS_ENABLE_SYNC_MODE=1` cho app do zkey mở. GTK3 0/30 → 30/30, đối chứng `ZKEY_CLIENT_SYNC_MODE=0` ĐỎ. accept-xvfb 2/2 × 6 bài XANH. Chi phí trung vị +2 ms/phím (6 vs 4 ms, max 8.3).
+ĐÃ ĐO (chạy thật, Xvfb/bus/IBus riêng):
+- accept-xvfb 7 bài XANH + cổng tác hại «MÁY NGUYÊN» (mount /run/user/1000/doc trước=sau): GTK4 Text Editor + GTK3 (gõ dồn + ⌫/Enter 30/30, IBus sync), VTE ×2, ptyxis, màn thiết lập → ô gõ (hoà→hòa), plugin bash vs lệnh máy gõ.
+- Gói user-local `scripts/install-user.py` (manifest SHA-256, gỡ an toàn): gõ thật bằng bản cài XANH; lõi hỏng ĐỎ.
+- SỰ CỐ do phiên: bài accept-ptyxis (từ 11:00) + 1 lệnh tay làm portal tài liệu desktop mất mount/failed; Hà duyệt restart 2 lần (PID 365673). Chốt lớp: `scripts/private_bus.py` + `tests/test_private_bus.py` + cổng tác hại.
 
-Việc kế: đối chứng xkb XONG (16:50) — GTK4+IBus async mất phím native với MỌI engine, không do zkey; cài hệ thống cần cờ sync ở env phiên (chờ chủ dự án); app ngoài `zkey --run` không có cờ sync. GTK4 Text Editor gõ dồn + phím native 30/30 với sync (16:30). Nợ cũ: `zkey --run ptyxis` IBus chết 1/3; ô mật khẩu GTK3 đỏ 1/~12 (2 lượt gần nhất không tái); tiếng Anh trong nháy; vim/TUI, zsh, SSH; Chrome/Electron (có firefox); P0-001.
+CHỜ HÀ: (1) cài thật vào ~/.local; (2) tải Firefox tarball (classifier chặn curl qua huba) để nghiệm thu trình duyệt — snap trên Xvfb = KHÔNG ĐO ĐƯỢC; (3) bộ gõ hệ thống (component IBus + IBUS_ENABLE_SYNC_MODE=1 cho phiên; GTK4 async mất phím với MỌI engine).
 
-Nền: không có. Chạy lại: `bash /mnt/data/projects/zkey/scripts/accept-xvfb.sh` (6 bài, log `.tmp/accept-xvfb.log`).
+Nợ: Wayland-native, Chrome/Electron (không có trên máy), vim/TUI/zsh/SSH, tiếng Anh trong nháy (Telex mơ hồ), .deb, `zkey --run ptyxis` chết 1/3 cũ không tái hiện.
+
+Nền: không có. Chạy lại: `bash /mnt/data/projects/zkey/scripts/accept-xvfb.sh`.
