@@ -8,6 +8,12 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 22:25 — BẬT zkey làm bộ gõ hệ thống (Hà xác nhận sau khi biết rủi ro)
+
+- Hà: «cài chạy như ứng dụng bình thường»; hỏi lại (đổi bộ gõ máy, `zkey/CLAUDE.md:8`, chưa đo trên desktop thật) ⇒ Hà chọn «Bật zkey cho cả máy».
+- `system-ime.py enable` mã 0: component `~/.local/share/ibus/component/zkey.xml` (exec `~/.local/bin/zkey --ibus`); `~/.config/environment.d/99-zkey.conf` (GTK/QT/XMODIFIERS ibus, `IBUS_ENABLE_SYNC_MODE=1`, `IBUS_COMPONENT_PATH`); `~/.xinputrc` `run_im ibus` (bản gốc fcitx5 lưu ở `~/.local/state/zkey/system-ime/`); nguồn GNOME `[('xkb','us'), ('ibus','zkey')]`.
+- Có hiệu lực sau đăng xuất/đăng nhập. CHƯA ĐO: phiên GNOME thật sau đăng nhập (zkey trong danh sách, gõ ở Text Editor/Firefox/terminal). Quay lại: `python3 /mnt/data/projects/zkey/scripts/system-ime.py disable` rồi đăng xuất/đăng nhập.
+
 ## 15/11 21:30 — cài thật ~/.local (Hà duyệt); bộ gõ hệ thống chuẩn bị sẵn
 
 - Hà duyệt cài ⇒ `install-user.py --prefix ~/.local`: 15 tệp, đích trống trước đó; `desktop-file-validate` OK; gõ thật GTK3 bằng `~/.local/lib/zkey` XANH (gõ dồn 30/30); mount desktop 1→1. Ngoại lệ có duyệt cho `zkey/CLAUDE.md:8`.

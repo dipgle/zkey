@@ -139,3 +139,7 @@
 ## 2026-11-15 21:30 +07 — cài ~/.local; bộ gõ hệ thống chuẩn bị
 
 - Hà duyệt cài ~/.local: bản cài gõ thật XANH. Trình duyệt: Hà bỏ qua. Bộ gõ hệ thống: system-ime.py (bật/tắt có sao lưu, tests HOME giả + keyfile) + probe-system-ime (daemon tự chạy engine từ component, gõ đúng; đối chứng ĐỎ). Chưa bật trên máy.
+
+## 2026-11-15 22:25 +07 — bật bộ gõ hệ thống
+
+- Hà xác nhận «bật zkey cho cả máy». system-ime.py enable mã 0; kiểm lại env/xinputrc/component/gsettings + bản sao lưu fcitx5. Chưa đo phiên GNOME thật (cần Hà đăng nhập lại).
