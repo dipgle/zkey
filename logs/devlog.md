@@ -89,3 +89,7 @@
 - Chủ dự án yêu cầu tự làm tới sản phẩm. Ghi ~/.bashrc bị classifier rồi guard chặn ⇒ trình cài `install-shell.sh` (thử trên bản sao) chạy qua huba: 1 khối, có sao lưu.
 - ptyxis thật + ~/.bashrc: XANH 2/2, đối chứng off ĐỎ. Truy lỗi ptyxis chết: không do phím/glyph/plugin; do môi trường launcher `--run` (A/B/C/D đo trong scratchpad). Ghi nợ.
 - Lượt gộp accept-xvfb 6 bài: 2/2 mã0; 1 lượt đỏ trước đó ở ô mật khẩu GTK3 (nợ, chưa che).
+
+## 2026-11-15 11:30 +07 — `zkey --run`: sửa lệch XDG_RUNTIME_DIR
+
+- Chia đôi biến ⇒ gốc là runtime dir lệch giữa app và dịch vụ kích hoạt. D 4/5 chết → 3/3 sống; A 4/4 chết → 1/3 chết (nợ). accept-xvfb 2/2 mã0.

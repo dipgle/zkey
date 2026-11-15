@@ -1,5 +1,10 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 15/11 11:30 — gốc lỗi `zkey --run ptyxis`: lệch XDG_RUNTIME_DIR
+
+- Chia đôi biến môi trường (scratchpad): từng biến và cả nhóm biến của launcher, áp lên ptyxis ngoài launcher, đều sống 3/3. Gốc: `runtime.py` kích hoạt portal/document-portal với `run-…/runtime`, còn ứng dụng nhận `session-…/runtime`.
+- Sửa: ứng dụng dùng chung runtime dir. Launcher không IBus: trước 4/5 chết, sau 3/3 sống. Launcher có IBus: trước 4/4 chết, sau 2/3 sống ⇒ còn phần dính IBus (nợ). accept-xvfb 6 bài 2/2 mã 0; Python 45/45.
+
 ## 15/11 11:00 — plugin đã cài vào ~/.bashrc; ptyxis thật XANH
 
 - Cài: `scripts/install-shell.sh` (một khối có đánh dấu, idempotent, sao lưu, `bash -n`; `--uninstall` trả đúng byte bản gốc — đã thử trên bản sao). Chạy qua huba vì classifier + guard-write-path chặn ghi `~/.bashrc`; sao lưu `~/.bashrc.zkey-backup.20261115084125`, 1 khối.

@@ -6,7 +6,8 @@
 - [x] Tiếng Việt trên dòng lệnh bash: plugin readline `shell/zkey.bash` + `zkey-line`; nghiệm thu VTE thật + đối chứng 2 chiều (15/11 10:00).
 - [ ] Terminal còn thiếu: vim/TUI, zsh, SSH (plugin máy xa), ptyxis app thật, tmux; câu tiếng Anh trong nháy bị đổi ở âm tiết hợp lệ.
 - [x] Plugin đã cài vào ~/.bashrc (15/11, `scripts/install-shell.sh`); ptyxis thật + ~/.bashrc XANH 2/2, đối chứng ĐỎ.
-- [ ] `zkey --run ptyxis`: ptyxis thoát sau vài giây trong môi trường launcher (A 4/4, D 1/2; ngoài launcher 3/3 sống). Tìm gốc.
+- [x] `zkey --run`: ứng dụng và dịch vụ kích hoạt dùng hai XDG_RUNTIME_DIR khác nhau ⇒ ptyxis thoát. Sửa `runtime.py`: launcher không IBus 4/5 chết → 3/3 sống.
+- [ ] `zkey --run ptyxis` với IBus: còn chết 1/3 (trước sửa 4/4). Chưa tìm gốc phần dính IBus.
 - [ ] Bước ô mật khẩu GTK3 trong lượt gộp đỏ 1/~12 (phím mất) khi còn cửa sổ GTK4 trên màn không WM. Tìm gốc.
 - [ ] **P0-001 CHẶN PHÁT HÀNH:** thay đường giữ từ trong preedit; bảo đảm terminal tắt echo không lộ/biến đổi mật khẩu. InputPurpose PASSWORD/PIN chưa đủ. Hợp đồng và phép nghiệm thu: `docs/input-contract.md`.
 - [ ] Thăm dò đường sửa ký tự đã commit theo từng frontend; VTE cài trên máy không hỗ trợ surrounding-text rewrite. Chưa quyết định backend terminal.

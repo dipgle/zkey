@@ -81,7 +81,11 @@ def isolated_engine():
                                   GTK_IM_MODULE="ibus", QT_IM_MODULE="ibus",
                                   XMODIFIERS="@im=ibus", PYTHONPATH=str(ROOT), GIO_USE_VFS="local",
                                   XDG_CONFIG_HOME=str(scratch / "config"), XDG_CACHE_HOME=str(scratch / "cache"),
-                                  XDG_DATA_HOME=str(scratch / "data"), GSETTINGS_BACKEND="memory", NO_AT_BRIDGE="1")
+                                  XDG_DATA_HOME=str(scratch / "data"), GSETTINGS_BACKEND="memory", NO_AT_BRIDGE="1",
+                                  # Same runtime dir as the services this bus activates for the
+                                  # app (portals, document FUSE mount). A mismatch made ptyxis
+                                  # exit within seconds (measured 15/11: 4/5 runs).
+                                  XDG_RUNTIME_DIR=str(scratch / "runtime"))
                 if backend := os.environ.get("ZKEY_CLIENT_GDK_BACKEND"):
                     client_env["GDK_BACKEND"] = backend
                 if module := os.environ.get("ZKEY_CLIENT_IM_MODULE"):
