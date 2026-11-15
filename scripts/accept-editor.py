@@ -134,7 +134,7 @@ try:
     x.XSetInputFocus(display, window, 2, 0)
     x.XSync(display, False)
     time.sleep(0.3)
-    def send(key, modifier=None):
+    def send(key, modifier=None, pause=0.055):
         focus, revert = C.c_ulong(), C.c_int()
         x.XGetInputFocus(display, C.byref(focus), C.byref(revert))
         if not is_active(x, display, window):
@@ -153,7 +153,8 @@ try:
         if mod:
             t.XTestFakeKeyEvent(display, mod, False, 0)
         x.XFlush(display)
-        time.sleep(0.055)
+        if pause:
+            time.sleep(pause)
     # This is our fresh standalone test document. Dismiss a previous failed
     # Save dialog before retrying, then replace only this synthetic fixture.
     send("Escape")
@@ -197,8 +198,60 @@ try:
     for key in " vieetj":
         send(key)
     expect("tiếng việt")
-    print("PASS GNOME Text Editor: 7 per-key prefixes and Vietnamese phrase, read through the actual document's accessibility UI; app remains open.")
-    (ROOT / ".tmp/editor-accepted.json").write_text(json.dumps({"pid": application["pid"], "window": window, "per_key_prefixes": 7}) + "\n")
+    # Native keys (Backspace, Enter) inside a 0 ms burst, read from the real
+    # document. Reference = same keys typed slowly; two references pinned by
+    # hand. Every mismatch is collected, with its round (same cases as GTK3).
+    def shown():
+        return Atspi.Text.get_text(editor.get_text_iface(), 0, -1).rstrip("\n")
+    def settle(seconds=3):
+        last, since, until = shown(), time.monotonic(), time.monotonic() + seconds
+        while time.monotonic() < until:
+            time.sleep(0.02)
+            now = shown()
+            if now != last:
+                last, since = now, time.monotonic()
+            elif time.monotonic() - since >= 0.3:
+                break
+        return last
+    def clear():
+        send("a", "Control_L")
+        send("BackSpace")
+        left = settle()
+        if left != "":
+            # Diagnose lost vs reordered keys: slow native keys, document after each.
+            trail = []
+            for probe in ("BackSpace", "BackSpace", "End", "BackSpace"):
+                send(probe, pause=0.2)
+                trail.append(f"{probe}->{settle()!r}")
+            raise AssertionError(f"Ctrl+A, Backspace left {left!r} in the synthetic document; "
+                                 f"then slow keys: {', '.join(trail)}; "
+                                 f"mismatches so far: {' | '.join(mismatches) or 'none'}")
+    names = {" ": "space", "\b": "BackSpace", "\n": "Return"}
+    cases = (("vieetj\bt", "việt"), ("tieengs\bf", None), ("xin chaof\b\baf", None),
+             ("dduowcj\b\bc", None), ("tieengs\nvieetj", "tiếng\nviệt"), ("xin\nchaof\nbanj", None))
+    mismatches, rounds = [], 5
+    for typed, pinned in cases:
+        clear()
+        for ch in typed:
+            send(names.get(ch, ch), pause=0.12)
+        reference = settle()
+        if pinned is not None and reference != pinned:
+            mismatches.append(f"slow {typed!r}: expected={pinned!r} actual={reference!r}")
+        for round_ in range(rounds):
+            clear()
+            for ch in typed:
+                send(names.get(ch, ch), pause=0)
+            actual = settle()
+            if actual != reference:
+                mismatches.append(f"burst {typed!r} round {round_+1}/{rounds}: slow={reference!r} burst={actual!r}")
+    total = rounds * len(cases)
+    print(f"EDITOR BURST+NATIVE: {total - sum(m.startswith('burst') for m in mismatches)}/{total} burst rounds equal to slow typing; "
+          f"{sum(m.startswith('slow') for m in mismatches)} slow reference mismatches "
+          f"(sync={os.environ.get('ZKEY_CLIENT_SYNC_MODE', 'default')})", flush=True)
+    if mismatches:
+        raise AssertionError("Editor burst with native keys differs: " + " | ".join(mismatches))
+    print("PASS GNOME Text Editor: 7 per-key prefixes and Vietnamese phrase; burst with native Backspace/Enter equal to slow typing; read through the actual document's accessibility UI; app remains open.")
+    (ROOT / ".tmp/editor-accepted.json").write_text(json.dumps({"pid": application["pid"], "window": window, "per_key_prefixes": 7, "burst_native_rounds": total}) + "\n")
 finally:
     x.XCloseDisplay(display)
     # Independent burst coverage still runs if the GNOME focus check fails.

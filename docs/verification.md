@@ -8,6 +8,12 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 15/11 16:30 — GTK4 Text Editor: gõ dồn + phím native
+
+- Pha EDITOR BURST+NATIVE (`scripts/accept-editor.py`, đọc tài liệu thật qua AT-SPI, 6 ca × 5 lượt, giống GTK3): sync 30/30 XANH; `accept-xvfb.sh` 6 bài XANH (lượt cuối `.tmp/accept-xvfb-gtk4-final.log`).
+- Đối chứng `ZKEY_CLIENT_SYNC_MODE=0`: ĐỎ ngay lần xoá đầu — Ctrl+A, Backspace để nguyên `tiếng việt`; thêm Backspace/End/Backspace chậm 200 ms: tài liệu không đổi, engine vẫn thấy phím (23 key-state). Tức GTK4 async (X11 backend) MẤT phím engine trả False, không chỉ đảo thứ tự. Bài cũ không phủ vì chưa gửi phím native sau khi có chữ.
+- CHƯA ĐO: cùng hiện tượng với engine IBus khác (xkb) — chưa biết lỗi của zkey hay GTK4; GTK4 Wayland backend.
+
 ## 15/11 16:00 — gõ dồn có phím native: gốc + sửa, XANH
 
 - Gốc: `im-ibus.so` GTK3 (ibus 1.5.34~rc2) bất đồng bộ; phím engine trả False bị `gdk_event_put` ra cuối hàng sự kiện, commit-text áp ngay ⇒ đảo thứ tự. Module GTK3 và GTK4 đều đọc `IBUS_ENABLE_SYNC_MODE`.

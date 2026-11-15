@@ -106,3 +106,8 @@
 - Gốc: im-ibus GTK bất đồng bộ đẩy phím engine không nhận (Backspace/Enter) ra cuối hàng sự kiện, commit áp ngay. Đối chứng chỉ bật IBUS_ENABLE_SYNC_MODE cho cửa sổ kiểm: 0/30 → 30/30.
 - Sửa runtime.py (env app do zkey mở). Đường sản phẩm 30/30; ZKEY_CLIENT_SYNC_MODE=0 ĐỎ 0/30. accept-xvfb 2/2 × 6 bài XANH; Python OK; audit 140/0. Phím→chữ trung vị 6 ms (async 4).
 - huba f3cfa32: pane huba mang ZKEY_MODE=off.
+
+## 2026-11-15 16:30 +07 — GTK4 Text Editor: gõ dồn + phím native
+
+- accept-editor.py: send() có pause; pha EDITOR BURST+NATIVE 6 ca × 5 lượt đọc AT-SPI. Sync 30/30; accept-xvfb 6 bài XANH.
+- Đối chứng sync=0: GTK4 (X11) mất hẳn phím engine trả False (Backspace/End/Ctrl+A, cả khi chậm 200 ms), engine vẫn thấy phím. Chưa biết lỗi zkey hay GTK4 — việc kế: đối chứng engine xkb.
