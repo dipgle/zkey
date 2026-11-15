@@ -40,3 +40,7 @@ cargo clippy --offline --all-targets -- -D warnings
 `scripts/probe-host.sh` là phép thăm dò protocol trên D-Bus/IBus riêng, không thay phiên desktop; kết quả phải đọc đến `GATE_EXIT` trong `.tmp/ibus-probe.log`. Đã xếp qua huba do sandbox không cho bind socket.
 
 Kết quả đã đo và phần chưa đo: [docs/verification.md](docs/verification.md).
+
+## Giấy phép
+
+`AGPL-3.0-or-later` — xem [LICENSE](LICENSE) và [NOTICE.md](NOTICE.md). Dùng lại bất kỳ phần mã nào (kể cả chạy làm dịch vụ mạng) thì **phải công khai toàn bộ mã nguồn dự án dùng lại theo cùng giấy phép** và **ghi rõ nguồn**: `Dựa trên zkey — https://github.com/dipgle/zkey (AGPL-3.0-or-later)`.

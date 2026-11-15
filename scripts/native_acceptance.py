@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Real XTest keystrokes into GTK widgets on the user's Xwayland display.
 
 Only synthetic test strings. No DOM insertion or InputContext API substitutes.

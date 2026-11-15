@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 pub const MAX_KEYS: usize = 256;
 
 // Each row: plain, acute, grave, hook, tilde, dot. NFC Unicode, no runtime normalization.

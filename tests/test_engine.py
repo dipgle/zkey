@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Real handler/apply with a transport editor model; not desktop acceptance."""
 import unittest
 from zkey.engine import Engine

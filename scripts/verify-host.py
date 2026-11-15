@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """One host verification run; read the actual exit statuses of both scripts."""
 from pathlib import Path
 import subprocess

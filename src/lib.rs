@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 //! Stateless Telex replay. No I/O, keyboard hooks, clipboard or shared state.
 pub mod telex;
 

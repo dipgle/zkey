@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # Real-key acceptance on a PRIVATE Xvfb display: GNOME Text Editor (GTK4) +
 # GTK3 burst/password. Keys are XTest events into that display only, never the
 # user's desktop; no RemoteDesktop portal consent. Private D-Bus + IBus.

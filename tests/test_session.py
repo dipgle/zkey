@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Committed-text contracts against an editor model, not UI acceptance."""
 import unittest
 from zkey.config import Config

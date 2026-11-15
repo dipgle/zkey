@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Read-only host session/lock status; never attempts to unlock the desktop."""
 import os
 import subprocess

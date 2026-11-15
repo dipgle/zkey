@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """EXPLORATORY protocol probe, not UI acceptance. Never connects to the user's bus.
 
 Run under dbus-run-session. All XDG state and sockets live under zkey/.tmp.

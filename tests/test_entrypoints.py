@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Entrypoints must compile; AST parsing alone misses duplicate lambda arguments."""
 from pathlib import Path
 import unittest

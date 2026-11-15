@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Run our own IBus daemon for one application, without changing desktop sources."""
 from contextlib import contextmanager
 from pathlib import Path

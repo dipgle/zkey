@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Per-application entry point; creates a private bus before importing IBus."""
 from pathlib import Path
 import os

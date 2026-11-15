@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # Real native UI typing with synthetic text, using a private application bus.
 set -u
 cd /mnt/data/projects/zkey || exit 2

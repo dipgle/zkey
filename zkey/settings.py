@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Native desktop preferences; launch explicitly with python3 -m zkey.settings."""
 import gi
 gi.require_version("Gtk", "3.0")

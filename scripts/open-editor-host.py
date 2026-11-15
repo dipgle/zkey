@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Open a standalone Text Editor with private zkey; no system input changes."""
 from pathlib import Path
 import json

@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Triage obvious blind assertions; not proof of correctness or a replacement for review.
 
 Scans tests and the protocol probe, never its own implementation. Exit 2 means

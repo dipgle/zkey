@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Extract import/module dependencies, augment with actual unittest call traces.
 
 Unknown or unobserved input selects ALL tests. No hand-authored application graph.

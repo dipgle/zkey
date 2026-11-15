@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Prepare reviewable user-local install files INSIDE the project. Does not install."""
 from pathlib import Path
 import argparse
@@ -34,12 +35,12 @@ def stage(destination, prefix):
     component = ET.Element("component")
     command = shlex.quote(str(prefix / "bin/zkey"))
     for key, value in {"name": "org.freedesktop.IBus.Zkey", "description": "zkey Vietnamese Telex",
-        "exec": command + " --ibus", "version": "0.1.0", "license": "Unspecified",
+        "exec": command + " --ibus", "version": "0.1.0", "license": "AGPL-3.0-or-later",
         "author": "zkey contributors", "textdomain": "zkey"}.items():
         ET.SubElement(component, key).text = value
     engine = ET.SubElement(ET.SubElement(component, "engines"), "engine")
     for key, value in {"name": "zkey", "longname": "zkey", "description": "Vietnamese Telex",
-        "language": "vi", "license": "Unspecified", "author": "zkey contributors",
+        "language": "vi", "license": "AGPL-3.0-or-later", "author": "zkey contributors",
         "icon": "input-keyboard", "layout": "us", "symbol": "Z",
         "setup": command + " --settings"}.items():
         ET.SubElement(engine, key).text = value

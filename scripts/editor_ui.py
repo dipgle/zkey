@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Accessibility controls of only the standalone editor launched by this task."""
 from pathlib import Path
 import os

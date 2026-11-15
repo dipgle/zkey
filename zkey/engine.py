@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 import logging
 import os
 from pathlib import Path
@@ -96,6 +97,7 @@ class Engine(IBus.Engine):
         private = purpose in (IBus.InputPurpose.PASSWORD, IBus.InputPurpose.PIN,
                               IBus.InputPurpose.TERMINAL)
         private = private or bool(hints & (IBus.InputHints.PRIVATE | IBus.InputHints.HIDDEN_TEXT))
+        LOG.debug("content-type purpose=%d hints=%d protected=%s", int(purpose), int(hints), private)
         self.session.private = private
         if private:
             self.session.clear()
@@ -155,8 +157,8 @@ def main():
         if not bus.request_name("org.freedesktop.IBus.Zkey", 0):
             raise RuntimeError("Cannot own IBus component name")
     else:
-        component = IBus.Component.new("org.freedesktop.IBus.Zkey", "Vietnamese Telex", "0.1.0", "Unspecified", "zkey contributors", "", "", "zkey")
-        component.add_engine(IBus.EngineDesc.new("zkey", "zkey", "Vietnamese Telex", "vi", "Unspecified", "zkey contributors", "input-keyboard", "us"))
+        component = IBus.Component.new("org.freedesktop.IBus.Zkey", "Vietnamese Telex", "0.1.0", "AGPL-3.0-or-later", "zkey contributors", "", "", "zkey")
+        component.add_engine(IBus.EngineDesc.new("zkey", "zkey", "Vietnamese Telex", "vi", "AGPL-3.0-or-later", "zkey contributors", "input-keyboard", "us"))
         if not bus.register_component(component):
             raise RuntimeError("IBus component registration rejected")
     if ready := os.environ.get("ZKEY_READY_FILE"):

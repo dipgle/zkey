@@ -3,6 +3,8 @@ name = "zkey-core"
 version = "0.1.0"
 edition = "2024"
 publish = false
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/dipgle/zkey"
 
 [lib]
 name = "zkey_core"

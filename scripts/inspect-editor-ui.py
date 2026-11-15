@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Read-only UI exploration of our own standalone test editor, not acceptance."""
 from pathlib import Path
 import json

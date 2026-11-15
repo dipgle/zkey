@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Ask the window manager to activate a test window, and verify its decision."""
 import ctypes as C
 import time

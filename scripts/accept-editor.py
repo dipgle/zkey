@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Type into our standalone GNOME Text Editor via XTest, read its visible UI.
 
 Only inject into windows carrying the PID of the app we just opened. Read the

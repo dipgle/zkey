@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Close only the empty test fixture via its Close button, then test fresh runtime."""
 from pathlib import Path
 import json

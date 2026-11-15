@@ -1,4 +1,5 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # Isolated protocol probe only; does not restart or select the desktop's IBus.
 set -u
 ROOT="/mnt/data/projects/zkey"

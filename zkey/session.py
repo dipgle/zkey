@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Telex over text already received by the application; never holds a preedit.
 
 Only rewrite text we committed ourselves, and only when a client-provided
