@@ -31,7 +31,7 @@ def inside():
             print("NOT_MEASURABLE: cannot open native X11 display")
             return 2
         window = Gtk.Window(title="zkey — kiểm gõ thật (dữ liệu giả)")
-        window.set_default_size(620, 230)
+        window.set_default_size(620, 330)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         box.set_border_width(24)
         window.add(box)
@@ -39,12 +39,18 @@ def inside():
         password = Gtk.Entry()
         password.set_visibility(False)
         password.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+        # Multi-line field for Enter inside a burst. Out of the Tab chain until
+        # its phase; then focused by a real click like the entry.
+        lines = Gtk.TextView()
+        lines.set_size_request(-1, 70)
+        lines.set_can_focus(False)
         for widget in (Gtk.Label(label="zkey: chữ nhận theo từng phím"), entry,
-                       Gtk.Label(label="Mật khẩu giả: phím nguyên trạng"), password):
+                       Gtk.Label(label="Mật khẩu giả: phím nguyên trạng"), password, lines):
             box.pack_start(widget, False, False, 0)
         visible_preedits = []
         entry.connect("preedit-changed", lambda _entry, text: visible_preedits.append(bool(text)))
         password.connect("preedit-changed", lambda _entry, text: visible_preedits.append(bool(text)))
+        lines.connect("preedit-changed", lambda _view, text: visible_preedits.append(bool(text)))
         errors = []
         def log_error(_domain, _level, message, _data):
             errors.append(message)
@@ -69,7 +75,7 @@ def inside():
         if not probe_display:
             raise RuntimeError("X11 display unavailable for window placement")
         try:
-            spot = free_position(placement, probe_display, 620, 230)
+            spot = free_position(placement, probe_display, 620, 330)
         finally:
             placement.XCloseDisplay(probe_display)
         if spot is not None:
@@ -212,6 +218,73 @@ def inside():
                 for key in "tieengs vieetj":
                     send("space" if key == " " else key)
                 expect(entry, "tiếng việt")
+            # Native keys (Backspace, Enter) inside a 0 ms burst: the app may
+            # queue them behind our commits. Reference = the same keys typed
+            # slowly; two references are also pinned by hand. Every mismatch
+            # is collected before failing, with its round.
+            def view_text(view):
+                buffer = view.get_buffer()
+                return buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
+            def settle(read, seconds=3):
+                # Stable for 0.3 s, or the deadline: returns what the app shows.
+                last, since, until = read(), time.monotonic(), time.monotonic() + seconds
+                while time.monotonic() < until:
+                    pump(0.02)
+                    now = read()
+                    if now != last:
+                        last, since = now, time.monotonic()
+                    elif time.monotonic() - since >= 0.3:
+                        break
+                return last
+            def clear(read):
+                send("a", control=True)
+                pump(0.03)
+                send("BackSpace")
+                if settle(read) != "":
+                    raise AssertionError("Cannot clear the field before a burst case")
+            def keys(text):
+                names = {" ": "space", "\b": "BackSpace", "\n": "Return"}
+                return [names.get(ch, ch) for ch in text]
+            entry_cases = (("vieetj\bt", "việt"), ("tieengs\bf", None),
+                           ("xin chaof\b\baf", None), ("dduowcj\b\bc", None))
+            line_cases = (("tieengs\nvieetj", "tiếng\nviệt"), ("xin\nchaof\nbanj", None))
+            lines.set_can_focus(True)
+            mismatches, rounds = [], 5
+            for widget, read, cases in ((entry, entry.get_text, entry_cases),
+                                        (lines, lambda: view_text(lines), line_cases)):
+                if widget is lines:
+                    origin = lines.translate_coordinates(window, 20, 20)
+                    xtest.XTestFakeMotionEvent(display, -1, root_x+origin[0], root_y+origin[1], 0)
+                    xtest.XTestFakeButtonEvent(display, 1, True, 0)
+                    xtest.XTestFakeButtonEvent(display, 1, False, 0)
+                    x11.XFlush(display)
+                    until = time.monotonic() + 2
+                    while not lines.is_focus() and time.monotonic() < until:
+                        pump(0.02)
+                    if not lines.is_focus():
+                        raise RuntimeError("A real click did not focus the multi-line field")
+                for typed, pinned in cases:
+                    clear(read)
+                    for name in keys(typed):
+                        send(name)
+                        pump(0.12)
+                    reference = settle(read)
+                    if pinned is not None and reference != pinned:
+                        mismatches.append(f"slow {typed!r}: expected={pinned!r} actual={reference!r}")
+                    for round_ in range(rounds):
+                        clear(read)
+                        for name in keys(typed):
+                            send(name)
+                        actual = settle(read)
+                        if actual != reference:
+                            mismatches.append(f"burst {typed!r} round {round_+1}/{rounds}: slow={reference!r} burst={actual!r}")
+            total = rounds * (len(entry_cases) + len(line_cases))
+            print(f"BURST+NATIVE: {total - sum(m.startswith('burst') for m in mismatches)}/{total} burst rounds equal to slow typing; "
+                  f"{sum(m.startswith('slow') for m in mismatches)} slow reference mismatches", flush=True)
+            if mismatches:
+                raise AssertionError("Burst with native keys differs: " + " | ".join(mismatches))
+            if errors:
+                raise RuntimeError("Native toolkit warnings: " + "; ".join(errors))
             if any(visible_preedits):
                 raise AssertionError("Visible preedit in direct/password mode")
             engine_log = ROOT / ".tmp" / (Path(env["IBUS_ADDRESS"].split("unix:path=", 1)[1]).parent.name + ".log")
@@ -227,7 +300,7 @@ def inside():
             # XGetImage excludes GTK input child windows on this Xwayland host.
             # Export the same already-typed widgets; never seed replacement text.
             export = Gtk.OffscreenWindow()
-            export.set_default_size(620, 230)
+            export.set_default_size(620, 330)
             window.remove(box)
             export.add(box)
             export.show_all()
@@ -237,7 +310,7 @@ def inside():
                 raise RuntimeError("Typed widget render unavailable")
             rendered.savev(str(ROOT / ".tmp/native-gtk-render.png"), "png", [], [])
             export.destroy()
-            print("PASS native GTK3/XTest: 7 per-key prefixes; 10 burst phrases; word boundary; Vietnamese; native Backspace; caret move; focus/password bypass; no visible preedit; 0 toolkit warnings.")
+            print("PASS native GTK3/XTest: 7 per-key prefixes; 10 burst phrases; burst with native Backspace/Enter equal to slow typing; word boundary; Vietnamese; native Backspace; caret move; focus/password bypass; no visible preedit; 0 toolkit warnings.")
             print("UI screenshot: .tmp/native-gtk.png; does not cover Chrome/Electron/Wayland-native/VTE yet.")
             return 0
         finally:
