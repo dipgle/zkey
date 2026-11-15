@@ -84,6 +84,9 @@ def isolated_engine():
                                   XDG_DATA_HOME=str(scratch / "data"), GSETTINGS_BACKEND="memory", NO_AT_BRIDGE="1")
                 if backend := os.environ.get("ZKEY_CLIENT_GDK_BACKEND"):
                     client_env["GDK_BACKEND"] = backend
+                if module := os.environ.get("ZKEY_CLIENT_IM_MODULE"):
+                    # Test control only: same isolated session without zkey input.
+                    client_env["GTK_IM_MODULE"] = module
                 yield client_env, bus, children
             finally:
                 for child in reversed(children):

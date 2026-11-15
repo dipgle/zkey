@@ -83,3 +83,9 @@
 - Chủ dự án giao tự quyết theo yêu cầu (chữ vào ngay, nhất quán, mật khẩu an toàn) ⇒ plugin readline; phím tắt+preedit trái yêu cầu nên loại.
 - Mới: `src/bin/line.rs` (zkey-line), `valid_syllable` trong lõi, `shell/zkey.bash`, `scripts/bench-shell.sh`; `accept-terminal.py` thêm chế độ plugin; `accept-xvfb.sh` chạy cả terminal.
 - Kết quả: accept-xvfb mã0 (GTK4+GTK3+terminal×2); đối chứng off/all ĐỎ; Rust 9 test, clippy 0; Python 45/45; bench ~330 µs/phím.
+
+## 2026-11-15 11:00 +07 — cài plugin, ptyxis thật
+
+- Chủ dự án yêu cầu tự làm tới sản phẩm. Ghi ~/.bashrc bị classifier rồi guard chặn ⇒ trình cài `install-shell.sh` (thử trên bản sao) chạy qua huba: 1 khối, có sao lưu.
+- ptyxis thật + ~/.bashrc: XANH 2/2, đối chứng off ĐỎ. Truy lỗi ptyxis chết: không do phím/glyph/plugin; do môi trường launcher `--run` (A/B/C/D đo trong scratchpad). Ghi nợ.
+- Lượt gộp accept-xvfb 6 bài: 2/2 mã0; 1 lượt đỏ trước đó ở ô mật khẩu GTK3 (nợ, chưa che).

@@ -23,7 +23,9 @@ FAKE_SECRET = "as"  # One-time test string; Telex would turn it into "á".
 # must turn this gate RED.
 MUTATE = os.environ.get("ZKEY_TERMINAL_MUTATE", "")
 # 1 = bash sources shell/zkey.bash: Telex done by readline on the command line.
-PLUGIN = os.environ.get("ZKEY_TERMINAL_PLUGIN") == "1"
+# "home" = the user's own ~/.bashrc as installed by scripts/install-shell.sh.
+PLUGIN_MODE = os.environ.get("ZKEY_TERMINAL_PLUGIN", "0")
+PLUGIN = PLUGIN_MODE in ("1", "home")
 
 
 def inside():
@@ -49,8 +51,8 @@ def inside():
         shell_env = [f"{k}={v}" for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "TERM", "ZKEY_MODE")]
         shell_env += ["PS1=$ ", "HISTFILE=/dev/null", "LANG=C.UTF-8"]
         spawned = []
-        shell = (["/bin/bash", "--rcfile", str(ROOT / "shell/zkey.bash"), "-i"] if PLUGIN
-                 else ["/bin/bash", "--norc", "--noprofile", "-i"])
+        shell = {"1": ["/bin/bash", "--rcfile", str(ROOT / "shell/zkey.bash"), "-i"],
+                 "home": ["/bin/bash", "-i"]}.get(PLUGIN_MODE, ["/bin/bash", "--norc", "--noprofile", "-i"])
         terminal.spawn_async(Vte.PtyFlags.DEFAULT, str(ROOT / ".tmp"), shell,
                              shell_env, GLib.SpawnFlags.DEFAULT, None, None, -1, None,
                              lambda _t, pid, error, *_: spawned.append((pid, error)))

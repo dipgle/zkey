@@ -73,4 +73,14 @@ for plugin in 0 1; do
   echo "terminal plugin=$plugin exit=$term"
   if [ "$term" != 0 ] && [ "$code" != 1 ]; then code=$term; fi
 done
+# The real ptyxis app with the user's own ~/.bashrc (installed plugin).
+if grep -q -x -F '# >>> zkey shell plugin >>>' "$HOME/.bashrc" 2>/dev/null; then
+  /usr/bin/python3 "$ROOT/scripts/accept-ptyxis.py"
+  pty=$?
+else
+  echo "NOT_MEASURABLE: ~/.bashrc has no zkey block (bash scripts/install-shell.sh)"
+  pty=2
+fi
+echo "ptyxis exit=$pty"
+if [ "$pty" != 0 ] && [ "$code" != 1 ]; then code=$pty; fi
 exit "$code"

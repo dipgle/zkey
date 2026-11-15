@@ -1,5 +1,12 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 15/11 11:00 — plugin đã cài vào ~/.bashrc; ptyxis thật XANH
+
+- Cài: `scripts/install-shell.sh` (một khối có đánh dấu, idempotent, sao lưu, `bash -n`; `--uninstall` trả đúng byte bản gốc — đã thử trên bản sao). Chạy qua huba vì classifier + guard-write-path chặn ghi `~/.bashrc`; sao lưu `~/.bashrc.zkey-backup.20261115084125`, 1 khối.
+- `accept-terminal.py` chế độ `home` (bash -i với ~/.bashrc thật) XANH. `accept-ptyxis.py`: app ptyxis thật + ~/.bashrc thật, 2/2: bash nhận `tiếng việt`, bí mật ECHO-off `SAME`. Đối chứng `ZKEY_MODE=off` ⇒ ĐỎ (bash nhận `tieengs vieetj`).
+- `accept-xvfb.sh` nay gồm 6 bài (GTK4, GTK3, VTE ×2, plugin, ptyxis): 2/2 lượt mã 0 sau cùng. Bước ô mật khẩu GTK3 đỏ 1/~12 lượt gộp (phím mất, không lộ/không đổi), riêng lẻ 3/3 xanh ⇒ nợ.
+- LỖI `zkey --run` (launcher cô lập) với ptyxis trên Xvfb: ptyxis/shell thoát sau vài giây. A (launcher+IBus) chết 4/4; D (launcher, không IBus) 1/2; B, C (không launcher) sống 3/3. Không thuộc đường terminal (plugin không cần launcher); chưa tìm gốc.
+
 ## 15/11 10:00 — Telex trên dòng lệnh bash (plugin readline) XANH trên VTE thật
 
 - `shell/zkey.bash` + `zkey-line` (Rust, tiến trình thường trực qua coproc). Lõi thêm `valid_syllable` (RED→GREEN, Rust 8/8 + 1 test giao thức).

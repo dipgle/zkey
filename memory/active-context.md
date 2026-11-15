@@ -8,6 +8,6 @@ Sửa gốc: phím trả native bị GTK async xếp sau commit ⇒ `tieseng`. `
 
 Xvfb: `.tmp/tools/root/usr/bin/Xvfb` (apt-get download + dpkg-deb -x; sudo hết giờ, không cài hệ thống). Desktop Xwayland `-enable-ei-portal` bắt hộp thoại RemoteDesktop mỗi phiên XTest; chủ máy xem qua zigeel không thấy ⇒ không dùng desktop để tự động.
 
-Việc kế: terminal bash XANH qua plugin `shell/zkey.bash` (README mục Terminal; chưa thêm vào ~/.bashrc). Tiếp: tiếng Anh trong nháy, vim/TUI, zsh, SSH; gõ dồn xen Backspace/Enter; Chrome/Electron; Wayland-native. Chạy toàn bộ: `bash scripts/accept-xvfb.sh`.
+Việc kế: plugin bash ĐÃ CÀI (~/.bashrc, khối `# >>> zkey shell plugin >>>`), ptyxis thật XANH. Nợ mở: `zkey --run ptyxis` chết trên Xvfb; ô mật khẩu GTK3 đỏ 1/~12 lượt gộp; tiếng Anh trong nháy; vim/TUI, zsh, SSH; Chrome/Electron. Chạy toàn bộ: `bash scripts/accept-xvfb.sh` (6 bài).
 
 Nền: fixture desktop Text Editor PID94574/supervisor94548 vẫn mở từ 00:58 (marker `.tmp/editor-app.json`). Không job nền khác. Chạy lại: `bash /mnt/data/projects/zkey/scripts/accept-xvfb.sh`.

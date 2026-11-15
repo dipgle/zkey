@@ -12,6 +12,7 @@
     "cargo::src/telex.rs::undo_and_replace",
     "cargo::src/telex.rs::vietnamese_words",
     "scripts/accept-editor.py",
+    "scripts/accept-ptyxis.py",
     "scripts/accept-terminal.py",
     "scripts/audit_measurements.py",
     "scripts/desktop-status.py",
