@@ -16,9 +16,12 @@ import atexit
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from zkey.bus_config import write_config  # noqa: E402
 
 
 def private_runtime():
@@ -42,9 +45,12 @@ def command(argv, env, child_real_runtime=False):
     env["XDG_RUNTIME_DIR"] = str(private_runtime())
     env.setdefault("ZKEY_REAL_RUNTIME_DIR", real)  # for a caller that must hand it to one app (snap)
     env.pop("WAYLAND_DISPLAY", None)  # relative to the real runtime dir; tests use X11 only
+    # /tmp is a DIFFERENT mount in snap. Keep the bus socket next to the private
+    # runtime instead, without changing authentication or activation policy.
+    config = write_config(env["XDG_RUNTIME_DIR"])
     if child_real_runtime:
         argv = ["env", f"XDG_RUNTIME_DIR={real}", *argv]
-    return ["dbus-run-session", "--", *argv], env
+    return ["dbus-run-session", f"--config-file={config}", "--", *argv], env
 
 
 def call(argv, env, child_real_runtime=False):

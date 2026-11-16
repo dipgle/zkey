@@ -3,10 +3,25 @@ from pathlib import Path
 import os
 import tempfile
 import unittest
+import socket
+from zkey import runtime
 from zkey.runtime import ROOT, prune_logs
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_runtime_belongs_to_the_bus_session_not_the_engine_lifetime(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tmp') as temporary:
+            directory = Path(temporary)
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as bus:
+                bus.bind(str(directory / 'bus'))
+                env = {'XDG_RUNTIME_DIR': temporary,
+                       'DBUS_SESSION_BUS_ADDRESS': f'unix:path={temporary}/bus,guid=synthetic'}
+                self.assertEqual(runtime.session_runtime(env), directory)
+                for key, value in (('XDG_RUNTIME_DIR', '/run/user/1000'),
+                                   ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus')):
+                    with self.subTest(key=key), self.assertRaises(RuntimeError):
+                        runtime.session_runtime({**env, key: value})
+
     def test_prune_keeps_newest_logs_and_never_touches_run_directories(self):
         (ROOT / ".tmp").mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=ROOT / ".tmp") as temporary:

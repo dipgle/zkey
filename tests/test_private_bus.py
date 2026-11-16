@@ -37,6 +37,20 @@ def sources():
 
 
 class PrivateBusTests(unittest.TestCase):
+    def test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp(self):
+        import xml.etree.ElementTree as ET
+        argv, env = private_bus.command(['true'], {'XDG_RUNTIME_DIR': '/run/user/1000'})
+        options = [part for part in argv if part.startswith('--config-file=')]
+        self.assertEqual(len(options), 1, 'default /tmp D-Bus socket is invisible inside snap')
+        config = Path(options[0].split('=', 1)[1])
+        runtime = Path(env['XDG_RUNTIME_DIR'])
+        self.assertTrue(config.is_relative_to(runtime))
+        tree = ET.parse(config)
+        self.assertEqual([item.text for item in tree.findall('listen')], [f'unix:path={runtime}/bus'])
+        self.assertEqual([item.text for item in tree.findall('auth')], ['EXTERNAL'])
+        for item in tree.findall('includedir'):
+            self.assertTrue(Path(item.text).is_absolute(), 'moving config must not move policy directories')
+
     def test_no_harness_launches_dbus_run_session_itself(self):
         self.assertEqual(violations(sources()), [])
 
@@ -56,7 +70,8 @@ class PrivateBusTests(unittest.TestCase):
     def test_helper_bus_never_sees_the_real_runtime_dir(self):
         argv, env = private_bus.command(["true"], {"XDG_RUNTIME_DIR": "/run/user/1000", "WAYLAND_DISPLAY": "wayland-0"})
         runtime = Path(env["XDG_RUNTIME_DIR"])
-        self.assertEqual(argv[:2], ["dbus-run-session", "--"])
+        self.assertEqual(argv[0], "dbus-run-session")
+        self.assertEqual(argv[2], "--")
         self.assertTrue(runtime.is_relative_to(ROOT / ".tmp"))
         self.assertEqual(runtime.stat().st_mode & 0o777, 0o700)
         self.assertEqual(env["ZKEY_REAL_RUNTIME_DIR"], "/run/user/1000")

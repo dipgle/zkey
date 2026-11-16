@@ -10,9 +10,27 @@ import sys
 import tempfile
 import time
 import shutil
+import stat
 
 ROOT = Path(__file__).resolve().parents[1]
 KEEP_LOGS = 50  # Engine logs (no typed text) kept per install; older ones are removed.
+
+
+def session_runtime(env):
+    """Keep activated services' runtime alive until THEIR bus has exited.
+
+    A document-portal may mount runtime/doc. Giving it the engine's shorter-lived
+    run directory made TemporaryDirectory fail before the private bus stopped.
+    Reject real-session addresses even if a caller accidentally sets our flag.
+    """
+    runtime = Path(env.get('XDG_RUNTIME_DIR', '')).resolve()
+    address = env.get('DBUS_SESSION_BUS_ADDRESS', '').split(',', 1)[0]
+    if (runtime == ROOT / '.tmp' or not runtime.is_relative_to(ROOT / '.tmp')
+            or address != f'unix:path={runtime}/bus'):
+        raise RuntimeError('Private runtime and session-bus socket must belong to the same zkey session')
+    if not (runtime / 'bus').is_socket() or stat.S_IMODE(runtime.stat().st_mode) != 0o700:
+        raise RuntimeError('Private session runtime must be mode 0700 and contain its bus socket')
+    return runtime
 
 
 def prune_logs(directory, keep=KEEP_LOGS):
@@ -30,6 +48,7 @@ def prune_logs(directory, keep=KEEP_LOGS):
 def isolated_engine():
     if os.environ.get("ZKEY_ISOLATED_BUS") != "1":
         raise RuntimeError("This runtime requires a new dbus-run-session")
+    bus_runtime = session_runtime(os.environ)
     (ROOT / ".tmp").mkdir(exist_ok=True)
     if not (ROOT / ".git").exists():
         # Installed copy: bounded. The development tree keeps every log because
@@ -43,7 +62,7 @@ def isolated_engine():
         env.update(IBUS_ADDRESS=f"unix:path={scratch}/ibus.sock",
                    IBUS_ADDRESS_FILE=str(scratch / "address"),
                    XDG_CONFIG_HOME=str(scratch / "config"), XDG_CACHE_HOME=str(scratch / "cache"),
-                   XDG_RUNTIME_DIR=str(scratch / "runtime"), PYTHONPATH=str(ROOT),
+                   XDG_RUNTIME_DIR=str(bus_runtime), PYTHONPATH=str(ROOT),
                    PYTHONUNBUFFERED="1", GIO_USE_VFS="local", NO_AT_BRIDGE="1",
                    ZKEY_READY_FILE=str(scratch / "ready"))
         # libibus treats presence as true, including the string "0".
@@ -98,10 +117,9 @@ def isolated_engine():
                                   XMODIFIERS="@im=ibus", PYTHONPATH=str(ROOT), GIO_USE_VFS="local",
                                   XDG_CONFIG_HOME=str(scratch / "config"), XDG_CACHE_HOME=str(scratch / "cache"),
                                   XDG_DATA_HOME=str(scratch / "data"), GSETTINGS_BACKEND="memory", NO_AT_BRIDGE="1",
-                                  # Same runtime dir as the services this bus activates for the
-                                  # app (portals, document FUSE mount). A mismatch made ptyxis
-                                  # exit within seconds (measured 15/11: 4/5 runs).
-                                  XDG_RUNTIME_DIR=str(scratch / "runtime"))
+                                  # Services and clients share the BUS lifetime, not the engine's
+                                  # run directory; document-portal may hold a FUSE mount here.
+                                  XDG_RUNTIME_DIR=str(bus_runtime))
                 # Key order. Async GTK3/GTK4 IBus modules re-queue keys the engine
                 # does not take (Backspace, Enter, arrows) at the END of the event
                 # queue with gdk_event_put, while our commits apply at once: a fast

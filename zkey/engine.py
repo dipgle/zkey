@@ -29,6 +29,9 @@ class Engine(IBus.Engine):
             # No rewrite may rely on libibus's optimistic post-edit cache.
             self.surrounding = None
         if result.delete:
+            # Metadata only: some clients advertise surrounding text but do not
+            # deliver the deletion to their editor (WebKit probe, 16/11).
+            LOG.debug("surrounding delete requested offset=%d count=%d", -result.delete, result.delete)
             self.delete_surrounding_text(-result.delete, result.delete)
         if result.preedit is not None:
             text = IBus.Text.new_from_string(result.preedit)

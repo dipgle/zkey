@@ -29,7 +29,9 @@ def main():
             env.update(XDG_CONFIG_HOME=str(scratch / "config"), XDG_CACHE_HOME=str(scratch / "cache"),
                        XDG_DATA_HOME=str(scratch / "data"), XDG_RUNTIME_DIR=str(scratch / "runtime"),
                        GSETTINGS_BACKEND="memory", GIO_USE_VFS="local")
-            return subprocess.call(["dbus-run-session", "--", sys.executable, "-m", "zkey.launch", "--inside", *arguments], env=env)
+            from .bus_config import write_config
+            config = write_config(scratch / "runtime")
+            return subprocess.call(["dbus-run-session", f"--config-file={config}", "--", sys.executable, "-m", "zkey.launch", "--inside", *arguments], env=env)
     from .runtime import run_application
     try:
         return run_application(arguments[1:])

@@ -52,12 +52,17 @@ def x11():
                              C.POINTER(C.POINTER(C.c_ulong)), C.POINTER(C.c_uint)]
     x.XFree.argtypes = [C.c_void_p]
     x.XSetInputFocus.argtypes = [C.c_void_p, C.c_ulong, C.c_int, C.c_ulong]
+    x.XGetInputFocus.argtypes = [C.c_void_p, C.POINTER(C.c_ulong), C.POINTER(C.c_int)]
+    x.XTranslateCoordinates.argtypes = [C.c_void_p, C.c_ulong, C.c_ulong, C.c_int, C.c_int,
+                                       C.POINTER(C.c_int), C.POINTER(C.c_int), C.POINTER(C.c_ulong)]
     x.XStringToKeysym.argtypes, x.XStringToKeysym.restype = [C.c_char_p], C.c_ulong
     x.XKeysymToKeycode.argtypes, x.XKeysymToKeycode.restype = [C.c_void_p, C.c_ulong], C.c_uint
     x.XFlush.argtypes = [C.c_void_p]
     x.XSync.argtypes = [C.c_void_p, C.c_int]
     x.XCloseDisplay.argtypes = [C.c_void_p]
     t.XTestFakeKeyEvent.argtypes = [C.c_void_p, C.c_uint, C.c_int, C.c_ulong]
+    t.XTestFakeMotionEvent.argtypes = [C.c_void_p, C.c_int, C.c_int, C.c_int, C.c_ulong]
+    t.XTestFakeButtonEvent.argtypes = [C.c_void_p, C.c_uint, C.c_int, C.c_ulong]
     return x, t
 
 
@@ -66,6 +71,8 @@ def inside():
     # ZKEY_FIREFOX: a non-snap build (e.g. official tarball under .tmp/tools); default = system firefox.
     firefox = os.environ.get("ZKEY_FIREFOX") or shutil.which("firefox")
     snap = not os.environ.get("ZKEY_FIREFOX") and Path("/snap/bin/firefox").exists()
+    if snap:
+        firefox = '/snap/bin/firefox'  # avoid /usr/bin's desktop-default migration wrapper
     if not firefox or not PAGE.exists():
         print("NOT_MEASURABLE: firefox or the fixture page is missing")
         return 2
@@ -110,6 +117,10 @@ def inside():
             tempfile.TemporaryDirectory(prefix="ff-profile-", dir=ROOT / ".tmp") as profile:
         Path(profile, "user.js").write_text(PREFS)
         env = dict(env, MOZ_ENABLE_WAYLAND="0", GDK_BACKEND="x11", MOZ_CRASHREPORTER_DISABLE="1")
+        if snap:
+            # gnome snap's desktop-launch otherwise replaces GDK_BACKEND with
+            # wayland when it sees the host socket, even with MOZ_ENABLE_WAYLAND=0.
+            env['DISABLE_WAYLAND'] = '1'  # supported launcher option, Xvfb test only
         env.pop("WAYLAND_DISPLAY", None)
         # Snap confinement needs the real runtime dir (snap cgroup scope and
         # /run/user/UID/doc), as when the user starts Firefox. D-Bus stays the
@@ -155,12 +166,38 @@ def inside():
 
             x.XSetInputFocus(display, target, 2, 0)
             x.XSync(display, False)
+            import gi
+            gi.require_version('Gdk', '3.0')
+            from gi.repository import Gdk
+            Gdk.init([])
+
+            def screenshot():
+                root_window = Gdk.get_default_root_window()
+                pixbuf = Gdk.pixbuf_get_from_window(root_window, 0, 0,
+                                                   root_window.get_width(), root_window.get_height())
+                if pixbuf is None:
+                    raise RuntimeError('Firefox evidence screenshot unavailable')
+                pixbuf.savev(str(ROOT / '.tmp/firefox-input.png'), 'png', [], [])
+            # activeElement is not proof of GTK/native focus. Click the fixture
+            # field as a person does (x=20..520, y=20..60; kiosk has no toolbar).
+            px, py, child = C.c_int(), C.c_int(), C.c_ulong()
+            if not x.XTranslateCoordinates(display, target, root, 60, 40,
+                                            C.byref(px), C.byref(py), C.byref(child)):
+                raise RuntimeError("Cannot locate Firefox fixture field on the private display")
+            t.XTestFakeMotionEvent(display, -1, px.value, py.value, 0)
+            t.XTestFakeButtonEvent(display, 1, True, 0)
+            t.XTestFakeButtonEvent(display, 1, False, 0)
+            x.XSync(display, False)
             deadline = time.monotonic() + 15
             while time.monotonic() < deadline and not ((s := state()) and s["focus"] == "text"):
                 time.sleep(0.1)
             if not (s := state()) or s["focus"] != "text":
                 print(f"NOT_MEASURABLE: page did not report focus in the text field ({s})")
                 return 2
+            screenshot()
+            focused, revert = C.c_ulong(), C.c_int()
+            x.XGetInputFocus(display, C.byref(focused), C.byref(revert))
+            print(f'FIREFOX native target={target} focus={focused.value}', flush=True)
 
             def send(name):
                 code = x.XKeysymToKeycode(display, x.XStringToKeysym(name.encode()))
@@ -177,6 +214,7 @@ def inside():
                     if s and s[field] == want:
                         return s
                     time.sleep(0.02)
+                screenshot()
                 raise AssertionError(f"page field {field}: expected={want!r}, actual={(state() or {}).get(field)!r}")
 
             for key, want in zip("tieengs", ("t", "ti", "tie", "tiê", "tiên", "tiêng", "tiếng")):
