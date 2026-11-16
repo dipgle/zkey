@@ -18,6 +18,7 @@
     "cargo::native/src/config.rs::malformed_unknown_duplicate_and_unversioned_are_rejected",
     "cargo::native/src/config.rs::missing_config_is_not_the_same_as_broken_config",
     "cargo::native/src/config.rs::saving_persists_only_settings_and_audits_the_generation",
+    "cargo::native/src/config.rs::webkit_compatibility_requires_explicit_opt_in_and_is_audited",
     "cargo::native/src/ffi.rs::dictionary_and_scalar_types_match_the_public_dbus_contract",
     "cargo::native/src/ffi.rs::system_text_wire_roundtrip_and_wrong_type_rejection",
     "cargo::native/src/launch.rs::input_service_exit_cannot_hide_behind_successful_app_exit",
@@ -33,11 +34,14 @@
     "cargo::native/src/session.rs::freeze_escape_and_native_backspace_preserve_visible_word",
     "cargo::native/src/session.rs::gtk_reset_after_native_backspace_requires_exact_app_confirmation",
     "cargo::native/src/session.rs::invalid_snapshot_clears_composition",
+    "cargo::native/src/session.rs::late_snapshot_composes_owned_burst_across_word_boundaries",
     "cargo::native/src/session.rs::legacy_rewrite_is_never_enabled_implicitly",
     "cargo::native/src/session.rs::password_pin_terminal_and_private_hints_pass_through",
     "cargo::native/src/session.rs::unacknowledged_burst_is_inserted_in_order_then_composed",
     "cargo::native/src/session.rs::unknown_purpose_is_closed_and_missing_capability_is_native",
     "cargo::native/src/session.rs::word_limit_keeps_remaining_keys_literal_until_boundary",
+    "cargo::native/tests/telex_corpus.rs::checker_turns_red_on_wrong_oracle_and_bad_lines",
+    "cargo::native/tests/telex_corpus.rs::corpus_matches_vietnamese_orthography",
     "cargo::src/bin/line.rs::protocol",
     "cargo::src/lib.rs::ffi_boundaries",
     "cargo::src/telex.rs::all_tones_all_vowels_and_cases",
@@ -62,12 +66,15 @@
     "native/src/main.rs",
     "native/src/session.rs",
     "native/src/settings.rs",
+    "native/src/webkit_bridge.rs",
     "native/tests/accept_desktop.py",
     "native/tests/accept_launcher.py",
     "native/tests/capture.py",
     "native/tests/health_fault.py",
     "native/tests/native_x11.py",
     "native/tests/provenance.py",
+    "native/tests/telex_corpus.rs",
+    "native/tests/telex_corpus.txt",
     "native/tests/test_stage.py",
     "native/tests/ui_settings.py",
     "native/tools/stage.py",
@@ -133,6 +140,7 @@
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
     "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core",
+    "test::test_impact.ImpactTests.test_native_integration_tests_and_their_corpus_are_selected",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
     "test::test_impact.ImpactTests.test_unknown_node_runs_full_and_cycles_terminate",
     "test::test_install_user.InstallUserTests.test_install_ships_launcher_plugin_line_binary_and_desktop_entry",
@@ -279,6 +287,10 @@
       "native/src/settings.rs"
     ],
     [
+      "native/Cargo.lock",
+      "native/src/webkit_bridge.rs"
+    ],
+    [
       "native/Cargo.toml",
       "native/src/compose.rs"
     ],
@@ -319,6 +331,10 @@
       "native/src/settings.rs"
     ],
     [
+      "native/Cargo.toml",
+      "native/src/webkit_bridge.rs"
+    ],
+    [
       "native/build.rs",
       "native/src/compose.rs"
     ],
@@ -357,6 +373,10 @@
     [
       "native/build.rs",
       "native/src/settings.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/webkit_bridge.rs"
     ],
     [
       "native/src/compose.rs",
@@ -436,6 +456,10 @@
     ],
     [
       "native/src/config.rs",
+      "cargo::native/src/config.rs::webkit_compatibility_requires_explicit_opt_in_and_is_audited"
+    ],
+    [
+      "native/src/config.rs",
       "native/src/lib.rs"
     ],
     [
@@ -501,6 +525,10 @@
     [
       "native/src/lib.rs",
       "native/src/settings.rs"
+    ],
+    [
+      "native/src/lib.rs",
+      "native/tests/telex_corpus.rs"
     ],
     [
       "native/src/main.rs",
@@ -572,6 +600,10 @@
     ],
     [
       "native/src/session.rs",
+      "cargo::native/src/session.rs::late_snapshot_composes_owned_burst_across_word_boundaries"
+    ],
+    [
+      "native/src/session.rs",
       "cargo::native/src/session.rs::legacy_rewrite_is_never_enabled_implicitly"
     ],
     [
@@ -605,6 +637,18 @@
     [
       "native/tests/accept_launcher.py",
       "e2e::native/tests/accept_launcher.py"
+    ],
+    [
+      "native/tests/telex_corpus.rs",
+      "cargo::native/tests/telex_corpus.rs::checker_turns_red_on_wrong_oracle_and_bad_lines"
+    ],
+    [
+      "native/tests/telex_corpus.rs",
+      "cargo::native/tests/telex_corpus.rs::corpus_matches_vietnamese_orthography"
+    ],
+    [
+      "native/tests/telex_corpus.txt",
+      "native/tests/telex_corpus.rs"
     ],
     [
       "native/tests/test_stage.py",
@@ -777,6 +821,10 @@
     [
       "scripts/impact.py",
       "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_impact.ImpactTests.test_native_integration_tests_and_their_corpus_are_selected"
     ],
     [
       "scripts/impact.py",
@@ -1265,6 +1313,10 @@
     [
       "tests/test_impact.py",
       "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core"
+    ],
+    [
+      "tests/test_impact.py",
+      "test::test_impact.ImpactTests.test_native_integration_tests_and_their_corpus_are_selected"
     ],
     [
       "tests/test_impact.py",
@@ -2164,6 +2216,7 @@
     "cargo::native/src/config.rs::malformed_unknown_duplicate_and_unversioned_are_rejected",
     "cargo::native/src/config.rs::missing_config_is_not_the_same_as_broken_config",
     "cargo::native/src/config.rs::saving_persists_only_settings_and_audits_the_generation",
+    "cargo::native/src/config.rs::webkit_compatibility_requires_explicit_opt_in_and_is_audited",
     "cargo::native/src/ffi.rs::dictionary_and_scalar_types_match_the_public_dbus_contract",
     "cargo::native/src/ffi.rs::system_text_wire_roundtrip_and_wrong_type_rejection",
     "cargo::native/src/launch.rs::input_service_exit_cannot_hide_behind_successful_app_exit",
@@ -2179,11 +2232,14 @@
     "cargo::native/src/session.rs::freeze_escape_and_native_backspace_preserve_visible_word",
     "cargo::native/src/session.rs::gtk_reset_after_native_backspace_requires_exact_app_confirmation",
     "cargo::native/src/session.rs::invalid_snapshot_clears_composition",
+    "cargo::native/src/session.rs::late_snapshot_composes_owned_burst_across_word_boundaries",
     "cargo::native/src/session.rs::legacy_rewrite_is_never_enabled_implicitly",
     "cargo::native/src/session.rs::password_pin_terminal_and_private_hints_pass_through",
     "cargo::native/src/session.rs::unacknowledged_burst_is_inserted_in_order_then_composed",
     "cargo::native/src/session.rs::unknown_purpose_is_closed_and_missing_capability_is_native",
     "cargo::native/src/session.rs::word_limit_keeps_remaining_keys_literal_until_boundary",
+    "cargo::native/tests/telex_corpus.rs::checker_turns_red_on_wrong_oracle_and_bad_lines",
+    "cargo::native/tests/telex_corpus.rs::corpus_matches_vietnamese_orthography",
     "cargo::src/bin/line.rs::protocol",
     "cargo::src/lib.rs::ffi_boundaries",
     "cargo::src/telex.rs::all_tones_all_vowels_and_cases",
@@ -2225,6 +2281,7 @@
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
     "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core",
+    "test::test_impact.ImpactTests.test_native_integration_tests_and_their_corpus_are_selected",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
     "test::test_impact.ImpactTests.test_unknown_node_runs_full_and_cycles_terminate",
     "test::test_install_user.InstallUserTests.test_install_ships_launcher_plugin_line_binary_and_desktop_entry",
@@ -2278,6 +2335,6 @@
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 80
+    "python_tests_run": 81
   }
 }

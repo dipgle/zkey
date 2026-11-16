@@ -21,7 +21,7 @@ MAP = ROOT / "docs/dependencies.json"
 def extract(root=ROOT):
     nodes, edges, tests = set(), set(), set()
     for folder, extension in (("zkey", "*.py"), ("scripts", "*.py"), ("tests", "*.py"), ("src", "*.rs"),
-                              ("native/src", "*.rs"), ("native/tests", "*.py"),
+                              ("native/src", "*.rs"), ("native/tests", "*.py"), ("native/tests", "*.rs"),
                               ("native/tools", "*.py"), ("native", "build.rs")):
         for path in (root / folder).rglob(extension):
             name = path.relative_to(root).as_posix()

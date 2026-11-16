@@ -43,6 +43,20 @@ class ImpactTests(unittest.TestCase):
         graph["edges"]=[]
         self.assertTrue(select(graph,["native/src/compose.rs"])[2])
 
+    def test_native_integration_tests_and_their_corpus_are_selected(self):
+        # Integration tests live in native/tests/*.rs and reach the core only
+        # through `use zkey_native::`. A known node with a partial selection
+        # does NOT fail closed, so a missing scan silently skips them.
+        graph=extract()
+        corpus="cargo::native/tests/telex_corpus.rs::corpus_matches_vietnamese_orthography"
+        self.assertIn(corpus,graph["tests"])
+        for changed in ("native/src/compose.rs","native/tests/telex_corpus.txt"):
+            selected,_,full=select(graph,[changed])
+            self.assertFalse(full,changed)
+            self.assertIn(corpus,selected,changed)
+        # Negative control: an unrelated native module must not pull the corpus.
+        self.assertNotIn(corpus,select(graph,["native/src/settings.rs"])[0])
+
 
 if __name__ == "__main__":
     unittest.main()

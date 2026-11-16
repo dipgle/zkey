@@ -1,0 +1,154 @@
+# Telex corpus for native/src/compose.rs — expected text is Vietnamese
+# orthography written by hand (NOT produced by running the composer).
+# Format: <style> <keys> <expected>   style: m = modern (hoà/thuỷ), t = traditional (hòa/thủy), * = both
+# Each line is one word typed in one composition; keys are ASCII Telex.
+#
+# --- single vowels, every tone
+* ba ba
+* bas bá
+* baf bà
+* bar bả
+* bax bã
+* baj bạ
+* mif mì
+* ys ý
+* uf ù
+# --- shaped vowels (aa ee oo aw ow uw dd)
+* caan cân
+* ddi đi
+* Ddi Đi
+* DDI ĐI
+* ddaau đâu
+* kem kem
+* keeu kêu
+* coon côn
+* booj bộ
+* awn ăn
+* mawt măt
+* owf ờ
+* tuw tư
+* muwa mưa
+* muaw mưa
+* thuw thư
+# --- late shaping across a coda
+* tienegs tiếng
+* banw băn
+* dduongwf đường
+* nuocws nước
+# --- iê / yê / ia
+* tieengs tiếng
+* vieetj việt
+* VIEETJ VIỆT
+* Vieetj Việt
+* yeeu yêu
+* yeeus yếu
+* khuyeens khuyến
+* nguyeenx nguyễn
+* chuyeenj chuyện
+* kiaf kìa
+* mias mía
+* chiaf chìa
+* tieesng tiếng
+* vieejt việt
+# --- uô / ua
+* muoons muốn
+* chuoois chuối
+* chuooix chuỗi
+* cuar của
+* muaf mùa
+* muas múa
+* thuoocs thuốc
+* buoonf buồn
+* quoocs quốc
+# --- ươ / ưa / ươu / ươi
+* duwowngf dường
+* dduwowngf đường
+* nuwowcs nước
+* nguwowif người
+* nguoiwf người
+* ruwowuj rượu
+* huwowu hươu
+* huow hươ
+* vuwownf vườn
+* luwowis lưới
+* thuwowngr thưởng
+* uwowts ướt
+* cuwax cữa
+* muwaf mừa
+# --- oa / oă / oe / oai / oay
+* hoangf hoàng
+* toanf toàn
+* hoawcj hoặc
+* xoawns xoắn
+* ngoaif ngoài
+* xoays xoáy
+* khoeo khoeo
+# --- uy / uyê / uây / uâ
+* tuyeetj tuyệt
+* khuaays khuấy
+* tuaans tuấn
+* quaan quân
+* quaans quấn
+# --- qu / gi onsets
+* quas quá
+* quaf quà
+* quys quý
+* quyeenr quyển
+* quow quơ
+* gias giá
+* giaf già
+* gif gì
+* gifn gìn
+* giuwx giữ
+* giowf giờ
+* gieengs giếng
+* giuwax giữa
+# --- two-vowel rimes, tone on first
+* ais ái
+* maos máo
+* sauf sàu
+* baayr bẩy
+* meof mèo
+* toois tối
+* mowis mới
+* guwir gửi
+* chiuj chịu
+* cuwux cữu
+* huwu hưu
+* tuij tụi
+* ddaauf đầu
+# --- tone order independence (tone typed before shaping key)
+* tiesneg tiếng
+* dduwowfng đường
+* nguoifw người
+* vieejt việt
+# --- tone change / removal
+* asf à
+* asz a
+* vieetjz viêt
+* vieetjs viết
+# --- capitals keep case through shaping and tone
+* DDUWOWNGF ĐƯỜNG
+* Nguwowif Người
+* NGUYEENX NGUYỄN
+* QUOOCS QUỐC
+* GIAF GIÀ
+# --- traditional style specific
+t hoaf hòa
+t khoer khỏe
+t thuyr thủy
+t loes lóe
+t hoaj họa
+t huyf hùy
+t uyr ủy
+m hoaf hoà
+m khoer khoẻ
+m thuyr thuỷ
+m loes loé
+m hoaj hoạ
+m huyf huỳ
+m uyr uỷ
+# --- tones with codas stay on the second vowel in both styles
+t hoangf hoàng
+t thuyeets thuyết
+t toanf toàn
