@@ -25,6 +25,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import private_bus  # noqa: E402
+import verify_site  # noqa: E402
 DIR = ROOT / ".tmp/web-driver"
 LOOK = r"""(() => {
   const vis = e => { const r = e.getBoundingClientRect(); const s = getComputedStyle(e);
@@ -52,12 +53,17 @@ def inside():
         print("NOT_MEASURABLE: no display", flush=True)
         return 2
     DIR.mkdir(parents=True, exist_ok=True)
-    profile = DIR / "profile"
-    manager = WebKit2.WebsiteDataManager(base_data_directory=str(profile / "data"),
-                                         base_cache_directory=str(profile / "cache"))
-    context = WebKit2.WebContext.new_with_website_data_manager(manager)
-    cookies = manager.get_cookie_manager()
-    cookies.set_persistent_storage(str(profile / "cookies.sqlite"), WebKit2.CookiePersistentStorage.SQLITE)
+    verify = sys.argv[2:] == ["--verify-site"]
+    if verify:
+        # Public verification never reuses the Studio login profile.
+        context = WebKit2.WebContext.new_ephemeral()
+    else:
+        profile = DIR / "profile"
+        manager = WebKit2.WebsiteDataManager(base_data_directory=str(profile / "data"),
+                                             base_cache_directory=str(profile / "cache"))
+        context = WebKit2.WebContext.new_with_website_data_manager(manager)
+        cookies = manager.get_cookie_manager()
+        cookies.set_persistent_storage(str(profile / "cookies.sqlite"), WebKit2.CookiePersistentStorage.SQLITE)
     view = WebKit2.WebView.new_with_context(context)
     window = Gtk.Window(title="zkey web-driver")
     window.set_default_size(1280, 900)
@@ -92,11 +98,60 @@ def inside():
                 box["e"] = error.message
             loop.quit()
         view.evaluate_javascript(source, -1, None, None, None, done)
-        GLib.timeout_add_seconds(10, loop.quit)
+        def timed_out():
+            box["e"] = "browser JavaScript evaluation timed out"
+            loop.quit()
+            return GLib.SOURCE_REMOVE
+        timeout = GLib.timeout_add_seconds(10, timed_out)
         loop.run()
+        if "v" in box or box.get("e") != "browser JavaScript evaluation timed out":
+            GLib.source_remove(timeout)
         if "e" in box:
             raise RuntimeError(box["e"])
-        return box.get("v")
+        if "v" not in box:
+            raise RuntimeError("browser JavaScript evaluation timed out")
+        return box["v"]
+
+    if verify:
+        # Fixed public target explicitly assigned in the handoff; read-only.
+        url = "https://zkey.dipgle.com/"
+        result = {"requested_url": url}
+        errors = []
+        finished = []
+        view.connect("load-failed", lambda _v, _event, _uri, error: errors.append(error.message) or False)
+        view.connect("load-changed", lambda _v, event: finished.append(True)
+                     if event == WebKit2.LoadEvent.FINISHED else None)
+        view.load_uri(url)
+        deadline = time.monotonic() + 45
+        while not finished and not errors and time.monotonic() < deadline:
+            pump(0.1)
+        code = 2
+        try:
+            if errors or not finished or view.get_uri() != url:
+                raise RuntimeError(f"page load unavailable/redirected: {errors}, uri={view.get_uri()}")
+            result["page"] = json.loads(js(LOOK))
+            js(verify_site.BROWSER_READ)
+            deadline = time.monotonic() + 30
+            observation = {"pending": True}
+            while observation.get("pending") and time.monotonic() < deadline:
+                pump(0.1)
+                observation = json.loads(js("JSON.stringify(window.__zkeySiteBytes)"))
+            expected = (ROOT / "site/index.html").read_bytes()
+            code, reason = verify_site.compare(observation, expected, url)
+            control, _ = verify_site.compare(observation, expected + b"\n", url)
+            result.update(observation=observation, expected_size=len(expected), reason=reason,
+                          negative_control_exit=control)
+            if code == 0 and control != 1:
+                code = 1
+                result["reason"] = "negative control did not reject altered source bytes"
+        except (RuntimeError, ValueError, OSError) as error:
+            result["error"] = str(error)
+        result["exit"] = code
+        out = ROOT / ".tmp/site-verification.json"
+        out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+        print(json.dumps(result, ensure_ascii=False), flush=True)
+        window.destroy()
+        return code
 
     x = C.CDLL("libX11.so.6")
     t = C.CDLL("libXtst.so.6")
@@ -201,15 +256,20 @@ def inside():
 
 
 def main():
-    if sys.argv[1:] == ["--inside"]:
+    if sys.argv[1:2] == ["--inside"]:
         return inside()
     display = os.environ.get("ZKEY_TEST_DISPLAY")
     if not display:
         print("NOT_MEASURABLE: needs a private display (ZKEY_TEST_DISPLAY)")
         return 2
     env = dict(os.environ, DISPLAY=display, GDK_BACKEND="x11", NO_AT_BRIDGE="1", GIO_USE_VFS="local",
-               WEBKIT_DISABLE_COMPOSITING_MODE="1", GTK_IM_MODULE="gtk-im-context-simple")
-    return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside"], env)
+               WEBKIT_DISABLE_COMPOSITING_MODE="1", GTK_IM_MODULE="gtk-im-context-simple",
+               # Xvfb has no DRI3 device; use the software path, not GPU DMA-BUF.
+               WEBKIT_DISABLE_DMABUF_RENDERER="1", LIBGL_ALWAYS_SOFTWARE="1")
+    if sys.argv[1:] not in ([], ["--verify-site"]):
+        print("usage: web-driver.py [--verify-site]")
+        return 2
+    return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside", *sys.argv[1:]], env)
 
 
 if __name__ == "__main__":
