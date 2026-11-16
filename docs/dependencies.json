@@ -188,6 +188,10 @@
     "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component",
     "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend",
     "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file",
+    "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable",
+    "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone",
+    "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte",
+    "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5",
     "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red",
     "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green",
     "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green",
@@ -1016,6 +1020,22 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5"
+    ],
+    [
+      "scripts/impact.py",
       "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red"
     ],
     [
@@ -1069,6 +1089,18 @@
     [
       "scripts/install-user.py",
       "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone"
+    ],
+    [
+      "scripts/install-user.py",
+      "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
     ],
     [
       "scripts/private_bus.py",
@@ -1128,6 +1160,18 @@
     ],
     [
       "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable"
+    ],
+    [
+      "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone"
+    ],
+    [
+      "scripts/stage.py",
+      "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
+    ],
+    [
+      "scripts/stage.py",
       "tests/test_stage.py"
     ],
     [
@@ -1153,6 +1197,22 @@
     [
       "scripts/system-ime.py",
       "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5"
     ],
     [
       "scripts/verify_site.py",
@@ -1505,6 +1565,22 @@
     [
       "tests/test_system_ime.py",
       "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5"
     ],
     [
       "tests/test_verify_site.py",
@@ -2329,12 +2405,16 @@
     "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component",
     "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend",
     "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file",
+    "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable",
+    "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone",
+    "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte",
+    "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5",
     "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red",
     "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green",
     "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green"
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 81
+    "python_tests_run": 85
   }
 }

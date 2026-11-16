@@ -13,6 +13,8 @@ system_ime = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(system_ime)
 XINPUTRC = "# im-config(8) generated\nrun_im fcitx5\n# im-config signature: x  -\n"
 FCITX = "GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nXMODIFIERS=@im=fcitx\n"
+FCITX_AUTOSTART = ("[Desktop Entry]\nName=Fcitx 5\nExec=/usr/bin/fcitx5 -d\nType=Application\n"
+                   "X-GNOME-Autostart-enabled=true\n")
 
 
 def run(action):
@@ -29,7 +31,9 @@ class SystemImeTests(unittest.TestCase):
         (self.home / ".xinputrc").write_text(XINPUTRC)
         (self.home / ".config/environment.d").mkdir(parents=True)
         (self.home / ".config/environment.d/95-fcitx5.conf").write_text(FCITX)
-        self.env = patch.dict("os.environ", {"HOME": str(self.home), "ZKEY_SKIP_GSETTINGS": "1"})
+        # Never read the host's /etc/xdg autostart entries from a unit test.
+        self.env = patch.dict("os.environ", {"HOME": str(self.home), "ZKEY_SKIP_GSETTINGS": "1",
+                                             "XDG_CONFIG_DIRS": str(self.home / "no-system")})
         self.env.start()
 
     def tearDown(self):
@@ -96,6 +100,55 @@ class SystemImeTests(unittest.TestCase):
         code, output = run("disable")
         self.assertEqual(code, 1)
         self.assertEqual((self.home / ".xinputrc").read_text(), XINPUTRC)
+
+    # 16/11 measured on the real login: a user autostart fcitx5 claimed
+    # org.freedesktop.IBus first, GNOME's ibus-daemon failed ("current session
+    # already has an ibus-daemon") and zkey never received a key.
+    def test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte(self):
+        autostart = self.home / ".config/autostart/org.fcitx.Fcitx5.desktop"
+        autostart.parent.mkdir(parents=True)
+        autostart.write_text(FCITX_AUTOSTART)
+        with patch.dict("os.environ", {"XDG_CONFIG_DIRS": str(self.home / "no-system")}):
+            self.assertEqual(run("enable")[0], 0)
+            text = autostart.read_text()
+            self.assertIn("\nHidden=true\n", text)
+            self.assertIn("Exec=/usr/bin/fcitx5 -d", text, "keeps the entry, only hides it")
+            self.assertEqual(run("disable")[0], 0)
+        self.assertEqual(autostart.read_text(), FCITX_AUTOSTART)
+
+    def test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable(self):
+        system = self.home / "etc-xdg"
+        (system / "autostart").mkdir(parents=True)
+        (system / "autostart/org.fcitx.Fcitx5.desktop").write_text(FCITX_AUTOSTART)
+        override = self.home / ".config/autostart/org.fcitx.Fcitx5.desktop"
+        with patch.dict("os.environ", {"XDG_CONFIG_DIRS": str(system)}):
+            self.assertEqual(run("enable")[0], 0)
+            self.assertIn("\nHidden=true\n", override.read_text())
+            self.assertEqual(run("disable")[0], 0)
+        self.assertFalse(override.exists())
+        self.assertFalse((self.home / ".config/autostart").exists())
+        self.assertEqual((system / "autostart/org.fcitx.Fcitx5.desktop").read_text(), FCITX_AUTOSTART)
+
+    def test_unrelated_or_already_hidden_autostart_is_left_alone(self):
+        autostart = self.home / ".config/autostart"
+        autostart.mkdir(parents=True)
+        (autostart / "other.desktop").write_text("[Desktop Entry]\nType=Application\nExec=/usr/bin/foo\n")
+        hidden = FCITX_AUTOSTART + "Hidden=true\n"
+        (autostart / "org.fcitx.Fcitx5.desktop").write_text(hidden)
+        with patch.dict("os.environ", {"XDG_CONFIG_DIRS": str(self.home / "no-system")}):
+            self.assertEqual(run("enable")[0], 0)
+            self.assertEqual((autostart / "org.fcitx.Fcitx5.desktop").read_text(), hidden)
+            self.assertNotIn("Hidden", (autostart / "other.desktop").read_text())
+            self.assertEqual(run("disable")[0], 0)
+        self.assertEqual((autostart / "org.fcitx.Fcitx5.desktop").read_text(), hidden)
+
+    def test_verify_names_the_ibus_owner_and_is_red_for_fcitx5(self):
+        for owner, want in (("ibus-daemon", 0), ("fcitx5", 1), (None, 2)):
+            with patch.object(system_ime, "ibus_owner", return_value=owner):
+                code, output = run("verify")
+            self.assertEqual(code, want, (owner, output))
+            if owner:
+                self.assertIn(owner, output)
 
 
 if __name__ == "__main__":
