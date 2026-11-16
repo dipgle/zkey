@@ -1,14 +1,20 @@
 # zkey
 
+**Website:** [zkey.dipgle.com](https://zkey.dipgle.com/) · **Góp ý:** [info@dipgle.com](mailto:info@dipgle.com)
+
 Bộ gõ Telex cho Ubuntu, lõi Rust và adapter IBus Python/GObject. Đường mới gửi chữ vào ứng dụng theo từng phím; khi thêm dấu, sửa phần chữ vừa gõ bằng surrounding-text đã được ứng dụng xác nhận.
 
 Gõ thật đã XANH trên GNOME Text Editor (GTK4) và ô nhập GTK3 trong màn X ảo riêng (15/11, 3/3 lượt, có vết engine private): gõ từng phím, gõ dồn, ô mật khẩu đi thẳng. Terminal (VTE thật): mật khẩu `read -s` không lộ/không đổi; gõ tiếng Việt trên dòng lệnh bash qua plugin `shell/zkey.bash`. CHƯA nghiệm thu: desktop Wayland-native, Chrome/Electron, vim/TUI, SSH, zsh. Chưa có bằng chứng mượt hơn các bộ gõ khác.
 
 **Phạm vi:** chỉ biến đổi Telex ở client hỗ trợ surrounding-text và có cập nhật xác nhận. Client thiếu khả năng này, PASSWORD/PIN/TERMINAL và private hints nhận phím nguyên trạng. Đây chưa phải bộ gõ Telex cho toàn bộ terminal hoặc toàn hệ thống. Không dùng bản thử cho bí mật thật khi chưa nghiệm thu đúng ứng dụng. Xem [hợp đồng nhập liệu và bảo mật](docs/input-contract.md).
 
+**Lỗi đang chặn phát hành (16/11):** WebKitGTK/X11 khai có surrounding-text nhưng đường xoá không tới editor: `tiee` → `tieê` thay vì `tiê`. Không coi trình duyệt này là đã hỗ trợ; khả năng đọc surrounding không bảo đảm sửa được chữ. Firefox/Chrome/Wayland chưa nghiệm thu. Xem [bằng chứng](docs/verification.md).
+
 Đường dự án thật: `/mnt/data/projects/zkey` (`~/projects/zkey`). `/projects` không có tại thời điểm khảo sát 2026-11-14.
 
 Đọc `docs/design.md` và `TODO.md` để xem phạm vi và việc còn thiếu.
+
+**Viết mới native (Hà giao16/11):** cây [`native/`](native/README.md) độc lập, Rust không crate ngoài; không nhập engine Python/lõi cũ. Đây là bản phát triển, **chưa thay bản đang cài và chưa đạt phát hành**. Kết quả/điểm chặn: [`docs/native-rewrite.md`](docs/native-rewrite.md).
 
 ## Bản thử hiện có
 
@@ -36,11 +42,13 @@ cargo build --offline --release
 - Không sửa `~/.bashrc` (dùng `scripts/install-shell.sh`), không cài component IBus (bộ gõ hệ thống; tuỳ chọn `--with-ibus-component`, cần thêm `IBUS_ENABLE_SYNC_MODE=1` cho phiên — chưa quyết).
 - Đã đo: cài vào tiền tố thử, gõ thật GTK3 bằng **bản đã cài** XANH (30/30 gõ dồn), lõi hỏng ⇒ ĐỎ, gỡ sạch 0 tệp sót.
 
-## Bộ gõ hệ thống (chuẩn bị sẵn, CHƯA bật)
+## Bộ gõ hệ thống (đã cấu hình, CHƯA nghiệm thu desktop)
 
 `scripts/system-ime.py status|enable|disable` — dùng zkey cho MỌI ứng dụng qua IBus thay fcitx5. `enable` (có hiệu lực sau đăng xuất/đăng nhập): cài kèm component IBus; `~/.config/environment.d/99-zkey.conf` (IBus + `IBUS_ENABLE_SYNC_MODE=1`, cần cho GTK4/X11); `~/.xinputrc` → `run_im ibus`; thêm nguồn nhập GNOME `('ibus','zkey')`. Mọi bản gốc được lưu trước ở `~/.local/state/zkey/system-ime/`; `disable` trả lại từng byte.
 
 Đã đo: HOME giả + gsettings trên keyfile riêng (6 bài, bật rồi tắt trả nguyên byte); `scripts/probe-system-ime.py` — ibus-daemon riêng tự tìm `zkey.xml`, tự chạy `bin/zkey --ibus` của bản cài, gõ thật GTK3 đúng (đối chứng thiếu component ⇒ ĐỎ). CHƯA đo: phiên GNOME thật sau khi bật (Wayland, GNOME Shell tự chạy IBus).
+
+Trên máy phát triển đã bật cấu hình theo yêu cầu chủ máy ngày15/11; kiểm16/11 vẫn là phiên đăng nhập cũ/fcitx5. Không tự restart/đổi engine để nghiệm thu.
 
 ## Dành cho phát triển
 
