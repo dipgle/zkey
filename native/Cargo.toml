@@ -1,0 +1,19 @@
+[package]
+name = "zkey-native"
+version = "0.2.0-dev"
+edition = "2024"
+publish = false
+license = "AGPL-3.0-or-later"
+
+[lib]
+name = "zkey_native"
+path = "src/lib.rs"
+
+[[bin]]
+name = "zkey-native"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"

@@ -30,6 +30,19 @@ class ImpactTests(unittest.TestCase):
         self.assertTrue(any("test_word_then_boundary" in test for test in selected))
         self.assertTrue(any(test.startswith("cargo::") for test in selected))
 
+    def test_independent_native_crate_is_mapped_without_linking_legacy_core(self):
+        graph=extract()
+        self.assertIn("native/Cargo.toml",graph["nodes"])
+        self.assertIn("native/src/engine.xml",graph["nodes"])
+        selected,affected,full=select(graph,["native/src/compose.rs"])
+        self.assertFalse(full)
+        self.assertIn("native/src/main.rs",affected)
+        self.assertTrue(any("visible_prefixes_are_incremental" in test for test in selected))
+        self.assertFalse(any("cargo::src/telex.rs" in test for test in selected))
+        # Breaking the native map must fail closed, never select zero tests.
+        graph["edges"]=[]
+        self.assertTrue(select(graph,["native/src/compose.rs"])[2])
+
 
 if __name__ == "__main__":
     unittest.main()

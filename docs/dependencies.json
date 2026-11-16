@@ -2,6 +2,42 @@
   "nodes": [
     "Cargo.lock",
     "Cargo.toml",
+    "cargo::native/src/compose.rs::alphabet_and_every_tone_preserve_case",
+    "cargo::native/src/compose.rs::hard_limit_has_a_real_boundary",
+    "cargo::native/src/compose.rs::horn_pairs_and_qu_onset",
+    "cargo::native/src/compose.rs::invalid_input_is_rejected_without_mutating_the_word",
+    "cargo::native/src/compose.rs::late_shape_keys_reach_the_vowel_before_the_coda",
+    "cargo::native/src/compose.rs::nfc_continuation_retains_and_changes_tone",
+    "cargo::native/src/compose.rs::repeated_modifiers_restore_literal_input",
+    "cargo::native/src/compose.rs::tone_placement_accounts_for_onsets_and_codas",
+    "cargo::native/src/compose.rs::visible_prefixes_are_incremental",
+    "cargo::native/src/config.rs::blocked_audit_prevents_configuration_mutation",
+    "cargo::native/src/config.rs::concurrent_save_is_refused_without_touching_configuration",
+    "cargo::native/src/config.rs::exact_round_trip_and_safe_defaults",
+    "cargo::native/src/config.rs::interrupted_post_rename_audit_is_not_silently_accepted_on_restart",
+    "cargo::native/src/config.rs::malformed_unknown_duplicate_and_unversioned_are_rejected",
+    "cargo::native/src/config.rs::missing_config_is_not_the_same_as_broken_config",
+    "cargo::native/src/config.rs::saving_persists_only_settings_and_audits_the_generation",
+    "cargo::native/src/ffi.rs::dictionary_and_scalar_types_match_the_public_dbus_contract",
+    "cargo::native/src/ffi.rs::system_text_wire_roundtrip_and_wrong_type_rejection",
+    "cargo::native/src/launch.rs::input_service_exit_cannot_hide_behind_successful_app_exit",
+    "cargo::native/src/launch.rs::private_supervisor_never_accepts_a_real_or_mismatched_bus",
+    "cargo::native/src/main.rs::bounded_protocol_recovers_after_oversized_invalid_and_crlf_lines",
+    "cargo::native/src/session.rs::acknowledged_prefixes_and_boundaries_do_not_duplicate",
+    "cargo::native/src/session.rs::backspace_ticket_never_survives_focus_or_a_different_caret",
+    "cargo::native/src/session.rs::ctrl_freeze_reanchors_escape_at_the_visible_composed_text",
+    "cargo::native/src/session.rs::departed_context_cannot_lend_its_public_purpose_to_an_unknown_field",
+    "cargo::native/src/session.rs::explicit_unknown_purpose_is_protected_not_inferred_public",
+    "cargo::native/src/session.rs::focus_reset_cannot_recommit_the_previous_word",
+    "cargo::native/src/session.rs::foreign_caret_and_selections_never_delete",
+    "cargo::native/src/session.rs::freeze_escape_and_native_backspace_preserve_visible_word",
+    "cargo::native/src/session.rs::gtk_reset_after_native_backspace_requires_exact_app_confirmation",
+    "cargo::native/src/session.rs::invalid_snapshot_clears_composition",
+    "cargo::native/src/session.rs::legacy_rewrite_is_never_enabled_implicitly",
+    "cargo::native/src/session.rs::password_pin_terminal_and_private_hints_pass_through",
+    "cargo::native/src/session.rs::unacknowledged_burst_is_inserted_in_order_then_composed",
+    "cargo::native/src/session.rs::unknown_purpose_is_closed_and_missing_capability_is_native",
+    "cargo::native/src/session.rs::word_limit_keeps_remaining_keys_literal_until_boundary",
     "cargo::src/bin/line.rs::protocol",
     "cargo::src/lib.rs::ffi_boundaries",
     "cargo::src/telex.rs::all_tones_all_vowels_and_cases",
@@ -11,12 +47,38 @@
     "cargo::src/telex.rs::tone_moves_when_coda_arrives",
     "cargo::src/telex.rs::undo_and_replace",
     "cargo::src/telex.rs::vietnamese_words",
+    "e2e::native/tests/accept_desktop.py",
+    "e2e::native/tests/accept_launcher.py",
+    "native/Cargo.lock",
+    "native/Cargo.toml",
+    "native/build.rs",
+    "native/src/compose.rs",
+    "native/src/config.rs",
+    "native/src/desktop.rs",
+    "native/src/engine.xml",
+    "native/src/ffi.rs",
+    "native/src/launch.rs",
+    "native/src/lib.rs",
+    "native/src/main.rs",
+    "native/src/session.rs",
+    "native/src/settings.rs",
+    "native/tests/accept_desktop.py",
+    "native/tests/accept_launcher.py",
+    "native/tests/capture.py",
+    "native/tests/health_fault.py",
+    "native/tests/native_x11.py",
+    "native/tests/provenance.py",
+    "native/tests/test_stage.py",
+    "native/tests/ui_settings.py",
+    "native/tools/stage.py",
     "scripts/accept-editor.py",
     "scripts/accept-firefox.py",
     "scripts/accept-ptyxis.py",
     "scripts/accept-settings.py",
     "scripts/accept-terminal.py",
+    "scripts/accept-webkit.py",
     "scripts/audit_measurements.py",
+    "scripts/bench-ffi.py",
     "scripts/desktop-status.py",
     "scripts/editor-session.py",
     "scripts/editor_ui.py",
@@ -34,12 +96,19 @@
     "scripts/stage.py",
     "scripts/system-ime.py",
     "scripts/verify-host.py",
+    "scripts/verify_site.py",
     "scripts/web-driver.py",
     "scripts/x11_activation.py",
     "src/bin/bench.rs",
     "src/bin/line.rs",
     "src/lib.rs",
     "src/telex.rs",
+    "test::native.tests.test_stage.NativePackageTests.test_cli_rejected_package_is_failure_not_not_measurable",
+    "test::native.tests.test_stage.NativePackageTests.test_copied_source_or_binary_race_keeps_package_incomplete",
+    "test::native.tests.test_stage.NativePackageTests.test_missing_binary_does_not_create_a_false_package",
+    "test::native.tests.test_stage.NativePackageTests.test_native_package_has_source_manifest_no_python_runtime_or_ime_activation",
+    "test::native.tests.test_stage.NativePackageTests.test_real_binary_source_attestation_is_red_for_wrong_source_then_green",
+    "test::native.tests.test_stage.NativePackageTests.test_refuses_outside_scratch_before_creating_anything",
     "test::test_audit_measurements.AuditTests.test_broken_assertions_are_flagged_then_repaired_are_clear",
     "test::test_config.ConfigTests.test_bad_data_is_not_silently_defaulted",
     "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user",
@@ -63,6 +132,7 @@
     "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute",
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
+    "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
     "test::test_impact.ImpactTests.test_unknown_node_runs_full_and_cycles_terminate",
     "test::test_install_user.InstallUserTests.test_install_ships_launcher_plugin_line_binary_and_desktop_entry",
@@ -70,12 +140,14 @@
     "test::test_install_user.InstallUserTests.test_reinstall_is_idempotent",
     "test::test_install_user.InstallUserTests.test_uninstall_keeps_an_edited_file_and_says_so",
     "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files",
+    "test::test_private_bus.PrivateBusTests.test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp",
     "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir",
     "test::test_private_bus.PrivateBusTests.test_no_harness_launches_dbus_run_session_itself",
     "test::test_private_bus.PrivateBusTests.test_product_launcher_gives_its_bus_a_scratch_runtime",
     "test::test_private_bus.PrivateBusTests.test_scanner_catches_the_15_11_shape_and_ignores_prose",
     "test::test_runtime.RuntimeTests.test_prune_keeps_newest_logs_and_never_touches_run_directories",
     "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing",
+    "test::test_runtime.RuntimeTests.test_runtime_belongs_to_the_bus_session_not_the_engine_lifetime",
     "test::test_session.SessionTests.test_app_update_after_zero_delay_burst_composes_whole_word",
     "test::test_session.SessionTests.test_backspace_deletes_visible_letter_and_keeps_tone",
     "test::test_session.SessionTests.test_catch_up_needs_the_apps_confirmation",
@@ -108,6 +180,9 @@
     "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component",
     "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend",
     "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file",
+    "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red",
+    "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green",
+    "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green",
     "tests/test_audit_measurements.py",
     "tests/test_config.py",
     "tests/test_engine.py",
@@ -119,7 +194,9 @@
     "tests/test_session.py",
     "tests/test_stage.py",
     "tests/test_system_ime.py",
+    "tests/test_verify_site.py",
     "zkey/__init__.py",
+    "zkey/bus_config.py",
     "zkey/config.py",
     "zkey/core.py",
     "zkey/engine.py",
@@ -162,12 +239,448 @@
       "src/telex.rs"
     ],
     [
+      "native/Cargo.lock",
+      "native/src/compose.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/config.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/desktop.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/engine.xml"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/ffi.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/launch.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/lib.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/main.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/session.rs"
+    ],
+    [
+      "native/Cargo.lock",
+      "native/src/settings.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/compose.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/config.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/desktop.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/engine.xml"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/ffi.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/launch.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/lib.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/main.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/session.rs"
+    ],
+    [
+      "native/Cargo.toml",
+      "native/src/settings.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/compose.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/config.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/desktop.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/engine.xml"
+    ],
+    [
+      "native/build.rs",
+      "native/src/ffi.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/launch.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/lib.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/main.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/session.rs"
+    ],
+    [
+      "native/build.rs",
+      "native/src/settings.rs"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::alphabet_and_every_tone_preserve_case"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::hard_limit_has_a_real_boundary"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::horn_pairs_and_qu_onset"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::invalid_input_is_rejected_without_mutating_the_word"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::late_shape_keys_reach_the_vowel_before_the_coda"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::nfc_continuation_retains_and_changes_tone"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::repeated_modifiers_restore_literal_input"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::tone_placement_accounts_for_onsets_and_codas"
+    ],
+    [
+      "native/src/compose.rs",
+      "cargo::native/src/compose.rs::visible_prefixes_are_incremental"
+    ],
+    [
+      "native/src/compose.rs",
+      "native/src/config.rs"
+    ],
+    [
+      "native/src/compose.rs",
+      "native/src/lib.rs"
+    ],
+    [
+      "native/src/compose.rs",
+      "native/src/session.rs"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::blocked_audit_prevents_configuration_mutation"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::concurrent_save_is_refused_without_touching_configuration"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::exact_round_trip_and_safe_defaults"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::interrupted_post_rename_audit_is_not_silently_accepted_on_restart"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::malformed_unknown_duplicate_and_unversioned_are_rejected"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::missing_config_is_not_the_same_as_broken_config"
+    ],
+    [
+      "native/src/config.rs",
+      "cargo::native/src/config.rs::saving_persists_only_settings_and_audits_the_generation"
+    ],
+    [
+      "native/src/config.rs",
+      "native/src/lib.rs"
+    ],
+    [
+      "native/src/config.rs",
+      "native/src/session.rs"
+    ],
+    [
+      "native/src/desktop.rs",
+      "native/src/main.rs"
+    ],
+    [
+      "native/src/engine.xml",
+      "native/src/desktop.rs"
+    ],
+    [
+      "native/src/ffi.rs",
+      "cargo::native/src/ffi.rs::dictionary_and_scalar_types_match_the_public_dbus_contract"
+    ],
+    [
+      "native/src/ffi.rs",
+      "cargo::native/src/ffi.rs::system_text_wire_roundtrip_and_wrong_type_rejection"
+    ],
+    [
+      "native/src/ffi.rs",
+      "native/src/desktop.rs"
+    ],
+    [
+      "native/src/ffi.rs",
+      "native/src/launch.rs"
+    ],
+    [
+      "native/src/ffi.rs",
+      "native/src/main.rs"
+    ],
+    [
+      "native/src/ffi.rs",
+      "native/src/settings.rs"
+    ],
+    [
+      "native/src/launch.rs",
+      "cargo::native/src/launch.rs::input_service_exit_cannot_hide_behind_successful_app_exit"
+    ],
+    [
+      "native/src/launch.rs",
+      "cargo::native/src/launch.rs::private_supervisor_never_accepts_a_real_or_mismatched_bus"
+    ],
+    [
+      "native/src/launch.rs",
+      "native/src/main.rs"
+    ],
+    [
+      "native/src/lib.rs",
+      "native/src/desktop.rs"
+    ],
+    [
+      "native/src/lib.rs",
+      "native/src/launch.rs"
+    ],
+    [
+      "native/src/lib.rs",
+      "native/src/main.rs"
+    ],
+    [
+      "native/src/lib.rs",
+      "native/src/settings.rs"
+    ],
+    [
+      "native/src/main.rs",
+      "cargo::native/src/main.rs::bounded_protocol_recovers_after_oversized_invalid_and_crlf_lines"
+    ],
+    [
+      "native/src/main.rs",
+      "native/tests/accept_desktop.py"
+    ],
+    [
+      "native/src/main.rs",
+      "native/tests/accept_launcher.py"
+    ],
+    [
+      "native/src/main.rs",
+      "native/tests/health_fault.py"
+    ],
+    [
+      "native/src/main.rs",
+      "native/tests/ui_settings.py"
+    ],
+    [
+      "native/src/main.rs",
+      "native/tools/stage.py"
+    ],
+    [
+      "native/src/main.rs",
+      "scripts/impact.py"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::acknowledged_prefixes_and_boundaries_do_not_duplicate"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::backspace_ticket_never_survives_focus_or_a_different_caret"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::ctrl_freeze_reanchors_escape_at_the_visible_composed_text"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::departed_context_cannot_lend_its_public_purpose_to_an_unknown_field"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::explicit_unknown_purpose_is_protected_not_inferred_public"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::focus_reset_cannot_recommit_the_previous_word"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::foreign_caret_and_selections_never_delete"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::freeze_escape_and_native_backspace_preserve_visible_word"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::gtk_reset_after_native_backspace_requires_exact_app_confirmation"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::invalid_snapshot_clears_composition"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::legacy_rewrite_is_never_enabled_implicitly"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::password_pin_terminal_and_private_hints_pass_through"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::unacknowledged_burst_is_inserted_in_order_then_composed"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::unknown_purpose_is_closed_and_missing_capability_is_native"
+    ],
+    [
+      "native/src/session.rs",
+      "cargo::native/src/session.rs::word_limit_keeps_remaining_keys_literal_until_boundary"
+    ],
+    [
+      "native/src/session.rs",
+      "native/src/lib.rs"
+    ],
+    [
+      "native/src/settings.rs",
+      "native/src/main.rs"
+    ],
+    [
+      "native/tests/accept_desktop.py",
+      "e2e::native/tests/accept_desktop.py"
+    ],
+    [
+      "native/tests/accept_launcher.py",
+      "e2e::native/tests/accept_launcher.py"
+    ],
+    [
+      "native/tests/test_stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_cli_rejected_package_is_failure_not_not_measurable"
+    ],
+    [
+      "native/tests/test_stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_copied_source_or_binary_race_keeps_package_incomplete"
+    ],
+    [
+      "native/tests/test_stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_missing_binary_does_not_create_a_false_package"
+    ],
+    [
+      "native/tests/test_stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_native_package_has_source_manifest_no_python_runtime_or_ime_activation"
+    ],
+    [
+      "native/tests/test_stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_real_binary_source_attestation_is_red_for_wrong_source_then_green"
+    ],
+    [
+      "native/tests/test_stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_refuses_outside_scratch_before_creating_anything"
+    ],
+    [
+      "native/tools/stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_copied_source_or_binary_race_keeps_package_incomplete"
+    ],
+    [
+      "native/tools/stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_missing_binary_does_not_create_a_false_package"
+    ],
+    [
+      "native/tools/stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_native_package_has_source_manifest_no_python_runtime_or_ime_activation"
+    ],
+    [
+      "native/tools/stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_real_binary_source_attestation_is_red_for_wrong_source_then_green"
+    ],
+    [
+      "native/tools/stage.py",
+      "test::native.tests.test_stage.NativePackageTests.test_refuses_outside_scratch_before_creating_anything"
+    ],
+    [
       "scripts/audit_measurements.py",
       "test::test_audit_measurements.AuditTests.test_broken_assertions_are_flagged_then_repaired_are_clear"
     ],
     [
       "scripts/audit_measurements.py",
       "tests/test_audit_measurements.py"
+    ],
+    [
+      "scripts/impact.py",
+      "test::native.tests.test_stage.NativePackageTests.test_cli_rejected_package_is_failure_not_not_measurable"
+    ],
+    [
+      "scripts/impact.py",
+      "test::native.tests.test_stage.NativePackageTests.test_copied_source_or_binary_race_keeps_package_incomplete"
+    ],
+    [
+      "scripts/impact.py",
+      "test::native.tests.test_stage.NativePackageTests.test_missing_binary_does_not_create_a_false_package"
+    ],
+    [
+      "scripts/impact.py",
+      "test::native.tests.test_stage.NativePackageTests.test_native_package_has_source_manifest_no_python_runtime_or_ime_activation"
+    ],
+    [
+      "scripts/impact.py",
+      "test::native.tests.test_stage.NativePackageTests.test_real_binary_source_attestation_is_red_for_wrong_source_then_green"
+    ],
+    [
+      "scripts/impact.py",
+      "test::native.tests.test_stage.NativePackageTests.test_refuses_outside_scratch_before_creating_anything"
     ],
     [
       "scripts/impact.py",
@@ -263,6 +776,10 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core"
+    ],
+    [
+      "scripts/impact.py",
       "test::test_impact.ImpactTests.test_transitive_and_negative_control"
     ],
     [
@@ -291,6 +808,10 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_private_bus.PrivateBusTests.test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp"
+    ],
+    [
+      "scripts/impact.py",
       "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir"
     ],
     [
@@ -312,6 +833,10 @@
     [
       "scripts/impact.py",
       "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_runtime.RuntimeTests.test_runtime_belongs_to_the_bus_session_not_the_engine_lifetime"
     ],
     [
       "scripts/impact.py",
@@ -443,6 +968,18 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green"
+    ],
+    [
+      "scripts/impact.py",
       "tests/test_impact.py"
     ],
     [
@@ -484,6 +1021,10 @@
     [
       "scripts/install-user.py",
       "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "scripts/private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp"
     ],
     [
       "scripts/private_bus.py",
@@ -564,6 +1105,18 @@
     [
       "scripts/system-ime.py",
       "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "scripts/verify_site.py",
+      "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red"
+    ],
+    [
+      "scripts/verify_site.py",
+      "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green"
+    ],
+    [
+      "scripts/verify_site.py",
+      "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green"
     ],
     [
       "src/bin/line.rs",
@@ -711,6 +1264,10 @@
     ],
     [
       "tests/test_impact.py",
+      "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core"
+    ],
+    [
+      "tests/test_impact.py",
       "test::test_impact.ImpactTests.test_transitive_and_negative_control"
     ],
     [
@@ -739,6 +1296,10 @@
     ],
     [
       "tests/test_private_bus.py",
+      "test::test_private_bus.PrivateBusTests.test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp"
+    ],
+    [
+      "tests/test_private_bus.py",
       "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir"
     ],
     [
@@ -760,6 +1321,10 @@
     [
       "tests/test_runtime.py",
       "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing"
+    ],
+    [
+      "tests/test_runtime.py",
+      "test::test_runtime.RuntimeTests.test_runtime_belongs_to_the_bus_session_not_the_engine_lifetime"
     ],
     [
       "tests/test_session.py",
@@ -888,6 +1453,34 @@
     [
       "tests/test_system_ime.py",
       "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    ],
+    [
+      "tests/test_verify_site.py",
+      "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red"
+    ],
+    [
+      "tests/test_verify_site.py",
+      "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green"
+    ],
+    [
+      "tests/test_verify_site.py",
+      "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green"
+    ],
+    [
+      "zkey/bus_config.py",
+      "scripts/private_bus.py"
+    ],
+    [
+      "zkey/bus_config.py",
+      "test::test_private_bus.PrivateBusTests.test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp"
+    ],
+    [
+      "zkey/bus_config.py",
+      "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir"
+    ],
+    [
+      "zkey/bus_config.py",
+      "zkey/launch.py"
     ],
     [
       "zkey/config.py",
@@ -1088,6 +1681,10 @@
     [
       "zkey/config.py",
       "zkey/settings.py"
+    ],
+    [
+      "zkey/core.py",
+      "scripts/bench-ffi.py"
     ],
     [
       "zkey/core.py",
@@ -1347,6 +1944,10 @@
     ],
     [
       "zkey/runtime.py",
+      "scripts/accept-webkit.py"
+    ],
+    [
+      "zkey/runtime.py",
       "scripts/native_acceptance.py"
     ],
     [
@@ -1360,6 +1961,10 @@
     [
       "zkey/runtime.py",
       "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing"
+    ],
+    [
+      "zkey/runtime.py",
+      "test::test_runtime.RuntimeTests.test_runtime_belongs_to_the_bus_session_not_the_engine_lifetime"
     ],
     [
       "zkey/runtime.py",
@@ -1543,6 +2148,42 @@
     ]
   ],
   "tests": [
+    "cargo::native/src/compose.rs::alphabet_and_every_tone_preserve_case",
+    "cargo::native/src/compose.rs::hard_limit_has_a_real_boundary",
+    "cargo::native/src/compose.rs::horn_pairs_and_qu_onset",
+    "cargo::native/src/compose.rs::invalid_input_is_rejected_without_mutating_the_word",
+    "cargo::native/src/compose.rs::late_shape_keys_reach_the_vowel_before_the_coda",
+    "cargo::native/src/compose.rs::nfc_continuation_retains_and_changes_tone",
+    "cargo::native/src/compose.rs::repeated_modifiers_restore_literal_input",
+    "cargo::native/src/compose.rs::tone_placement_accounts_for_onsets_and_codas",
+    "cargo::native/src/compose.rs::visible_prefixes_are_incremental",
+    "cargo::native/src/config.rs::blocked_audit_prevents_configuration_mutation",
+    "cargo::native/src/config.rs::concurrent_save_is_refused_without_touching_configuration",
+    "cargo::native/src/config.rs::exact_round_trip_and_safe_defaults",
+    "cargo::native/src/config.rs::interrupted_post_rename_audit_is_not_silently_accepted_on_restart",
+    "cargo::native/src/config.rs::malformed_unknown_duplicate_and_unversioned_are_rejected",
+    "cargo::native/src/config.rs::missing_config_is_not_the_same_as_broken_config",
+    "cargo::native/src/config.rs::saving_persists_only_settings_and_audits_the_generation",
+    "cargo::native/src/ffi.rs::dictionary_and_scalar_types_match_the_public_dbus_contract",
+    "cargo::native/src/ffi.rs::system_text_wire_roundtrip_and_wrong_type_rejection",
+    "cargo::native/src/launch.rs::input_service_exit_cannot_hide_behind_successful_app_exit",
+    "cargo::native/src/launch.rs::private_supervisor_never_accepts_a_real_or_mismatched_bus",
+    "cargo::native/src/main.rs::bounded_protocol_recovers_after_oversized_invalid_and_crlf_lines",
+    "cargo::native/src/session.rs::acknowledged_prefixes_and_boundaries_do_not_duplicate",
+    "cargo::native/src/session.rs::backspace_ticket_never_survives_focus_or_a_different_caret",
+    "cargo::native/src/session.rs::ctrl_freeze_reanchors_escape_at_the_visible_composed_text",
+    "cargo::native/src/session.rs::departed_context_cannot_lend_its_public_purpose_to_an_unknown_field",
+    "cargo::native/src/session.rs::explicit_unknown_purpose_is_protected_not_inferred_public",
+    "cargo::native/src/session.rs::focus_reset_cannot_recommit_the_previous_word",
+    "cargo::native/src/session.rs::foreign_caret_and_selections_never_delete",
+    "cargo::native/src/session.rs::freeze_escape_and_native_backspace_preserve_visible_word",
+    "cargo::native/src/session.rs::gtk_reset_after_native_backspace_requires_exact_app_confirmation",
+    "cargo::native/src/session.rs::invalid_snapshot_clears_composition",
+    "cargo::native/src/session.rs::legacy_rewrite_is_never_enabled_implicitly",
+    "cargo::native/src/session.rs::password_pin_terminal_and_private_hints_pass_through",
+    "cargo::native/src/session.rs::unacknowledged_burst_is_inserted_in_order_then_composed",
+    "cargo::native/src/session.rs::unknown_purpose_is_closed_and_missing_capability_is_native",
+    "cargo::native/src/session.rs::word_limit_keeps_remaining_keys_literal_until_boundary",
     "cargo::src/bin/line.rs::protocol",
     "cargo::src/lib.rs::ffi_boundaries",
     "cargo::src/telex.rs::all_tones_all_vowels_and_cases",
@@ -1552,6 +2193,14 @@
     "cargo::src/telex.rs::tone_moves_when_coda_arrives",
     "cargo::src/telex.rs::undo_and_replace",
     "cargo::src/telex.rs::vietnamese_words",
+    "e2e::native/tests/accept_desktop.py",
+    "e2e::native/tests/accept_launcher.py",
+    "test::native.tests.test_stage.NativePackageTests.test_cli_rejected_package_is_failure_not_not_measurable",
+    "test::native.tests.test_stage.NativePackageTests.test_copied_source_or_binary_race_keeps_package_incomplete",
+    "test::native.tests.test_stage.NativePackageTests.test_missing_binary_does_not_create_a_false_package",
+    "test::native.tests.test_stage.NativePackageTests.test_native_package_has_source_manifest_no_python_runtime_or_ime_activation",
+    "test::native.tests.test_stage.NativePackageTests.test_real_binary_source_attestation_is_red_for_wrong_source_then_green",
+    "test::native.tests.test_stage.NativePackageTests.test_refuses_outside_scratch_before_creating_anything",
     "test::test_audit_measurements.AuditTests.test_broken_assertions_are_flagged_then_repaired_are_clear",
     "test::test_config.ConfigTests.test_bad_data_is_not_silently_defaulted",
     "test::test_config.ConfigTests.test_change_log_records_only_changed_keys_with_time_and_user",
@@ -1575,6 +2224,7 @@
     "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute",
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
+    "test::test_impact.ImpactTests.test_independent_native_crate_is_mapped_without_linking_legacy_core",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
     "test::test_impact.ImpactTests.test_unknown_node_runs_full_and_cycles_terminate",
     "test::test_install_user.InstallUserTests.test_install_ships_launcher_plugin_line_binary_and_desktop_entry",
@@ -1582,12 +2232,14 @@
     "test::test_install_user.InstallUserTests.test_reinstall_is_idempotent",
     "test::test_install_user.InstallUserTests.test_uninstall_keeps_an_edited_file_and_says_so",
     "test::test_install_user.InstallUserTests.test_uninstall_removes_only_its_own_untouched_files",
+    "test::test_private_bus.PrivateBusTests.test_bus_socket_is_in_the_private_runtime_not_snap_hidden_tmp",
     "test::test_private_bus.PrivateBusTests.test_helper_bus_never_sees_the_real_runtime_dir",
     "test::test_private_bus.PrivateBusTests.test_no_harness_launches_dbus_run_session_itself",
     "test::test_private_bus.PrivateBusTests.test_product_launcher_gives_its_bus_a_scratch_runtime",
     "test::test_private_bus.PrivateBusTests.test_scanner_catches_the_15_11_shape_and_ignores_prose",
     "test::test_runtime.RuntimeTests.test_prune_keeps_newest_logs_and_never_touches_run_directories",
     "test::test_runtime.RuntimeTests.test_prune_with_fewer_logs_removes_nothing",
+    "test::test_runtime.RuntimeTests.test_runtime_belongs_to_the_bus_session_not_the_engine_lifetime",
     "test::test_session.SessionTests.test_app_update_after_zero_delay_burst_composes_whole_word",
     "test::test_session.SessionTests.test_backspace_deletes_visible_letter_and_keeps_tone",
     "test::test_session.SessionTests.test_catch_up_needs_the_apps_confirmation",
@@ -1619,10 +2271,13 @@
     "test::test_system_ime.SystemImeTests.test_disable_without_enable_changes_nothing",
     "test::test_system_ime.SystemImeTests.test_enable_writes_ibus_session_with_sync_mode_and_component",
     "test::test_system_ime.SystemImeTests.test_gnome_input_source_added_then_restored_on_a_private_keyfile_backend",
-    "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file"
+    "test::test_system_ime.SystemImeTests.test_refuses_twice_and_refuses_a_foreign_99_file",
+    "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red",
+    "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green",
+    "test::test_verify_site.VerifySiteTests.test_real_bytes_match_and_changed_source_is_red_then_green"
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 68
+    "python_tests_run": 80
   }
 }

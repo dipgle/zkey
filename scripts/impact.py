@@ -20,18 +20,34 @@ MAP = ROOT / "docs/dependencies.json"
 
 def extract(root=ROOT):
     nodes, edges, tests = set(), set(), set()
-    for folder, extension in (("zkey", "*.py"), ("scripts", "*.py"), ("tests", "*.py"), ("src", "*.rs")):
+    for folder, extension in (("zkey", "*.py"), ("scripts", "*.py"), ("tests", "*.py"), ("src", "*.rs"),
+                              ("native/src", "*.rs"), ("native/tests", "*.py"),
+                              ("native/tools", "*.py"), ("native", "build.rs")):
         for path in (root / folder).rglob(extension):
             name = path.relative_to(root).as_posix()
             nodes.add(name)
             source = path.read_text()
-            if extension == "*.rs":
-                for module in re.findall(r"^pub mod (\w+);", source, re.M):
-                    dependency = f"src/{module}.rs"
+            if path.suffix == ".rs":
+                crate_src = "native/src" if name.startswith("native/") else "src"
+                for module in re.findall(r"^\s*(?:pub\s+)?mod (\w+);", source, re.M):
+                    candidate=path.parent / (module + ".rs")
+                    if candidate.is_file():
+                        dependency=candidate.relative_to(root).as_posix()
+                        nodes.add(dependency)
+                        edges.add((dependency, name))
+                for module in re.findall(r"\bcrate::(\w+)::",source):
+                    dependency=f"{crate_src}/{module}.rs"
+                    if (root/dependency).is_file():
+                        nodes.add(dependency)
+                        edges.add((dependency,name))
+                for included in re.findall(r'include_str!\("([^"\n]+)"\)',source):
+                    dependency=(path.parent/included).relative_to(root).as_posix()
                     nodes.add(dependency)
-                    edges.add((dependency, name))
+                    edges.add((dependency,name))
                 if "use zkey_core::" in source:
                     edges.add(("src/lib.rs", name))
+                if "use zkey_native::" in source:
+                    edges.add(("native/src/lib.rs",name))
                 for test in re.findall(r"#\[test\]\s*fn (\w+)", source):
                     test_id = f"cargo::{name}::{test}"
                     nodes.add(test_id)
@@ -48,21 +64,32 @@ def extract(root=ROOT):
                     if (root / candidate).is_file():
                         nodes.add(candidate)
                         edges.add((candidate, name))
-                if isinstance(item, ast.ClassDef) and folder == "tests":
+                if isinstance(item, ast.ClassDef) and folder in ("tests","native/tests"):
                     for method in item.body:
                         if isinstance(method, ast.FunctionDef) and method.name.startswith("test_"):
-                            test_id = f"test::{path.stem}.{item.name}.{method.name}"
+                            prefix="native.tests." if folder=="native/tests" else ""
+                            test_id = f"test::{prefix}{path.stem}.{item.name}.{method.name}"
                             nodes.add(test_id)
                             tests.add(test_id)
                             edges.add((name, test_id))
             # The FFI artifact name is present in the actual loader's source.
             if folder == "zkey" and '"target/release/libzkey_core.so"' in source and "ctypes.CDLL(" in source:
                 edges.add(("src/lib.rs", name))
-    nodes.update({"Cargo.toml", "Cargo.lock"})
+            if folder=="native/tests" and path.name.startswith("accept_"):
+                test_id=f"e2e::{name}"
+                nodes.add(test_id);tests.add(test_id)
+                edges.add((name,test_id))
+            if "native/target/release/zkey-native" in source:
+                edges.add(("native/src/main.rs",name))
+    nodes.update({"Cargo.toml", "Cargo.lock", "native/Cargo.toml", "native/Cargo.lock", "native/build.rs"})
     for name in tuple(nodes):
         if name.startswith("src/"):
             edges.add(("Cargo.toml", name))
             edges.add(("Cargo.lock", name))
+        elif name.startswith("native/src/"):
+            edges.add(("native/Cargo.toml",name))
+            edges.add(("native/Cargo.lock",name))
+            edges.add(("native/build.rs",name))
     return {"nodes": sorted(nodes), "edges": sorted([list(edge) for edge in edges]), "tests": sorted(tests)}
 
 
@@ -95,7 +122,7 @@ class TraceResult(unittest.TextTestResult):
         if event == "call":
             try:
                 path = Path(frame.f_code.co_filename).resolve().relative_to(ROOT).as_posix()
-                if path.startswith(("zkey/", "scripts/", "tests/")):
+                if path.startswith(("zkey/", "scripts/", "tests/", "native/")):
                     self.observed.add(path)
             except ValueError:
                 pass
@@ -115,7 +142,10 @@ def main():
     graph = extract()
     if args.record:
         TraceResult.trace_edges = set()
-        suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"))
+        suite = unittest.TestSuite([
+            unittest.defaultTestLoader.discover(str(ROOT / "tests")),
+            unittest.defaultTestLoader.loadTestsFromName("native.tests.test_stage"),
+        ])
         result = unittest.TextTestRunner(verbosity=1, resultclass=TraceResult).run(suite)
         if not result.wasSuccessful() or result.testsRun == 0:
             return 1

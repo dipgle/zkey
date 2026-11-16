@@ -1,0 +1,28 @@
+<!-- Public IBus wire contract, not application code. -->
+<node>
+ <interface name="org.freedesktop.IBus.Factory">
+  <method name="CreateEngine"><arg type="s" direction="in"/><arg type="o" direction="out"/></method>
+ </interface>
+ <interface name="org.freedesktop.IBus.Engine">
+  <method name="ProcessKeyEvent"><arg type="u" direction="in"/><arg type="u" direction="in"/><arg type="u" direction="in"/><arg type="b" direction="out"/></method>
+  <method name="SetCapabilities"><arg type="u" direction="in"/></method>
+  <method name="SetSurroundingText"><arg type="v" direction="in"/><arg type="u" direction="in"/><arg type="u" direction="in"/></method>
+  <method name="SetCursorLocation"><arg type="i" direction="in"/><arg type="i" direction="in"/><arg type="i" direction="in"/><arg type="i" direction="in"/></method>
+  <method name="FocusIn"/><method name="FocusOut"/>
+  <method name="FocusInId"><arg type="s" direction="in"/><arg type="s" direction="in"/></method>
+  <method name="FocusOutId"><arg type="s" direction="in"/></method>
+  <method name="Enable"/><method name="Disable"/><method name="Reset"/>
+  <method name="PropertyActivate"><arg type="s" direction="in"/><arg type="u" direction="in"/></method>
+  <method name="PropertyShow"><arg type="s" direction="in"/></method>
+  <method name="PropertyHide"><arg type="s" direction="in"/></method>
+  <method name="PageUp"/><method name="PageDown"/><method name="CursorUp"/><method name="CursorDown"/>
+  <property name="ContentType" type="(uu)" access="write"/>
+  <property name="FocusId" type="b" access="read"/>
+  <property name="ActiveSurroundingText" type="b" access="read"/>
+  <signal name="CommitText"><arg type="v"/></signal>
+  <signal name="DeleteSurroundingText"><arg type="i"/><arg type="u"/></signal>
+  <signal name="RequireSurroundingText"/>
+  <signal name="UpdatePreeditText"><arg type="v"/><arg type="u"/><arg type="b"/><arg type="u"/></signal>
+ </interface>
+ <interface name="org.freedesktop.IBus.Service"><method name="Destroy"/></interface>
+</node>
