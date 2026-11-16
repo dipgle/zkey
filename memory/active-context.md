@@ -1,12 +1,13 @@
-# zkey/core — native rewrite (16/11 18:30, phiên claude acc6 PID2418069)
+# zkey/core — native rewrite (16/11 18:50, phiên claude acc6 PID2418069)
 
-Hà giao VIẾT LẠI native, tự thiết kế/code/kiểm. Phiên trước (ses_e1dc…) không thấy tiến trình, ghi cuối 13:13; diff của nó đã gom 4 commit (8986445 6be19c0 99d03a1 6286b4f). Chưa push.
+Hà giao VIẾT LẠI native, tự thiết kế/code/kiểm. Diff phiên trước đã gom commit; cây sạch, CHƯA push.
 
-ĐÃ ĐO 16/11 tối: native Rust 40/40 (+2 corpus) clippy0 fmt0; legacy Rust/clippy0; Python 79/79; map 216 nút/136 bài.
-- N06: corpus Telex 134 dòng/251 phép (8c416db); mutant ê/ơ ⇒ĐỎ 11/251, khôi phục XANH. impact.py trước đó KHÔNG quét native/tests/*.rs (RED→GREEN).
-- DESKTOP THẬT: Hà đã đăng nhập GNOME Wayland tty2. fcitx5 (autostart người dùng) giữ org.freedesktop.IBus ⇒ ibus GNOME failed ⇒ zkey KHÔNG nhận phím, nguồn gõ chỉ còn xkb us. Sửa system-ime.py: enable ẩn autostart fcitx5 + verify (e4af712). `system-ime.py verify` máy thật = mã1 fcitx5. CHƯA áp lên máy.
+ĐÃ ĐO 16/11 tối: native Rust 40/40 clippy0 fmt0; Python 79/79; map 216 nút/136 bài. N06 corpus 251 phép (8c416db).
 
-CHỜ HÀ: (1) áp lên máy: `system-ime.py disable` rồi `enable` (ẩn fcitx5) + đăng xuất/vào, sau đó `verify` phải 0; (2) publish site có email lên zkey.dipgle.com — web-driver đang ĐĂNG NHẬP tfl5 (Operator) trên Xvfb riêng; (3) N01 WebKit: hợp đồng cấm preedit (docs/input-contract.md:5) ⇒ chỉ còn báo lỗi upstream WebKitGTK/bridge cho app do zkey mở.
+BỘ GÕ HỆ THỐNG — ĐÃ ÁP (Hà «làm đi» 18:40, vượt zkey/CLAUDE.md:8 có duyệt): disable (hoàn nguyên đúng byte, hash 2261b5…/8447b7…) rồi enable bản mới (e4af712+4103d50): autostart fcitx5 Hidden=true (sao lưu ~/.local/state/zkey/system-ime/fcitx5-autostart.orig), 99-zkey.conf ghi đè cả QT_IM_MODULES/SDL_IM_MODULE, nguồn gõ [xkb us, ibus zkey]. Generator systemd tính đúng 7 biến. fcitx5 cũ còn chạy tới khi đăng xuất ⇒ `system-ime.py verify` hiện vẫn mã1.
 
-KẾ (tự làm được): N04 backend terminal native; N06 tiếp (VNI/tiếng Anh cần Hà chốt chính sách).
-Nền: web-driver.py (PID286546, Xvfb :99) — dừng: .tmp/web-driver/cmd.json {"id":41,"op":"quit"}. Không job test nền.
+KẾ NGAY SAU KHI HÀ ĐĂNG XUẤT/VÀO: `python3 scripts/system-ime.py verify` phải 0; xem nguồn gõ còn ('ibus','zkey'); gõ thật Text Editor/Firefox/terminal (cần Hà gõ hoặc RemoteDesktop). Hỏng ⇒ `system-ime.py disable` + đăng xuất/vào.
+
+Web: KHÔNG publish (luật gốc cấm Claude deploy prod; ngoại lệ chỉ zigeel.com). web-driver đã quit 18:45 (phiên Operator đóng). Hà tự tải `site/index.html` (8881 byte, sha256 49ea7571…) lên tfl5 app zkey.
+N01: chờ Hà chọn (báo upstream WebKitGTK / bridge chỉ cho app do zkey mở). Preedit bị hợp đồng cấm.
+Nền: KHÔNG CÓ.

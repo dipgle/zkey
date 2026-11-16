@@ -209,3 +209,9 @@
 - N06 (8c416db): corpus 134 dòng/251 phép; 1 ca oracle của tôi sai (`tiesng`) sửa thành `tiesneg`. Mutant bỏ ưu tiên ê/ơ ⇒ĐỎ 11/251, khôi phục XANH. impact.py không quét native/tests/*.rs ⇒ RED→GREEN; map 216/136.
 - Desktop thật: GNOME Wayland tty2; fcitx5 PID119222 giữ org.freedesktop.IBus/portal.IBus; IBus GNOME service failed 10:10 «already has an ibus-daemon». system-ime.py (e4af712): enable ẩn autostart fcitx5 có sao lưu, `verify` chỉ đọc; test RED3→GREEN10/10, Python 79/79; máy thật verify=1, bus chết=2. CHƯA áp lên máy (chờ Hà).
 - Nền: web-driver PID286546 (đăng nhập tfl5). Không job test nền.
+
+## 2026-11-16 18:40 +07 — Hà «làm đi»: áp bộ gõ hệ thống
+
+- Vượt zkey/CLAUDE.md:8 theo lệnh Hà sau khi biết. Phát hiện thêm: 95-fcitx5.conf đặt QT_IM_MODULES/SDL_IM_MODULE=fcitx, 99-zkey không ghi đè ⇒ sửa 4103d50 (RED→GREEN, Python OK).
+- disable lần1/lần2: ~/.xinputrc 8447b7… và autostart 2261b5… trả đúng byte; enable: Hidden=true, nguồn [xkb us, ibus zkey], generator env 7 biến đúng. verify vẫn 1 (fcitx5 cũ còn sống) — chờ đăng xuất/vào.
+- Web: không publish (luật cấm deploy prod); web-driver quit (out-41), 0 tiến trình. N01 chờ Hà chọn hướng.
