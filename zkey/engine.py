@@ -40,10 +40,22 @@ class Engine(IBus.Engine):
         return result.handled
 
     def do_process_key_event(self, keyval, keycode, state):
+        name = IBus.keyval_name(keyval) or ""
+        # Ctrl tapped alone (pressed and released, no other key pressed between)
+        # freezes the current word: "u", Ctrl, "s" -> "us" (Hà 16/11). Ctrl used
+        # for a shortcut is not a tap. Releases of other keys do not cancel it.
+        if name in ("Control_L", "Control_R"):
+            if state & IBus.ModifierType.RELEASE_MASK:
+                if getattr(self, "ctrl_tap", False):
+                    self.ctrl_tap = False
+                    self.session.freeze_word()
+            else:
+                self.ctrl_tap = True
+            return False
         if state & IBus.ModifierType.RELEASE_MASK:
             return False
+        self.ctrl_tap = False
         # Ignore modifier-only events; holding Shift must not commit a partial word.
-        name = IBus.keyval_name(keyval) or ""
         if name in {"Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "Super_L", "Super_R", "Caps_Lock", "ISO_Level3_Shift"}:
             return False
         shortcut_mask = (IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK

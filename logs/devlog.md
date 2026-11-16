@@ -152,3 +152,7 @@
 ## 2026-11-15 23:05 +07 — trang giới thiệu live
 
 - web-driver.py (WebKit2 thật). QR login tfl5 (Hà duyệt) → app zkey a-mwi0sgxv → upload index.html → Publish → Domains zkey.dipgle.com active. Mở lại trang như người xem: khớp tiêu đề/nội dung. Đăng xuất Studio sau đó.
+
+## 2026-11-16 — chạm Ctrl giữ từ; chuyển phiên
+
+- freeze_word: u+Ctrl+s → us. 5 unit (3 RED→GREEN), gõ thật GTK3 XANH, accept-xvfb 7 XANH + MÁY NGUYÊN; ~/.local cập nhật. Hook ≥50% ⇒ bản giao .tmp/brief-core-ke-nhiem-20261116.md.

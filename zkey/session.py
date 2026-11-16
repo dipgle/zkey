@@ -46,6 +46,15 @@ class Session:
         self.bypass_word = False
         self.dirty = False  # Keys committed as typed after the first, not yet composed.
 
+    def freeze_word(self):
+        """Ctrl tapped alone (Hà 16/11: u, Ctrl, s -> "us"): keep the current
+        word exactly as shown and stop Telex in it until the next word."""
+        if self.raw:
+            self.raw = self.text
+            self.literal = True
+            self.dirty = False
+        return Result()
+
     def flush(self):
         # Everything was committed per key; lifecycle changes must not repeat it.
         self.clear()

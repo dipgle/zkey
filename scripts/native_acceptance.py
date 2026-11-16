@@ -237,6 +237,17 @@ def inside():
                 for key in "tieengs vieetj":
                     send("space" if key == " " else key)
                 expect(entry, "tiếng việt")
+            # Ctrl tapped alone freezes the word (Hà 16/11): u, Ctrl, s -> "us";
+            # control: without the tap "us" -> "ú".
+            for keys, want in ((["u", "Control_L", "s"], "us"), (["u", "s"], "ú")):
+                send("a", control=True)
+                pump(0.03)
+                send("BackSpace")
+                expect(entry, "")
+                for name in keys:
+                    send(name)
+                    pump(0.06)
+                expect(entry, want)
             # Native keys (Backspace, Enter) inside a 0 ms burst: the app may
             # queue them behind our commits. Reference = the same keys typed
             # slowly; two references are also pinned by hand. Every mismatch
@@ -329,7 +340,7 @@ def inside():
                 raise RuntimeError("Typed widget render unavailable")
             rendered.savev(str(ROOT / ".tmp/native-gtk-render.png"), "png", [], [])
             export.destroy()
-            print("PASS native GTK3/XTest: 7 per-key prefixes; 10 burst phrases; burst with native Backspace/Enter equal to slow typing; word boundary; Vietnamese; native Backspace; caret move; focus/password bypass; no visible preedit; 0 toolkit warnings.")
+            print("PASS native GTK3/XTest: 7 per-key prefixes; 10 burst phrases; Ctrl tap keeps 'us'; burst with native Backspace/Enter equal to slow typing; word boundary; Vietnamese; native Backspace; caret move; focus/password bypass; no visible preedit; 0 toolkit warnings.")
             print("UI screenshot: .tmp/native-gtk.png; does not cover Chrome/Electron/Wayland-native/VTE yet.")
             return 0
         finally:

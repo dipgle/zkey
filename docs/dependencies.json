@@ -30,9 +30,11 @@
     "scripts/probe-system-ime.py",
     "scripts/probe_ibus.py",
     "scripts/recheck-editor.py",
+    "scripts/render-site.py",
     "scripts/stage.py",
     "scripts/system-ime.py",
     "scripts/verify-host.py",
+    "scripts/web-driver.py",
     "scripts/x11_activation.py",
     "src/bin/bench.rs",
     "src/bin/line.rs",
@@ -44,16 +46,21 @@
     "test::test_config.ConfigTests.test_explicit_preferences_survive_application_xdg_isolation",
     "test::test_config.ConfigTests.test_missing_uses_defaults_and_write_round_trip",
     "test::test_engine.EngineTests.test_composition_failure_passes_current_key_exactly_once",
+    "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks",
+    "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed",
+    "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap",
     "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack",
     "test::test_engine.EngineTests.test_late_app_update_rewrites_burst_word_in_order",
     "test::test_engine.EngineTests.test_missing_app_update_never_uses_optimistic_ibus_cache",
     "test::test_engine.EngineTests.test_modifier_shortcuts_and_releases",
     "test::test_engine.EngineTests.test_protected_context_update_never_rewrites",
     "test::test_engine.EngineTests.test_protected_contexts_pass_through_without_composition",
+    "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts",
     "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters",
     "test::test_engine.EngineTests.test_shift_only_does_not_split_word",
     "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit",
     "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients",
+    "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute",
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
@@ -188,6 +195,18 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap"
+    ],
+    [
+      "scripts/impact.py",
       "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack"
     ],
     [
@@ -212,6 +231,10 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts"
+    ],
+    [
+      "scripts/impact.py",
       "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters"
     ],
     [
@@ -225,6 +248,10 @@
     [
       "scripts/impact.py",
       "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "scripts/impact.py",
+      "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute"
     ],
     [
       "scripts/impact.py",
@@ -616,6 +643,18 @@
     ],
     [
       "tests/test_engine.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks"
+    ],
+    [
+      "tests/test_engine.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed"
+    ],
+    [
+      "tests/test_engine.py",
+      "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap"
+    ],
+    [
+      "tests/test_engine.py",
       "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack"
     ],
     [
@@ -640,6 +679,10 @@
     ],
     [
       "tests/test_engine.py",
+      "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts"
+    ],
+    [
+      "tests/test_engine.py",
       "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters"
     ],
     [
@@ -653,6 +696,10 @@
     [
       "tests/test_engine.py",
       "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "tests/test_engine.py",
+      "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute"
     ],
     [
       "tests/test_entrypoints.py",
@@ -864,6 +911,18 @@
     ],
     [
       "zkey/config.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks"
+    ],
+    [
+      "zkey/config.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed"
+    ],
+    [
+      "zkey/config.py",
+      "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap"
+    ],
+    [
+      "zkey/config.py",
       "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack"
     ],
     [
@@ -888,6 +947,10 @@
     ],
     [
       "zkey/config.py",
+      "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts"
+    ],
+    [
+      "zkey/config.py",
       "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters"
     ],
     [
@@ -901,6 +964,10 @@
     [
       "zkey/config.py",
       "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/config.py",
+      "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute"
     ],
     [
       "zkey/config.py",
@@ -1028,6 +1095,18 @@
     ],
     [
       "zkey/core.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks"
+    ],
+    [
+      "zkey/core.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed"
+    ],
+    [
+      "zkey/core.py",
+      "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap"
+    ],
+    [
+      "zkey/core.py",
       "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack"
     ],
     [
@@ -1052,6 +1131,10 @@
     ],
     [
       "zkey/core.py",
+      "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts"
+    ],
+    [
+      "zkey/core.py",
       "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters"
     ],
     [
@@ -1065,6 +1148,10 @@
     [
       "zkey/core.py",
       "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/core.py",
+      "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute"
     ],
     [
       "zkey/core.py",
@@ -1180,6 +1267,18 @@
     ],
     [
       "zkey/engine.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks"
+    ],
+    [
+      "zkey/engine.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed"
+    ],
+    [
+      "zkey/engine.py",
+      "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap"
+    ],
+    [
+      "zkey/engine.py",
       "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack"
     ],
     [
@@ -1204,6 +1303,10 @@
     ],
     [
       "zkey/engine.py",
+      "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts"
+    ],
+    [
+      "zkey/engine.py",
       "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters"
     ],
     [
@@ -1217,6 +1320,10 @@
     [
       "zkey/engine.py",
       "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/engine.py",
+      "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute"
     ],
     [
       "zkey/engine.py",
@@ -1268,6 +1375,18 @@
     ],
     [
       "zkey/session.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks"
+    ],
+    [
+      "zkey/session.py",
+      "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed"
+    ],
+    [
+      "zkey/session.py",
+      "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap"
+    ],
+    [
+      "zkey/session.py",
       "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack"
     ],
     [
@@ -1292,6 +1411,10 @@
     ],
     [
       "zkey/session.py",
+      "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts"
+    ],
+    [
+      "zkey/session.py",
       "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters"
     ],
     [
@@ -1305,6 +1428,10 @@
     [
       "zkey/session.py",
       "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients"
+    ],
+    [
+      "zkey/session.py",
+      "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute"
     ],
     [
       "zkey/session.py",
@@ -1431,16 +1558,21 @@
     "test::test_config.ConfigTests.test_explicit_preferences_survive_application_xdg_isolation",
     "test::test_config.ConfigTests.test_missing_uses_defaults_and_write_round_trip",
     "test::test_engine.EngineTests.test_composition_failure_passes_current_key_exactly_once",
+    "test::test_engine.EngineTests.test_ctrl_tap_freezes_what_is_shown_including_marks",
+    "test::test_engine.EngineTests.test_ctrl_tap_keeps_the_current_word_as_typed",
+    "test::test_engine.EngineTests.test_ctrl_used_for_a_shortcut_is_not_a_tap",
     "test::test_engine.EngineTests.test_empty_bootstrap_allows_one_insert_then_requires_client_ack",
     "test::test_engine.EngineTests.test_late_app_update_rewrites_burst_word_in_order",
     "test::test_engine.EngineTests.test_missing_app_update_never_uses_optimistic_ibus_cache",
     "test::test_engine.EngineTests.test_modifier_shortcuts_and_releases",
     "test::test_engine.EngineTests.test_protected_context_update_never_rewrites",
     "test::test_engine.EngineTests.test_protected_contexts_pass_through_without_composition",
+    "test::test_engine.EngineTests.test_releasing_the_previous_letter_during_the_tap_still_counts",
     "test::test_engine.EngineTests.test_reset_disable_and_focus_do_not_duplicate_committed_letters",
     "test::test_engine.EngineTests.test_shift_only_does_not_split_word",
     "test::test_engine.EngineTests.test_surrounding_capability_is_required_not_preedit",
     "test::test_engine.EngineTests.test_surrounding_requested_only_from_capable_clients",
+    "test::test_engine.EngineTests.test_without_ctrl_tap_us_is_u_acute",
     "test::test_entrypoints.EntrypointTests.test_all_python_entrypoints_compile",
     "test::test_impact.ImpactTests.test_extracted_native_loader_reaches_session_tests",
     "test::test_impact.ImpactTests.test_transitive_and_negative_control",
@@ -1491,6 +1623,6 @@
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 63
+    "python_tests_run": 68
   }
 }

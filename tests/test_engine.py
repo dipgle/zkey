@@ -83,6 +83,52 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(self.sink.document, "á")
         self.assertEqual(self.sink.preedits, [])
 
+    def ctrl_tap(self, name="Control_L"):
+        self.assertFalse(self.key(name))
+        self.assertFalse(self.key(name, IBus.ModifierType.RELEASE_MASK | IBus.ModifierType.CONTROL_MASK))
+
+    def test_ctrl_tap_keeps_the_current_word_as_typed(self):
+        # Hà 16/11: "u", Ctrl, "s" must give "us", not "ú".
+        self.key("u")
+        self.ctrl_tap()
+        self.key("s")
+        self.assertEqual(self.sink.document, "us")
+        self.key("s")
+        self.assertEqual(self.sink.document, "uss", "the whole word stays as typed")
+        self.key("space")
+        for key in "us":
+            self.key(key)
+        self.assertEqual(self.sink.document, "uss ú", "the next word is Vietnamese again")
+
+    def test_ctrl_tap_freezes_what_is_shown_including_marks(self):
+        for key in "aa":
+            self.key(key)
+        self.ctrl_tap("Control_R")
+        self.key("s")
+        self.assertEqual(self.sink.document, "âs")
+
+    def test_without_ctrl_tap_us_is_u_acute(self):
+        for key in "us":
+            self.key(key)
+        self.assertEqual(self.sink.document, "ú")
+
+    def test_ctrl_used_for_a_shortcut_is_not_a_tap(self):
+        self.key("space")
+        self.assertFalse(self.key("Control_L"))
+        self.key("x", IBus.ModifierType.CONTROL_MASK)
+        self.assertFalse(self.key("Control_L", IBus.ModifierType.RELEASE_MASK | IBus.ModifierType.CONTROL_MASK))
+        for key in "aas":
+            self.key(key)
+        self.assertEqual(self.sink.document, " ấ")
+
+    def test_releasing_the_previous_letter_during_the_tap_still_counts(self):
+        self.key("u")
+        self.assertFalse(self.key("Control_L"))
+        self.key("u", IBus.ModifierType.RELEASE_MASK | IBus.ModifierType.CONTROL_MASK)
+        self.assertFalse(self.key("Control_L", IBus.ModifierType.RELEASE_MASK | IBus.ModifierType.CONTROL_MASK))
+        self.key("s")
+        self.assertEqual(self.sink.document, "us")
+
     def test_modifier_shortcuts_and_releases(self):
         for mask in (IBus.ModifierType.CONTROL_MASK, IBus.ModifierType.MOD1_MASK,
                      IBus.ModifierType.SUPER_MASK, IBus.ModifierType.MOD5_MASK):

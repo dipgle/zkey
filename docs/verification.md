@@ -8,6 +8,12 @@
 - Không vỡ đường cũ: VTE plugin 0/1 và ptyxis thật (~/.bashrc) XANH trên Xvfb; Python 45/45; Rust 9/9; audit 140 assertion 0.
 - CHƯA ĐO: bash đang mở từ trước vẫn giữ hàm cũ tới khi mở terminal mới; `/terminal` + `/type` của huba chưa chạy lại sau sửa.
 
+## 16/11 — chạm Ctrl giữ nguyên từ đang gõ (Hà: «u, Ctrl, s phải ra us»)
+
+- `Session.freeze_word` + engine nhận Ctrl nhấn-nhả đứng riêng (Ctrl+phím khác không tính; nhả phím khác giữa chừng vẫn tính). Từ hiện tại giữ đúng chữ đang hiện, không Telex tới hết từ; từ sau gõ bình thường.
+- `tests/test_engine.py` 5 bài: trước sửa 3 ĐỎ (`'ú' != 'us'`, `'ấ' != 'âs'`), sau 68/68 XANH. Gõ thật GTK3 (Xvfb): `u`+Ctrl+`s` → `us`, đối chứng `us` → `ú`; accept-xvfb 7 bài XANH, MÁY NGUYÊN 1->1. Bản cài ~/.local cập nhật (kèm component).
+- Không áp cho plugin bash: readline không nhận được Ctrl đứng riêng.
+
 ## 15/11 23:05 — trang giới thiệu LIVE ở https://zkey.dipgle.com (Hà ra lệnh, đăng nhập bằng QR)
 
 - Hà: «trước vẫn tự làm» (tiền lệ `AI/sdvi/scripts/dang-nhap-qr.mjs`) + «tự mở bằng playwright». Playwright chưa có ⇒ `scripts/web-driver.py` (WebKit2 thật trên Xvfb + bus riêng; bấm/gõ bằng XTest; đọc trang bằng JS liệt kê).
