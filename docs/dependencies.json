@@ -191,6 +191,7 @@
     "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable",
     "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone",
     "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte",
+    "test::test_system_ime.SystemImeTests.test_verify_is_red_while_the_lingering_user_manager_keeps_the_old_environment",
     "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5",
     "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red",
     "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green",
@@ -1032,6 +1033,10 @@
     ],
     [
       "scripts/impact.py",
+      "test::test_system_ime.SystemImeTests.test_verify_is_red_while_the_lingering_user_manager_keeps_the_old_environment"
+    ],
+    [
+      "scripts/impact.py",
       "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5"
     ],
     [
@@ -1209,6 +1214,10 @@
     [
       "scripts/system-ime.py",
       "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
+    ],
+    [
+      "scripts/system-ime.py",
+      "test::test_system_ime.SystemImeTests.test_verify_is_red_while_the_lingering_user_manager_keeps_the_old_environment"
     ],
     [
       "scripts/system-ime.py",
@@ -1577,6 +1586,10 @@
     [
       "tests/test_system_ime.py",
       "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte"
+    ],
+    [
+      "tests/test_system_ime.py",
+      "test::test_system_ime.SystemImeTests.test_verify_is_red_while_the_lingering_user_manager_keeps_the_old_environment"
     ],
     [
       "tests/test_system_ime.py",
@@ -2408,6 +2421,7 @@
     "test::test_system_ime.SystemImeTests.test_system_fcitx5_autostart_gets_a_user_override_removed_on_disable",
     "test::test_system_ime.SystemImeTests.test_unrelated_or_already_hidden_autostart_is_left_alone",
     "test::test_system_ime.SystemImeTests.test_user_fcitx5_autostart_is_hidden_then_restored_byte_for_byte",
+    "test::test_system_ime.SystemImeTests.test_verify_is_red_while_the_lingering_user_manager_keeps_the_old_environment",
     "test::test_system_ime.SystemImeTests.test_verify_names_the_ibus_owner_and_is_red_for_fcitx5",
     "test::test_verify_site.VerifySiteTests.test_http_error_redirect_non_html_or_tampered_digest_is_red",
     "test::test_verify_site.VerifySiteTests.test_incomplete_read_is_not_measurable_not_green",
@@ -2415,6 +2429,6 @@
   ],
   "trace": {
     "command": "/usr/bin/python3 scripts/impact.py --record",
-    "python_tests_run": 85
+    "python_tests_run": 86
   }
 }

@@ -159,6 +159,31 @@ class SystemImeTests(unittest.TestCase):
             if owner:
                 self.assertIn(owner, output)
 
+    def test_verify_is_red_while_the_lingering_user_manager_keeps_the_old_environment(self):
+        # 16/11 23:59 measured: Linger=yes keeps systemd --user (and its
+        # environment) alive across log out, so it still had QT_IM_MODULES=fcitx
+        # even though 99-zkey.conf said ibus: logging out alone fixes nothing.
+        env_file = self.home / ".config/environment.d/99-zkey.conf"
+        env_file.write_text(system_ime.env_text(self.home / ".local"))
+        fresh = dict(line.split("=", 1) for line in env_file.read_text().splitlines()
+                     if "=" in line and not line.startswith("#"))
+        stale = {**fresh, "QT_IM_MODULES": "fcitx", "SDL_IM_MODULE": "fcitx"}
+        for manager, want in ((fresh, 0), (stale, 1), (None, 2)):
+            with (patch.object(system_ime, "ibus_owner", return_value="ibus-daemon"),
+                  patch.object(system_ime, "manager_env", return_value=manager)):
+                code, output = run("verify")
+            self.assertEqual(code, want, (manager, output))
+            if want == 1:
+                self.assertIn("QT_IM_MODULES", output)
+                self.assertIn("SDL_IM_MODULE", output)
+                self.assertIn("reboot", output)
+        # Stale environment is reported even while fcitx5 still owns the name.
+        with (patch.object(system_ime, "ibus_owner", return_value="fcitx5"),
+              patch.object(system_ime, "manager_env", return_value=stale)):
+            code, output = run("verify")
+        self.assertEqual(code, 1)
+        self.assertIn("QT_IM_MODULES", output)
+
 
 if __name__ == "__main__":
     unittest.main()

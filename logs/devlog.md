@@ -215,3 +215,10 @@
 - Vượt zkey/CLAUDE.md:8 theo lệnh Hà sau khi biết. Phát hiện thêm: 95-fcitx5.conf đặt QT_IM_MODULES/SDL_IM_MODULE=fcitx, 99-zkey không ghi đè ⇒ sửa 4103d50 (RED→GREEN, Python OK).
 - disable lần1/lần2: ~/.xinputrc 8447b7… và autostart 2261b5… trả đúng byte; enable: Hidden=true, nguồn [xkb us, ibus zkey], generator env 7 biến đúng. verify vẫn 1 (fcitx5 cũ còn sống) — chờ đăng xuất/vào.
 - Web: không publish (luật cấm deploy prod); web-driver quit (out-41), 0 tiến trình. N01 chờ Hà chọn hướng.
+
+## 2026-11-17 00:35 +07 — «Xong chưa»: chưa; đăng xuất không đủ, phải khởi động lại
+
+- Đo: `verify` = 1, fcitx5 PID 119222 khởi từ 16/11 10:10 (autostart cũ, trước khi áp); gnome-shell + phiên loginctl 3 cũng từ 10:10 ⇒ Hà chưa đăng xuất (cột «1h23min» là thời gian rảnh, tôi đọc nhầm).
+- Gốc mới: Linger=yes ⇒ systemd --user (từ 09:30) sống qua đăng xuất; environment.d chỉ đọc khi trình quản lý khởi động ⇒ `show-environment` vẫn QT_IM_MODULES/SDL_IM_MODULE=fcitx dù 99-zkey.conf ghi ibus.
+- Sửa: `verify` so 99-zkey.conf với `systemctl --user show-environment` (thiếu/khác ⇒ 1, không đo được ⇒ 2); câu enable/disable đổi sang «reboot». Bài mới RED trước (AttributeError) → GREEN; đột biến `stale_keys→[]` ⇒ ĐỎ. Python 80/80; map ghi lại 217 nút.
+- verify thật giờ in đúng: «old QT_IM_MODULES, SDL_IM_MODULE … reboot».

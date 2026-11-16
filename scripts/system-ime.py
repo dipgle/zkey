@@ -3,7 +3,8 @@
 """Prepare / enable / disable zkey as the SYSTEM input method (IBus), reversibly.
 
 NOT run by default. `status` only reads. `enable` changes the login session
-(takes effect after log out / log in):
+(takes effect after a REBOOT: with Linger=yes systemd --user and its
+environment survive log out, so log out / log in alone keeps the old values):
   1. user-local install WITH the IBus component (scripts/install-user.py)
   2. ~/.config/environment.d/99-zkey.conf: GTK/QT/XMODIFIERS -> ibus,
      IBUS_COMPONENT_PATH (+ ~/.local/share/ibus/component),
@@ -19,7 +20,8 @@ NOT run by default. `status` only reads. `enable` changes the login session
 Every original is saved under ~/.local/state/zkey/system-ime/ first; `disable`
 restores each byte-for-byte (or removes what did not exist). Refuses to
 enable twice or to overwrite a 99-zkey.conf it did not write.
-`verify` only reads: who owns org.freedesktop.IBus on this session bus.
+`verify` only reads: who owns org.freedesktop.IBus, and whether the running
+systemd --user manager already has the 99-zkey.conf values.
 ZKEY_SKIP_GSETTINGS=1 skips step 4 (tests). Exit 0 ok, 1 refused/red, 2 cannot run/measure.
 """
 from pathlib import Path
@@ -99,6 +101,35 @@ def ibus_owner():
         return None
 
 
+def manager_env():
+    """Environment of the running systemd --user manager; None = unmeasurable."""
+    try:
+        result = subprocess.run(["systemctl", "--user", "show-environment"],
+                                capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode:
+        return None
+    return dict(line.split("=", 1) for line in result.stdout.splitlines() if "=" in line)
+
+
+def stale_keys():
+    """Keys of 99-zkey.conf the running manager does not have yet; None = unmeasurable.
+
+    environment.d is read only when the user manager starts. With Linger=yes it
+    survives log out, so a new login inherits the OLD values (measured 16/11).
+    """
+    p = paths()
+    if not p["env"].is_file():
+        return []
+    wanted = dict(line.split("=", 1) for line in p["env"].read_text().splitlines()
+                  if "=" in line and not line.startswith("#"))
+    actual = manager_env()
+    if actual is None:
+        return None
+    return sorted(key for key, value in wanted.items() if actual.get(key) != value)
+
+
 def env_text(prefix):
     return ("# Written by zkey scripts/system-ime.py enable; removed by disable.\n"
             "GTK_IM_MODULE=ibus\nQT_IM_MODULE=ibus\nXMODIFIERS=@im=ibus\n"
@@ -141,9 +172,15 @@ def status():
 
 def verify():
     owner = ibus_owner()
-    if owner is None:
-        print("NOT MEASURABLE: org.freedesktop.IBus unowned or no session bus")
+    stale = stale_keys()
+    if stale:
+        print(f"RED: running systemd --user still has old {', '.join(stale)}; "
+              "it outlives log out when Linger=yes, so reboot (or restart the user manager)")
+    if owner is None or stale is None:
+        print("NOT MEASURABLE: org.freedesktop.IBus unowned, no session bus, or no systemd --user")
         return 2
+    if stale:
+        return 1
     if owner != "ibus-daemon":
         print(f"RED: org.freedesktop.IBus is owned by {owner}, not ibus-daemon; zkey receives no keys")
         return 1
@@ -185,7 +222,7 @@ def enable():
         current = ast.literal_eval(state["sources"].removeprefix("@a(ss) "))
         if SOURCE not in current:
             gsettings("set", "org.gnome.desktop.input-sources", "sources", repr(current + [SOURCE]))
-    print("ENABLED for the next login: log out and back in. Undo: system-ime.py disable")
+    print("ENABLED for the next boot: reboot (log out is not enough with Linger=yes), then system-ime.py verify. Undo: system-ime.py disable")
     return 0
 
 
@@ -222,7 +259,7 @@ def disable():
     for directory in (p["state"], p["state"].parent, p["env"].parent, p["autostart"].parent):
         if directory.is_dir() and not any(directory.iterdir()):
             directory.rmdir()
-    print("DISABLED: originals restored; log out and back in. (zkey --run and the user-local install stay.)")
+    print("DISABLED: originals restored; reboot (log out is not enough with Linger=yes). (zkey --run and the user-local install stay.)")
     return 0
 
 
