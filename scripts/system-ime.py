@@ -102,6 +102,9 @@ def ibus_owner():
 def env_text(prefix):
     return ("# Written by zkey scripts/system-ime.py enable; removed by disable.\n"
             "GTK_IM_MODULE=ibus\nQT_IM_MODULE=ibus\nXMODIFIERS=@im=ibus\n"
+            # Override every key 95-fcitx5.conf sets: Qt >= 6.7 prefers the
+            # plural list, SDL has its own; either one alone revives fcitx5.
+            "QT_IM_MODULES=ibus\nSDL_IM_MODULE=ibus\n"
             "IBUS_ENABLE_SYNC_MODE=1\n"
             f"IBUS_COMPONENT_PATH=/usr/share/ibus/component:{prefix}/share/ibus/component\n")
 

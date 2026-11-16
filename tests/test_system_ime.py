@@ -13,6 +13,9 @@ system_ime = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(system_ime)
 XINPUTRC = "# im-config(8) generated\nrun_im fcitx5\n# im-config signature: x  -\n"
 FCITX = "GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nXMODIFIERS=@im=fcitx\n"
+# Byte copy of the real ~/.config/environment.d/95-fcitx5.conf (16/11).
+FCITX_ENV_FULL = ("GTK_IM_MODULE=fcitx\nQT_IM_MODULE=fcitx\nQT_IM_MODULES=fcitx\n"
+                  "XMODIFIERS=@im=fcitx\nSDL_IM_MODULE=fcitx\n")
 FCITX_AUTOSTART = ("[Desktop Entry]\nName=Fcitx 5\nExec=/usr/bin/fcitx5 -d\nType=Application\n"
                    "X-GNOME-Autostart-enabled=true\n")
 
@@ -46,6 +49,12 @@ class SystemImeTests(unittest.TestCase):
         text = (self.home / ".config/environment.d/99-zkey.conf").read_text()
         self.assertIn("IBUS_ENABLE_SYNC_MODE=1\n", text)
         self.assertIn("GTK_IM_MODULE=ibus\n", text)
+        # 95-fcitx5.conf also sets the plural Qt list (preferred by Qt >= 6.7)
+        # and SDL; leaving them makes those apps start/use fcitx5 (16/11).
+        for key in ("QT_IM_MODULE", "QT_IM_MODULES", "SDL_IM_MODULE", "XMODIFIERS"):
+            fcitx_keys = {line.split("=")[0] for line in FCITX_ENV_FULL.splitlines()}
+            self.assertIn(key, fcitx_keys)
+            self.assertRegex(text, rf"(?m)^{key}=(ibus|@im=ibus)$")
         self.assertIn(f"{self.home / '.local'}/share/ibus/component", text)
         self.assertGreater("99-zkey.conf", "95-fcitx5.conf", "must sort after fcitx5 to win")
         self.assertIn("run_im ibus", (self.home / ".xinputrc").read_text())
