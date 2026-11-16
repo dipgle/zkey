@@ -11,3 +11,11 @@
 - Phép kiểm lõi/protocol không thay thế nghiệm thu desktop; ghi rõ CHƯA ĐO ĐƯỢC nếu thiếu GUI hoặc session bus.
 - Cấu hình nằm trong TOML; thay đổi qua màn thiết lập native, kiểm hợp lệ trước lưu. Bí mật và nội dung gõ không lưu.
 - Kết thúc mạch: cập nhật `TODO.md`, `memory/active-context.md`, `logs/devlog.md`; không tuyên bố sản phẩm xong khi chưa nghiệm thu gõ thật.
+
+## Tiếp tục làm, không tự dừng giữa chừng (Hà 16/11/2026)
+
+- Nhận việc/bản giao ⇒ tự làm tiếp trong phạm vi đã giao; không đợi người dùng nhắc hoặc duyệt lại việc đã giao.
+- Phát hiện lỗi, chạy xong một nhóm kiểm, ghi sổ hoặc có báo cáo tiến độ KHÔNG phải điểm dừng. Còn việc tự làm được ⇒ truy gốc, sửa, kiểm hồi quy rồi sang việc kế; báo tiến độ ngắn trong lúc làm, không kết thúc lượt bằng danh sách việc mình vẫn làm tiếp được.
+- Một việc bị chặn ⇒ ghi bằng chứng và chuyển sang việc độc lập còn làm được; không lấy desktop chờ đăng nhập lại làm lý do dừng việc lõi hoặc kiểm riêng.
+- Chỉ dừng khi người dùng yêu cầu dừng/đổi việc, phạm vi đã đạt đủ nghiệm thu, hoặc sau khi quét hết việc mở thì mọi đường tiếp đều cần quyền/quyết định/thao tác người dùng hay điều kiện ngoài khả năng phiên. Khi đó báo rõ đã thử gì, chặn ở đâu, cần gì; không vượt hàng rào an toàn để tránh dừng.
+- Sắp hết ngữ cảnh ⇒ làm gọn và bàn giao theo quy định chuyển phiên, không bỏ việc bằng một báo cáo "chưa xong".

@@ -1,5 +1,40 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 16/11 09:45 — chốt lượt, nhường phiên thiết kế theo yêu cầu mới của Hà
+
+- Python73/73 mã0; `impact.py --record`137 nút/82 test. Hai ca mới RED→GREEN: socket bus phải ở runtime riêng thay `/tmp` bị Snap che; runtime/session-bus phải cùng đời để document-portal không giữ mount trong thư mục engine đã dọn. `bus_config.py` giữ policy/auth hệ thống, chỉ đổi listen và resolve include tương đối; `launch.py`/`private_bus.py` cùng dùng. Chưa cài bản này ngoài repo.
+- Firefox Snap mở được khi `DISABLE_WAYLAND=1` (launcher Snap tự ép Wayland nếu thấy socket host). Sau khi bus nhìn thấy từ Snap, lộ cleanup `PermissionError runtime/doc`; đổi lifetime runtime sang đời bus hết lỗi cleanup ở lượt sau. Firefox vẫn đỏ tại phím đầu nhưng `.tmp/firefox-input.png` **là màn LOGO STARTUP**, chưa thấy ô gõ. Title/DOM activeElement/focus X11 KHÔNG đủ chứng minh UI sẵn sàng. Không kết luận lỗi nhập chữ engine từ lượt này. Chưa tìm/đóng startup overlay; chưa sửa fixture readiness.
+- Lượt cuối `accept-xvfb.sh` mã1 (`.tmp/accept-xvfb.log`): GTK4+GTK3/bypass/settings đạt; plugin VTE không thấy tiê, ptyxis/tmux H nhận nguyên văn. Đo env phiên `ZKEY_MODE=off`; chưa chạy đối chứng quoted, không tự coi đã xác định toàn bộ nguyên nhân. Bộ kiểm chưa chuẩn hoá mode đầu vào là vấn đề thiết kế phép đo.
+- Portal thật vẫn active/PID1936, mount1→1; không mount riêng còn lại trong `/proc/mounts`. Máy reboot09:30, loginctl chỉ còn manager user1+GDM greeter, chưa phiên desktop user1; ibus ở greeter không chứng minh zkey user1 đã chạy. Số PID365673 và phiên15/11 ở mục cũ là lịch sử trước reboot.
+- Không có bài kiểm nền. Hà chuyển mục tiêu sang thiết kế toàn bộ, nên dừng sửa sản phẩm/kiểm mới và bàn giao diff+sổ trực tiếp qua synthetic cho ses_e1dc8e2baffeVY9CklW9BwSK9n; chưa commit/push/deploy. Brief `.tmp/brief-core-design-ke-nhiem-20261116-0945.md`.
+
+## 16/11 08:10 — kế nhiệm: trang live khớp byte; phát hiện P0-WebKit
+
+### Đã chạy thật
+
+- `scripts/web-driver.py --verify-site` trên Xvfb + `private_bus.py`: WebKit thật mở `https://zkey.dipgle.com/`, JS `fetch('/', {cache:'no-store', credentials:'omit'})` + ArrayBuffer/SHA-256. HTTP200, HTML, 8.763 byte, SHA-256 `417f5ceed5be9509e5fc0ebb6813f5c5860a58ec5b50752c778057b9bcb017c6` trùng nguồn. Đối chứng thêm newline vào **nguồn đối chiếu trong RAM** ⇒ mã1; bản đúng ⇒0. Không upload/deploy/đăng nhập, không đổi tệp site. `.tmp/site-verification.json`. Chế độ này dùng profile ephemeral, không tái dùng cookie Studio.
+- Python71/71; Rust9/9; clippy `-D warnings`/release build mã0. `impact.py --record`:133 nút/80 test (71 Python+9 Rust); selector không rõ tệp ⇒ toàn bộ. `audit_measurements.py`:13 tệp/234 assertion,0 mẫu nghi ngờ được nhận diện; không thay soát ngữ nghĩa.
+- `accept-xvfb.sh`:7 bài mã0 (GTK4+GTK3, VTE, plugin, ptyxis, settings, tmux); `.tmp/accept-xvfb.log`; portal active/PID365673, mount1→1. Lượt trước bị công cụ cắt ở120s, mã143: **không tính xanh**; lượt lại cho600s hoàn tất. Lượt bị cắt còn có dbind warning AT-SPI; lượt hoàn tất không có warning đó. Không lấy latency của lượt chịu tải làm benchmark mới.
+- Read-only: desktop GNOME vẫn đăng nhập15/11 14:54:01, fcitx5 PID3619 còn chạy; không bật zkey/restart/đăng xuất. Cấu hình thật (XDG_CONFIG_HOME=/home/user1/.config) có nguồn zkey; manifest bản cài16/16 khớp. Môi trường OpenCode dùng thư mục cấu hình riêng, lần đọc gsettings mặc định ra rỗng KHÔNG phải trạng thái desktop.
+
+### P0-WebKit — **ĐỎ, chưa sửa**
+
+- Bộ đo mới `scripts/accept-webkit.py` dùng WebKitGTK2.52.6/Gtk3.24.52/IBus1.5.34~rc2, X11/Xvfb + bus/engine riêng, fixture browser có sẵn. Phím XTest, giá trị/input/composition do **trang tự báo qua tiêu đề**; không gán DOM hoặc gọi API để tạo dữ liệu gõ.
+- 4/4 lượt: tiền tố `t`, `ti`, `tie` đúng; phím `e` tiếp → `tieê`, không phải `tiê`. Engine khai caps41, nhận surrounding thật, gửi delete(-1,1) (`.tmp/run-gy_2vih_.log:12`); WebKit `WebKitInputMethodContextImplGtk` chỉ phát4 `committed`, không phát `delete-surrounding`. Ảnh `.tmp/webkit-input.png` đã xem. Đây là lỗi tương thích có thật; **chưa chứng minh điểm làm rơi bên GTK-IBus hay WebKit**, không đổ lỗi upstream khi chưa đủ bằng chứng.
+- Vẫn kiểm ô password độc lập sau lỗi text: Tab bằng phím, chuỗi giả3 phím nguyên dạng,0 composition, purpose8/protected=True (`.tmp/run-gy_2vih_.log:16–22`). Toàn bài vẫn mã1; các bước phrase/Backspace chưa đi tới được báo skip, không nhận xanh.
+- `zkey/engine.py` chỉ thêm trace offset/count, KHÔNG nội dung gõ và KHÔNG sửa hành vi. Khả năng **đọc** surrounding không đủ chứng minh có thể **xoá**; apply hiện gửi delete rồi commit ngay, nên suffix có thể bị nhân. Cần truy đường xoá và thiết kế xác nhận/fallback an toàn; không vá bằng Backspace giả hoặc đoán tên cửa sổ.
+- Firefox/Wayland-native/Chrome/Electron vẫn CHƯA ĐO; WebKit này không thay nghiệm thu các frontend đó. P0-001 vẫn chặn phát hành. Không cài/đẩy mã mới lên máy người dùng.
+
+Chạy riêng trên Xvfb của dự án (không desktop):
+
+```bash
+PATH="$PWD/.tmp/tools/root/usr/bin:$PATH" TMPDIR="$PWD/.tmp" \
+  xvfb-run -a -f "$PWD/.tmp/webkit-input.auth" -s '-screen 0 1280x900x24 -nolisten tcp' \
+  bash -c 'export ZKEY_TEST_DISPLAY="$DISPLAY"; exec /usr/bin/python3 scripts/accept-webkit.py'
+```
+
+So byte: cùng wrapper, thay lệnh cuối bằng `scripts/web-driver.py --verify-site`.
+
 ## 15/11 15:40 — plugin bash không còn viết lại lệnh do máy gõ
 
 - Báo từ huba: lệnh mở phiên gõ qua `tmux send-keys -l` vào bash ⇒ quoted mode đổi `Bash(git reset:*)` → `git rết` (thủng `--disallowedTools`), `PROJECTS_ROOT` → `RÔT`, `project_doc_max_bytes` → `mã`.

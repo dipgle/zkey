@@ -156,3 +156,56 @@
 ## 2026-11-16 — chạm Ctrl giữ từ; chuyển phiên
 
 - freeze_word: u+Ctrl+s → us. 5 unit (3 RED→GREEN), gõ thật GTK3 XANH, accept-xvfb 7 XANH + MÁY NGUYÊN; ~/.local cập nhật. Hook ≥50% ⇒ bản giao .tmp/brief-core-ke-nhiem-20261116.md.
+
+## 2026-11-16 08:10 +07 — kế nhiệm: so byte live; P0-WebKit tái hiện
+
+- Đóng PID9330/pane%4 sau kiểm sạch/remote2503149/0 con/0 queue. Không main/làn/dwork. Desktop vẫn phiên15/11 14:54/fcitx5; không thay cấu hình. OpenCode XDG_CONFIG_HOME riêng ⇒ phải đọc trạng thái máy với ~/.config. Manifest16/16 khớp.
+- WebKit thật `web-driver.py --verify-site`: trang live8.763 byte/SHA256 trùng nguồn, đối chứng nguồn+newline⇒1, lành⇒0; `.tmp/site-verification.json`. Ephemeral/no-cookie/no-cache; không deploy. Phần mới có3 unit đối chứng; timeout JS không còn rơi vềNone.
+- Python71/71; Rust9/9; clippy/release0; impact133 nút/80 test; audit13 tệp/234 assertion. accept-xvfb7 bài0 + MÁY NGUYÊN mount1→1/PID365673. Lượt đầu timeout120s/mã143 KHÔNG xanh; lượt lại600s hoàn tất.
+- PHÁT HIỆN P0: `accept-webkit.py` gõ thật tiee→tieê (4/4), cần tiê. Engine gửi delete(-1,1) nhưng WebKit IM context thấy4commit/0delete; `.tmp/run-gy_2vih_.log:12`. Password giả vẫn nguyên/0composition/purpose8 (:16–22); ảnh `.tmp/webkit-input.png` đã xem. Cổng vẫnĐỎ1, phrase/Backspace chưa tới. Engine chỉ thêm log offset/count, không nội dung. Chưa khoanh điểm rơi GTK-IBus/WebKit, chưa vá.
+- Việc kế core: truy xoá bị rơi + xác nhận trước commit thay thế; Firefox/Wayland/Chrome/Electron/vim/zsh/SSH/.deb còn mở. Chưa commit/đẩy/cài; không job nền. Lệnh Xvfb riêng: docs/verification.md (đầu tệp); bộ cũ `bash scripts/accept-xvfb.sh` (≥300s).
+
+## 2026-11-16 — Hà yêu cầu ghi luật không tự dừng
+
+- Ghi vào `CLAUDE.md` mục "Tiếp tục làm, không tự dừng giữa chừng": báo cáo/phát hiện lỗi/ghi sổ không phải điểm dừng; một việc bị chặn thì làm việc độc lập; chỉ dừng ở nghiệm thu đủ, yêu cầu người dùng hoặc mọi đường thực sự bị chặn, không vượt quyền/an toàn.
+- Tiếp tục P0-WebKit, không chờ duyệt lại. So binary WebKit2.52.6: constructor Gtk IM context nối preedit/commit/retrieve-surrounding tại0xf27870–0xf27982 nhưng thiếu delete-surrounding. Đang đối chứng bằng hook quan sát riêng; chưa sửa hệ thống hoặc tuyên bố đã vá.
+
+## 2026-11-16 — đối chứng WebKit; yêu cầu email/link và câu hỏi viết mới
+
+- Diagnostic nối callback Gtk→WebKit thiếu trong app kiểm:7prefix/phrase/⌫/password đạt,23 input events/20 engine keys; trace run-7p_xe3te.log. Core/engine giữ nguyên, stock vẫnĐỎ; không coi diagnostic là sản phẩm đã sửa.
+- Hà yêu cầu info@dipgle.com: thêm mailto footer nguồn web, link web+mail ở đầu README. Render1280/390 mã0, ảnh đã xem;0tài nguyên ngoài/không tràn ngang. Chưa publish/push: live chưa có thay đổi này. So byte08:02 là bằng chứng lịch sử trước sửa nguồn.
+- GitHub: gh phiên này chưa auth; webfetch bị từ chối, không thử lại. Xếp huba gh chỉ-đọc ⇒ log mã0, homepageUrl rỗng (.tmp/github-about.json); README remote chưa có link. Không đổi metadata remote.
+- Câu hỏi tái sử dụng/viết mới: cargo tree chỉzkey-core, FFI gọi lib của dự án; không suy từ đó thành kiểm toán xuất xứ mọi dòng.100k mẫu Rust p50=99ns/p99=2152ns; Python+FFI p50=2222ns/p99=6601ns, không phải latency UI. `docs/reuse-and-rewrite.md` ghi phạm vi/số max/đối chứng/phương án; chưa chọn viết lại toàn bộ hoặc thêm interpose toàn app.
+- Không job nền, không thay input stack/cài ngoài repo. Việc kế vẫn đường tương thích an toàn; web publish và Git remote chưa thực hiện.
+
+## 2026-11-16 09:45+07 — chốt và nhường phiên thiết kế
+
+- Hà đổi mục tiêu: thiết kế chi tiết/sơ đồ/mã vấn đề; ses_e1dc8e2baffeVY9CklW9BwSK9n nhận cây. Không mở việc/sửa sản phẩm thêm. Brief .tmp/brief-core-design-ke-nhiem-20261116-0945.md; chưa commit/push/cài, mọi diff giữ nguyên.
+- Python73/73, impact137nút/82test. Bus socket /tmp bị Snap che ⇒ bus_config.py+launch/private_bus đặt socket trong runtime riêng, giữ policy/auth; unitRED→GREEN. Firefox kích privateportal làm mount doc giữ thư mục engine ⇒ runtime dùng đời bus, guard socket/runtime riêng; unitRED→GREEN, lượt sau hết PermissionError cleanup.
+- Firefox vẫnĐỎ t→rỗng nhưng ảnh .tmp/firefox-input.png là LOGO STARTUP, không phải ô gõ; title/activeElement chưa đủ readiness. Không kết luận engine hỏng từ ca này. Test dùng DISABLE_WAYLAND để Snap không ép Wayland; không tắt sandbox.
+- Lượt accept-xvfb cuốiĐỎ1: GTK4/GTK3/bypass/settings đạt, plugin/ptyxis/tmux H nguyên văn. Env ZKEY_MODE=off đã đo, chưa đối chứngquoted; log .tmp/accept-xvfb.log. Portal active/PID1936/mount1→1. Máy reboot09:30, hiện GDM chưa user1 desktop; số đo cũ chỉ lịch sử.
+- Nền: KHÔNG CÓ, không mount riêng sót. Lệnh chạy lại bash scripts/accept-xvfb.sh (≥300s), chú ý mode. Bàn giao trực tiếp qua synthetic, dừng ghi cây sau tin nhường.
+
+## 2026-11-16 — native rewrite được giao trực tiếp
+
+- Hà: viết lại, không gói bộ gõ/crate ngoài; tự thiết kế/code/kiểm, không hỏi lựa chọn thường. `native/` độc lập, không nhập/link core cũ. Chỉ ABI hệ thống GLib/GIO/IBus; chưa cài/đổi máy.
+- Core9test: RED7/9→GREEN9/9. State10test đạt; clippy0/release0. GIO factory/engine native gõ thật GTK3 7prefix/câu tiếng việt/Backspace đạt, ảnh .tmp/native-typing.png đã xem. Sai ABI FocusId/ActiveSurroundingText trả tuple thay boolean đã gây GLibCRITICAL; đổi bool, lượt sau không còn. Không dùng subclass-offset.
+- Siết bài password: purpose8 không tới engine trên đường GTK3 bỏ IM, bàiĐỎ1; đang đóng protected khi focus-out và đổi assert sang vết thực nhận+UIpassword nguyên (chưa chạy lại). Không tuyên bố security hoàn tất. Config native strict TOML/audit intent/atomic rename mới viết, chưa kiểm.
+- Native mặc định không cho rewrite chưa nghiệm thu; cờ thử nghiệm riêng còn P0-WebKit, chưa giả vờ viết Rust là sửa upstream. Kế: launcher/settings/gói+UIregression. Không job nền; giữ nguyên toàn bộ diff bàn giao.
+
+## 2026-11-16 — native kiểm/đóng gói thử, chưa phát hành
+
+- Rust35/35, clippy0; Python trace80/80 (74cũ+6gói), map203nút/126kiểm. GTK3/4 mỗi15/15burst0ms; settings UI→TOML/audit→reopen→hoà/hòa + startup-error/exit1 đạt. Launcher/VTE15/15, ECHO-off không lộ/không đổi. Bỏ eager ActiveSurroundingText: warningVTEĐỎ→hết. Ảnh `.tmp/native-*.png` đã xem.
+- Race engine chết/app đóng: child-process regressionĐỎ→xanh (`native/src/launch.rs`, session_exit). Config hỏng khi chạy: cảnh báo nhìn thấy→literal bypass→UI repair→Telex đạt; sửa socket AT-SPI quá dài, accessibility của dialog. UI kiểm hash nguồn độc lập, gói kiểm bản sao; test cấy lệch source/binary bị từ chối.
+- Stage `.tmp/native-review-20261116-r1.deb`, **không cài**. Extract38file/0hash lệch; nguồn kèm khớp binary build1028f940a324…; chạy binary giải nén qua launcher/VTE15/15 đạt. GLIBC>=2.39,amd64,0crate. Không gọi development bundle là sản phẩm cuối.
+- QG chungĐỎ1: cây26tệp chưa commit, rustfmt baseline cũ, regexsecrets bắt nhầm password/data giả. WebKit rewrite vẫnĐỎtiee→tieê; bypasskhôngTelex. N01–N07 còn treo (`docs/native-rewrite.md`). PortalPID1936/mount1 giữ nguyên lần đo gần nhất.
+- Hà không nhận QR: mở lại web-driver riêng/cpanel.tafalo.com; ảnhTele2766 đã gửi nhưng Hà cần **link như cũ**, đang lấy link mới. Không publish/đổi hệ thống. Nền: web-driver trên Xvfb riêng, cmd.json opquit/idmới để dừng; không jobtestnền.
+
+## 2026-11-16 17:50–18:30 +07 — phiên claude acc6: gom commit, corpus Telex, desktop thật
+
+- Phiên trước: không thấy tiến trình, ghi cuối 13:13. web-driver vẫn chạy; `look` 17:52 cho thấy tfl5 ĐÃ ĐĂNG NHẬP (Operator) — QR đã được duyệt sau 13:08. Không publish.
+- Đo lại: native 38/38+clippy0, legacy Rust/clippy0, Python 74/74. Gom diff thành 4 commit (8986445 6be19c0 99d03a1 6286b4f), không push.
+- Hướng preedit cho N01 bị loại: `docs/input-contract.md:5` + `docs/native-rewrite.md:60` cấm giữ từ trong preedit.
+- N06 (8c416db): corpus 134 dòng/251 phép; 1 ca oracle của tôi sai (`tiesng`) sửa thành `tiesneg`. Mutant bỏ ưu tiên ê/ơ ⇒ĐỎ 11/251, khôi phục XANH. impact.py không quét native/tests/*.rs ⇒ RED→GREEN; map 216/136.
+- Desktop thật: GNOME Wayland tty2; fcitx5 PID119222 giữ org.freedesktop.IBus/portal.IBus; IBus GNOME service failed 10:10 «already has an ibus-daemon». system-ime.py (e4af712): enable ẩn autostart fcitx5 có sao lưu, `verify` chỉ đọc; test RED3→GREEN10/10, Python 79/79; máy thật verify=1, bus chết=2. CHƯA áp lên máy (chờ Hà).
+- Nền: web-driver PID286546 (đăng nhập tfl5). Không job test nền.
