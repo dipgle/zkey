@@ -238,3 +238,7 @@
 - Sửa: chọn nguồn zkey bằng mru-sources trong bản chép dconf (bỏ Super+Space), chờ chữ đúng có trần (20/30 s) thay ngủ cố định, ghi độ trễ + load.
 - Sau sửa: login 3/3 mã 0 (phím cuối→chữ 0,8/0,4/1,0 s ở load ~24, KHÔNG phải số độ mượt); control-squatter mã 1. Dconf thật: disabled-extensions @as [], mru [('xkb','us')] (không phải giá trị bản chép).
 - Gỡ fcitx5 lần 2 (07:17): lại «sudo: timed out», 10 gói còn nguyên; không mở lại lần 3.
+
+## 2026-11-17 09:52 +07 — đã gỡ fcitx5
+
+- Lần 3 (09:50, Hà ngồi máy): `.tmp/remove-fcitx5.sh` GATE_EXIT=0, gỡ đúng 13 gói đã mô phỏng; dpkg không còn fcitx5*; /usr/bin/fcitx5, org.fcitx.Fcitx5.service, /etc/xdg/autostart đều vắng. fcitx5 PID 119222 vẫn sống tới reboot. Kế: Hà khởi động lại ⇒ `system-ime.py verify` phải 0 + gõ thật.
