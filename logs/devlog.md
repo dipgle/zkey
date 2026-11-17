@@ -231,3 +231,10 @@
 - Lần 2 login: env 5 biến ibus, fcitx5 không chạy, owner ibus-daemon, «Tieengs Vieejt» ⇒ «Tiếng Việt» (mã 0). control-squatter ⇒ mã 1; khi đó chữ vẫn ra đúng vì ibus-daemon không thoát (fcitx5 16/11 thì làm ibus thoát). disabled-extensions thật trước/sau = @as [].
 - Chưa truy: dò đầu «aa» ra «a» ngay sau Esc (bàn phím us).
 - Gỡ fcitx5: mô phỏng `apt-get -s remove` 13 gói, chỉ fcitx5 + libxcb-ewmh2/imdkit1. Tab ptyxis 07:08 ⇒ «sudo: timed out», GATE_EXIT=1, chưa gỡ gì.
+
+## 2026-11-17 07:30 +07 — phiên ẩn: ĐỎ/XANH chập chờn là trễ, không mất phím
+
+- 3 lượt cũ: 2/0/1. Dòng thời gian keys.jsonl × app-events.jsonl: không phím nào mất; máy load 20–27/4 nhân, Ctrl+A/Backspace gửi 7,0 s tới 11,2 s mới có hiệu lực, `â` tới 60 ms SAU lúc đọc cố định 1,5 s ⇒ bộ dò đọc trạng thái trung gian (phép đo mù ⑥).
+- Sửa: chọn nguồn zkey bằng mru-sources trong bản chép dconf (bỏ Super+Space), chờ chữ đúng có trần (20/30 s) thay ngủ cố định, ghi độ trễ + load.
+- Sau sửa: login 3/3 mã 0 (phím cuối→chữ 0,8/0,4/1,0 s ở load ~24, KHÔNG phải số độ mượt); control-squatter mã 1. Dconf thật: disabled-extensions @as [], mru [('xkb','us')] (không phải giá trị bản chép).
+- Gỡ fcitx5 lần 2 (07:17): lại «sudo: timed out», 10 gói còn nguyên; không mở lại lần 3.

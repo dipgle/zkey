@@ -47,7 +47,7 @@ DISPLAY_NAME = "zkey-headless-0"
 TYPED = "Tieengs Vieejt"  # synthetic Telex
 WANT = "Tiếng Việt"
 MIN_AVAILABLE_MB = 2500
-SUPER_L, CONTROL_L, BACKSPACE = 0xFFEB, 0xFFE3, 0xFF08
+CONTROL_L, BACKSPACE = 0xFFE3, 0xFF08
 
 
 def system_ime():
@@ -238,6 +238,10 @@ def inside(base, first):
     disabled = [] if current in ("", "@as []") else [item.strip(" '") for item in current.strip("[]").split(",")]
     subprocess.run(["gsettings", "set", "org.gnome.shell", "disabled-extensions",
                     repr(sorted(set(disabled) | {"ding@rastersoft.com"}))], timeout=10, check=False)
+    # zkey as the active source without Super+Space: the switcher popup can keep
+    # the keyboard grab under load (17/11 07:18: every later key lost).
+    subprocess.run(["gsettings", "set", "org.gnome.desktop.input-sources", "mru-sources",
+                    "[('ibus', 'zkey'), ('xkb', 'us')]"], timeout=10, check=False)
     if first == "fcitx5":
         spawn(["fcitx5"], "fcitx5.log")
     elif first == "squatter":
@@ -278,7 +282,11 @@ def inside(base, first):
         conn.call_sync("org.gnome.Mutter.RemoteDesktop", path, session, "Start", None, None,
                        Gio.DBusCallFlags.NONE, 5000, None)
 
+        keylog = open(base / "keys.jsonl", "w")
+
         def key(keysym, pressed):
+            keylog.write(json.dumps({"t": time.monotonic(), "keysym": keysym, "pressed": pressed}) + "\n")
+            keylog.flush()
             conn.call_sync("org.gnome.Mutter.RemoteDesktop", path, session, "NotifyKeyboardKeysym",
                            GLib.Variant("(ub)", (keysym, pressed)), None, Gio.DBusCallFlags.NONE, 2000, None)
 
@@ -306,33 +314,38 @@ def inside(base, first):
                 break
         else:
             return finish(2, f"NOT MEASURABLE: GTK4 window never got focus ({app_state()})")
+        time.sleep(1.5)  # let the overview finish closing, as a user would
+
+        # Wait for the text, never sleep a fixed time and read: on a loaded desk
+        # (load 24 on 4 cores, 17/11 07:20) Ctrl+A/Backspace took 4 s to land and
+        # a fixed 1.5 s read saw an intermediate state (blind measure shape 6).
+        def settle(want, seconds):
+            start = time.monotonic()
+            if wait(lambda: (app_state() or {}).get("text") == want, seconds):
+                return round(time.monotonic() - start, 3)
+            return None
 
         def clear():
             key(CONTROL_L, True)
             tap(ord("a"))
             key(CONTROL_L, False)
             tap(BACKSPACE)
-            time.sleep(0.5)
+            return settle("", 20)
 
-        # Which input source is active is unknown: probe with "aa" like a user would,
-        # switch with Super+Space (the real shortcut) if it stays Latin.
-        report["probes"] = []
-        for attempt in range(3):
-            type_text("aa")
-            time.sleep(1)
-            seen = (app_state() or {}).get("text")
-            report["probes"].append(seen)
-            clear()
-            if seen == "â":
-                break
-            key(SUPER_L, True)
-            tap(0x20)
-            key(SUPER_L, False)
-            time.sleep(1.5)
+        # mru-sources made zkey active; "aa" -> "â" proves it before the real text.
+        type_text("aa")
+        report["probe_seconds"] = settle("â", 20)
+        report["probe"] = app_state()
+        if report["probe_seconds"] is None:
+            return finish(2, f"NOT MEASURABLE: zkey not composing at start (probe {report['probe']}); "
+                             "see keys.jsonl / app-events.jsonl")
+        if clear() is None:
+            return finish(2, f"NOT MEASURABLE: field did not clear ({app_state()})")
         type_text(TYPED)
-        time.sleep(1.5)
         report["typed"] = TYPED
+        report["last_key_to_text_seconds"] = settle(WANT, 30)
         report["text"] = (app_state() or {}).get("text")
+        report["loadavg"] = Path("/proc/loadavg").read_text().split()[0]
     except GLib.Error as error:
         return finish(2, f"NOT MEASURABLE: RemoteDesktop call failed: {error.message}")
     engine = subprocess.run(["ibus", "engine"], capture_output=True, text=True, timeout=5)
@@ -369,6 +382,16 @@ def app(result_path):
     window.set_child(entry)
     loop = GLib.MainLoop()
     window.connect("close-request", lambda *_: loop.quit() or False)
+
+    events = open(result.with_name("app-events.jsonl"), "w")
+
+    def event(*_):
+        events.write(json.dumps({"t": time.monotonic(), "focus": window.is_active(), "text": entry.get_text()},
+                                ensure_ascii=False) + "\n")
+        events.flush()
+
+    entry.connect("changed", event)
+    window.connect("notify::is-active", event)
 
     def dump():
         part = result.with_suffix(".part")
