@@ -80,6 +80,7 @@
     "native/tools/stage.py",
     "scripts/accept-editor.py",
     "scripts/accept-firefox.py",
+    "scripts/accept-headless-gnome.py",
     "scripts/accept-ptyxis.py",
     "scripts/accept-settings.py",
     "scripts/accept-terminal.py",

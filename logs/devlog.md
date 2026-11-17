@@ -222,3 +222,12 @@
 - Gốc mới: Linger=yes ⇒ systemd --user (từ 09:30) sống qua đăng xuất; environment.d chỉ đọc khi trình quản lý khởi động ⇒ `show-environment` vẫn QT_IM_MODULES/SDL_IM_MODULE=fcitx dù 99-zkey.conf ghi ibus.
 - Sửa: `verify` so 99-zkey.conf với `systemctl --user show-environment` (thiếu/khác ⇒ 1, không đo được ⇒ 2); câu enable/disable đổi sang «reboot». Bài mới RED trước (AttributeError) → GREEN; đột biến `stale_keys→[]` ⇒ ĐỎ. Python 80/80; map ghi lại 217 nút.
 - verify thật giờ in đúng: «old QT_IM_MODULES, SDL_IM_MODULE … reboot».
+
+## 2026-11-17 07:15 +07 — phiên GNOME ẩn (Hà «chạy phiên ẩn đi») + gỡ fcitx5
+
+- Docker không dùng: cấm trong --disallowedTools của phiên, user1 không ở nhóm docker, và container không phải phiên thật.
+- `scripts/accept-headless-gnome.py`: gnome-shell 50.1 --headless --no-x11 trong private_bus, scope systemd MemoryMax=2500M CPUWeight=30; XDG_* là bản chép/rỗng dưới .tmp; env = generator environment.d. Thứ tự xấu nhất: autostart trước unit `ibus-daemon --panel disable`.
+- Lần 1: cửa sổ không được focus (DING lặp khởi mỗi 3 s, kéo Nautilus/Tracker). Sửa: tắt DING trong bản chép dconf (gsettings qua bus riêng), Esc đóng overview. Đếm sót tiến trình chờ tới 10 s.
+- Lần 2 login: env 5 biến ibus, fcitx5 không chạy, owner ibus-daemon, «Tieengs Vieejt» ⇒ «Tiếng Việt» (mã 0). control-squatter ⇒ mã 1; khi đó chữ vẫn ra đúng vì ibus-daemon không thoát (fcitx5 16/11 thì làm ibus thoát). disabled-extensions thật trước/sau = @as [].
+- Chưa truy: dò đầu «aa» ra «a» ngay sau Esc (bàn phím us).
+- Gỡ fcitx5: mô phỏng `apt-get -s remove` 13 gói, chỉ fcitx5 + libxcb-ewmh2/imdkit1. Tab ptyxis 07:08 ⇒ «sudo: timed out», GATE_EXIT=1, chưa gỡ gì.
