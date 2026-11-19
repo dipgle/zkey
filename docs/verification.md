@@ -1,6 +1,6 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
-## 19/11 12:30 — plugin dòng lệnh dùng `zkey-native --line`; gốc lỗi Firefox
+## 19/11 11:40 — plugin dòng lệnh dùng `zkey-native --line`; gốc lỗi Firefox
 
 ### Đã chạy thật
 
@@ -16,8 +16,16 @@
 
 ### CHƯA ĐO ĐƯỢC
 
-- Firefox thật với bản sửa (cần build đã cài lại; luật dự án cấm tự đổi bộ gõ hệ thống/restart IBus trong phiên).
-- WebKit N01 vẫn ĐỎ; VTE/ptyxis thật với plugin mới (mới có cổng tmux).
+- Firefox thật với bản sửa: **đã cài bản sửa lên máy Hà lúc 11:47** (Hà 19/11 «tự làm tự kiểm đi»), kiểm tự động đúng mẫu gọi của Firefox qua D-Bus của daemon thật ⇒ xem mục dưới; còn chờ chính Hà gõ trong Firefox để nghiệm thu mắt.
+- WebKit N01 vẫn ĐỎ; vim/TUI/zsh/SSH.
+
+## 19/11 11:50 — cài bản sửa + tự kiểm mẫu gọi Firefox trên engine ĐÃ CÀI
+
+- Hà ra lệnh «tự làm tự kiểm đi» ⇒ gỡ/cài lại bằng `scripts/native-ime.py disable` rồi `enable --trace` (công cụ đảo ngược được, đã dùng trước đó). Mã thoát 0/0; `status`: engine có trong daemon; `sha256` binary cài **trùng** binary build `2f979f84…`; một tiến trình engine mới (PID 4186151, 11:47); `ibus engine` qua địa chỉ daemon = `zkey-native`; không còn tiến trình engine cũ.
+- **Cổng mới `native/tests/accept_firefox_pattern.py`** (D-Bus thật, không bơm phím, không đổi nguồn nhập, không đụng tài liệu người dùng): tạo engine qua factory của **engine đã cài**, gửi đúng chuỗi Firefox đã đo (`SetSurroundingText` → `ProcessKeyEvent` → áp `DeleteSurroundingText`/`CommitText` → `Reset` → `SetSurroundingText`), gõ `tieengs`. Kết quả: `text='tiếng' keys=7 removes=2 commits=7` ⇒ **PASS, GATE_EXIT=0**.
+- **Đối chứng ngược:** cùng cổng với client bỏ `SetSurroundingText` sau Reset (`ZKEY_FIREFOX_SKIP_SURROUNDING=1`) ⇒ `text='tieengs' removes=0` ⇒ **ĐỎ, GATE_EXIT=1**. Cổng đỏ được, không phải assert luôn xanh.
+- Trace của engine đã cài ghi `surrounding-event ... chars=N cursor=N anchor=N` (chỉ số); ngữ cảnh thử đã `Destroy`, không rò.
+- Còn lại cần mắt người: Hà gõ `tieengs` trong Firefox thật (engine trên máy đã là bản sửa).
 
 ## 16/11 09:45 — chốt lượt, nhường phiên thiết kế theo yêu cầu mới của Hà
 
