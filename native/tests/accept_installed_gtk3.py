@@ -20,10 +20,16 @@ import subprocess
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
-DISPLAY = ":81"
 WORD = "tieengs"
 EXPECTED = "tiếng"
 SKIP_ENGINE = os.environ.get("ZKEY_INSTALLED_SKIP_ENGINE") == "1"
+
+
+def free_display():
+    for number in range(90, 100):
+        if not Path(f"/tmp/.X11-unix/X{number}").exists():
+            return f":{number}"
+    return None
 
 
 def not_measurable(reason):
@@ -72,14 +78,17 @@ def main():
         if current != "zkey-native":
             return not_measurable(f"global engine is {current or 'unknown'!r}, not zkey-native")
 
+    display_name = free_display()
+    if display_name is None:
+        return not_measurable("no free X display number")
     xvfb = subprocess.Popen(
-        [str(ROOT / ".tmp/tools/root/usr/bin/Xvfb"), DISPLAY,
+        [str(ROOT / ".tmp/tools/root/usr/bin/Xvfb"), display_name,
          "-screen", "0", "900x600x24", "-nolisten", "tcp", "-ac"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     try:
         time.sleep(0.8)
-        env = {**os.environ, "DISPLAY": DISPLAY, "IBUS_ADDRESS": address,
+        env = {**os.environ, "DISPLAY": display_name, "IBUS_ADDRESS": address,
                "XMODIFIERS": "@im=ibus", "GDK_BACKEND": "x11",
                "GTK_IM_MODULE": "gtk-im-context-simple" if SKIP_ENGINE else "ibus"}
         env.pop("XAUTHORITY", None)
@@ -119,7 +128,7 @@ def main():
         x.XFlush.argtypes = [C.c_void_p]
         x.XSetInputFocus.argtypes = [C.c_void_p, C.c_ulong, C.c_int, C.c_ulong]
         t.XTestFakeKeyEvent.argtypes = [C.c_void_p, C.c_uint, C.c_int, C.c_ulong]
-        display = x.XOpenDisplay(DISPLAY.encode())
+        display = x.XOpenDisplay(display_name.encode())
         if not display:
             return not_measurable("cannot open private X display")
         window.get_window()
