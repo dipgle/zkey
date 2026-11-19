@@ -2,7 +2,6 @@
 use std::io::{self, BufRead, Write};
 use zkey_native::compose::{Composer, HARD_KEY_LIMIT, ToneStyle};
 mod desktop;
-mod ffi;
 mod launch;
 mod settings;
 
@@ -23,7 +22,7 @@ fn run() -> Result<(), String> {
             );
             Ok(())
         }
-        [] => settings::run(),
+        [] => settings::default_entry(),
         [flag] if flag == "--version" => {
             println!(
                 "zkey-native {} (development; not system-certified)",
@@ -33,7 +32,7 @@ fn run() -> Result<(), String> {
         }
         [flag] if matches!(flag.as_str(), "--help" | "-h") => {
             println!(
-                "zkey-native — independent Rust development build\n\n--settings                 Native preferences (also the default)\n--run [APPLICATION ARGS]   Private application session; system IME unchanged\n--experimental-rewrite --run APPLICATION ARGS\n                           Explicit unverified surrounding rewrite\n--webkit-compat --experimental-rewrite --run APPLICATION ARGS\n                           Opt-in process-local GTK3/WebKit bridge\n--compose WORD             Print one Telex result\n--line                     Bounded UTF-8 word-per-line protocol\n--version                  Build version\n\nNot approved for system installation; compatibility is scoped to launched applications."
+                "zkey-native — independent Rust development build\n\n--show                     Print the settings (also --settings, and the default at a terminal)\n--set KEY=VALUE ...        Validate and save settings (enabled, tone_style, max_word_keys, experimental_rewrite, webkit_compat)\n--ibus [--experimental-rewrite]\n                           IBus engine started by the user's ibus-daemon (install with scripts/native-ime.py)\n--run [APPLICATION ARGS]   Private application session; system IME unchanged\n--experimental-rewrite --run APPLICATION ARGS\n                           Explicit unverified surrounding rewrite\n--webkit-compat --experimental-rewrite --run APPLICATION ARGS\n                           Opt-in process-local GTK3/WebKit bridge\n--compose WORD             Print one Telex result\n--line                     Bounded UTF-8 word-per-line protocol\n--version                  Build version\n\nNot approved for system installation; compatibility is scoped to launched applications."
             );
             Ok(())
         }
@@ -56,11 +55,17 @@ fn run() -> Result<(), String> {
         {
             launch::inside(rest, mode == "experimental")
         }
-        [flag] if flag == "--settings" => settings::run(),
+        [flag] if matches!(flag.as_str(), "--settings" | "--show") => settings::show(),
+        [flag, edits @ ..] if flag == "--set" => settings::set(edits),
         [flag, message] if flag == "--alert" => settings::alert(message),
-        [flag] if flag == "--engine" => desktop::run(false),
+        [flag] if flag == "--engine" => desktop::run(false, false),
         [flag, experimental] if flag == "--engine" && experimental == "--experimental-rewrite" => {
-            desktop::run(true)
+            desktop::run(true, false)
+        }
+        // Started by the user's ibus-daemon from the installed component XML.
+        [flag] if flag == "--ibus" => desktop::run(false, true),
+        [flag, experimental] if flag == "--ibus" && experimental == "--experimental-rewrite" => {
+            desktop::run(true, true)
         }
         [flag, text] if flag == "--compose" => {
             let mut composer = Composer::new(ToneStyle::Modern);
@@ -121,23 +126,27 @@ fn main() {
     if let Err(error) = run() {
         eprintln!("zkey-native: {error}");
         let first = std::env::args_os().nth(1);
-        let graphical = first.as_ref().is_none_or(|flag| {
+        // Only a launch from a menu/launcher needs a visible warning; command-line
+        // verbs (--show, --set, --compose …) report on stderr and by exit code.
+        let graphical = first.as_ref().is_some_and(|flag| {
             matches!(
                 flag.to_str(),
-                Some("--settings" | "--run" | "--experimental-rewrite" | "--webkit-compat")
+                Some("--run" | "--experimental-rewrite" | "--webkit-compat")
             )
         });
         if graphical {
             if std::env::var_os("ZKEY_TEST_DISPLAY").is_some() {
-                // Private acceptance must observe the error/exit code rather
-                // than hang waiting for a human to dismiss a diagnostic window.
+                // Private acceptance observes the error/exit code and must not post a
+                // notification to whatever desktop the test happens to run beside.
                 eprintln!(
-                    "zkey-native: private test display; fatal dialog skipped, failure exit retained"
+                    "zkey-native: private test display; fatal notification skipped, failure exit retained"
                 );
             } else if let Err(_dialog_error) = settings::alert(&format!(
                 "Không khởi động được zkey native: {error}. Bộ gõ hệ thống chưa bị thay đổi."
             )) {
-                eprintln!("zkey-native: failure dialog unavailable; see the startup error above");
+                eprintln!(
+                    "zkey-native: failure notification unavailable; see the startup error above"
+                );
             }
         }
         std::process::exit(1);

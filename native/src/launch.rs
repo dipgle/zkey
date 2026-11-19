@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //! Private application launcher. Product path is native Rust + system daemons.
 //! It never edits input sources, environment.d, .bashrc or desktop IBus.
-use crate::ffi::{self as f, Variant};
 use std::{
     fs::{self, OpenOptions},
     os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
-    ptr, thread,
+    thread,
     time::{Duration, Instant},
 };
-use zkey_native::config;
+use zkey_native::{
+    config,
+    dbus::{Connection, Value},
+    ibus,
+};
 
 struct Process(Child);
 impl Drop for Process {
@@ -258,34 +261,44 @@ fn activation() -> Result<(), String> {
             .map(|value| (key.to_string(), value))
     })
     .collect();
-    let parameters = Variant::tuple(&[Variant::dictionary(&items)?]);
-    let mut error = ptr::null_mut();
-    unsafe {
-        let bus = f::g_bus_get_sync(2, ptr::null_mut(), &mut error);
-        if bus.is_null() {
-            return Err(f::error_message(error, "Private session bus connection"));
-        }
-        let reply = f::g_dbus_connection_call_sync(
-            bus,
-            c"org.freedesktop.DBus".as_ptr(),
-            c"/org/freedesktop/DBus".as_ptr(),
-            c"org.freedesktop.DBus".as_ptr(),
-            c"UpdateActivationEnvironment".as_ptr(),
-            parameters.0,
-            ptr::null(),
-            0,
-            5000,
-            ptr::null_mut(),
-            &mut error,
-        );
-        f::g_object_unref(bus);
-        if reply.is_null() {
-            Err(f::error_message(error, "Private activation environment"))
-        } else {
-            drop(Variant(reply));
-            Ok(())
-        }
+    if items.is_empty() {
+        return Err("Activation dictionary cannot be empty".into());
     }
+    let dictionary = Value::Array(
+        "{ss}".into(),
+        items
+            .iter()
+            .map(|(key, value)| Value::Dict(Box::new(Value::str(key)), Box::new(Value::str(value))))
+            .collect(),
+    );
+    let session =
+        std::env::var("DBUS_SESSION_BUS_ADDRESS").map_err(|_| "Private session bus unavailable")?;
+    let mut bus =
+        Connection::connect(&session).map_err(|_| "Private session bus connection failed")?;
+    bus.call(
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        "UpdateActivationEnvironment",
+        vec![dictionary],
+    )
+    .map(|_| ())
+    .map_err(|_| "Private activation environment failed".into())
+}
+/// Select the native engine on the PRIVATE daemon (never the desktop's).
+fn select_engine() -> Result<(), String> {
+    let address = std::env::var("IBUS_ADDRESS").map_err(|_| "Missing private IBus address")?;
+    let mut bus = Connection::connect(&address)
+        .map_err(|_| "Cannot create private IBus control connection")?;
+    bus.call(
+        ibus::BUS_NAME,
+        ibus::BUS_PATH,
+        ibus::BUS_NAME,
+        "SetGlobalEngine",
+        vec![Value::str("zkey-native")],
+    )
+    .map(|_| ())
+    .map_err(|_| "Cannot select native engine on the private daemon".into())
 }
 pub fn inside(arguments: &[String], experimental: bool) -> Result<(), String> {
     let root = PathBuf::from(
@@ -331,18 +344,7 @@ pub fn inside(arguments: &[String], experimental: bool) -> Result<(), String> {
         .stderr(log(&root.join("engine.log"))?);
     let mut engine = Process(engine.spawn().map_err(|_| "Cannot start native engine")?);
     wait_file(&root.join("ready"), &mut engine, deadline)?;
-    unsafe {
-        f::ibus_init();
-        let bus = f::ibus_bus_new();
-        if bus.is_null() {
-            return Err("Cannot create private IBus control connection".into());
-        }
-        let ok = f::ibus_bus_set_global_engine(bus, c"zkey-native".as_ptr());
-        f::g_object_unref(bus);
-        if ok == 0 {
-            return Err("Cannot select native engine on the private daemon".into());
-        }
-    }
+    select_engine()?;
     let default = vec![
         "gnome-text-editor".to_string(),
         "--standalone".to_string(),
@@ -419,14 +421,9 @@ pub fn inside(arguments: &[String], experimental: bool) -> Result<(), String> {
                 "zkey-native: input service stopped; save the document, Telex is unavailable"
             );
             let message = "zkey native đã dừng. Hãy lưu tài liệu; Telex không còn hoạt động. Không tự khởi động lại hoặc gõ lại chữ.";
-            match Command::new(&executable)
-                .args(["--alert", message])
-                .env("GTK_IM_MODULE", "gtk-im-context-simple")
-                .env_remove("NO_AT_BRIDGE")
-                .spawn()
-            {
+            match Command::new(&executable).args(["--alert", message]).spawn() {
                 Ok(child) => alert = Some(Process(child)),
-                Err(_) => eprintln!("zkey-native: cannot show failure dialog"),
+                Err(_) => eprintln!("zkey-native: cannot show failure notification"),
             }
         }
         if invalid_settings && !settings_reported {
@@ -435,12 +432,7 @@ pub fn inside(arguments: &[String], experimental: bool) -> Result<(), String> {
                 "zkey-native: settings rejected; visible warning opened, composition bypassed"
             );
             let message = "Cấu hình zkey native không hợp lệ. Telex đã tắt để giữ nguyên phím. Hãy mở Thiết lập và lưu cấu hình hợp lệ; không cần đóng tài liệu.";
-            match Command::new(&executable)
-                .args(["--alert", message])
-                .env("GTK_IM_MODULE", "gtk-im-context-simple")
-                .env_remove("NO_AT_BRIDGE")
-                .spawn()
-            {
+            match Command::new(&executable).args(["--alert", message]).spawn() {
                 Ok(child) => alert = Some(Process(child)),
                 Err(_) => return Err("Cannot show native settings failure warning".into()),
             }
@@ -448,12 +440,17 @@ pub fn inside(arguments: &[String], experimental: bool) -> Result<(), String> {
             settings_reported = false;
         }
         if let Some(dialog) = &mut alert
-            && dialog
+            && let Some(status) = dialog
                 .0
                 .try_wait()
-                .map_err(|_| "Cannot inspect failure dialog")?
-                .is_some()
+                .map_err(|_| "Cannot inspect failure notification")?
         {
+            if !status.success() {
+                // Delivery failed: say so (the keys stay literal either way).
+                eprintln!(
+                    "zkey-native: warning notification was not delivered; see its error above"
+                );
+            }
             alert = None;
         }
         thread::sleep(Duration::from_millis(50));

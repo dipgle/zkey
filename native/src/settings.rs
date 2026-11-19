@@ -1,231 +1,189 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-//! Native preferences, using GTK's system C ABI. No Python or GTK Rust crate.
-use crate::ffi::{self as f, Handle};
-use std::{
-    ffi::{CStr, c_char, c_int},
-    panic::{AssertUnwindSafe, catch_unwind},
-    ptr,
-};
+//! Native preferences as a command line (no GUI toolkit, no system library):
+//! `--show` prints the settings, `--set key=value …` validates and saves them
+//! through the same audited transaction as before (`config::save`).
+use std::io::IsTerminal;
 use zkey_native::{
-    compose::ToneStyle,
+    compose::{HARD_KEY_LIMIT, ToneStyle},
     config::{self, Config, SaveOutcome},
+    notify,
 };
 
-#[link(name = "libgtk-3.so.0", kind = "dylib", modifiers = "+verbatim")]
-unsafe extern "C" {
-    fn gtk_init_check(argc: *mut c_int, argv: *mut *mut *mut c_char) -> c_int;
-    fn gtk_window_new(kind: c_int) -> Handle;
-    fn gtk_window_set_title(window: Handle, title: *const c_char);
-    fn gtk_window_set_default_size(window: Handle, width: c_int, height: c_int);
-    fn gtk_container_set_border_width(container: Handle, border: u32);
-    fn gtk_container_add(container: Handle, widget: Handle);
-    fn gtk_box_new(orientation: c_int, spacing: c_int) -> Handle;
-    fn gtk_box_pack_start(
-        container: Handle,
-        child: Handle,
-        expand: c_int,
-        fill: c_int,
-        padding: u32,
-    );
-    fn gtk_check_button_new_with_label(label: *const c_char) -> Handle;
-    fn gtk_toggle_button_set_active(button: Handle, active: c_int);
-    fn gtk_toggle_button_get_active(button: Handle) -> c_int;
-    fn gtk_label_new(label: *const c_char) -> Handle;
-    fn gtk_label_set_text(label: Handle, text: *const c_char);
-    fn gtk_label_set_line_wrap(label: Handle, wrap: c_int);
-    fn gtk_label_set_max_width_chars(label: Handle, width: c_int);
-    fn gtk_spin_button_new_with_range(min: f64, max: f64, step: f64) -> Handle;
-    fn gtk_spin_button_set_value(spin: Handle, value: f64);
-    fn gtk_spin_button_get_value_as_int(spin: Handle) -> c_int;
-    fn gtk_button_new_with_label(label: *const c_char) -> Handle;
-    fn gtk_widget_show_all(widget: Handle);
-    fn gtk_widget_destroy(widget: Handle);
-    fn gtk_main();
-    fn gtk_main_level() -> u32;
-    fn gtk_main_quit();
-}
-struct View {
-    enabled: Handle,
-    modern: Handle,
-    experimental: Handle,
-    webkit: Handle,
-    limit: Handle,
-    status: Handle,
-    path: std::path::PathBuf,
-}
-fn label_text(label: Handle, text: &str) {
-    match f::cstring(text) {
-        Ok(text) => unsafe {
-            gtk_label_set_text(label, text.as_ptr());
-        },
-        Err(_) => eprintln!("zkey-native: cannot display settings status"),
+const KEYS: &str = "enabled, tone_style (modern|traditional), max_word_keys (8..256), experimental_rewrite, webkit_compat";
+
+fn boolean(value: &str) -> Result<bool, String> {
+    match value {
+        "true" => Ok(true),
+        "false" => Ok(false),
+        _ => Err("Expected true or false".into()),
     }
 }
-unsafe extern "C" fn quit(_widget: Handle, _data: Handle) {
-    unsafe {
-        // A Close click exits the loop; our subsequent widget destruction emits
-        // destroy once more. GTK reports a critical if quit is called at level0.
-        if gtk_main_level() > 0 {
-            gtk_main_quit();
+
+/// Apply `key=value` edits on top of `base`. Unknown/duplicate keys and bad values
+/// are errors; nothing is returned (so nothing can be saved) unless ALL are valid.
+pub fn apply_edits(mut base: Config, edits: &[String]) -> Result<Config, String> {
+    let mut seen = Vec::new();
+    for edit in edits {
+        let (key, value) = edit
+            .split_once('=')
+            .ok_or("Expected key=value (see --help)")?;
+        if seen.contains(&key) {
+            return Err(format!("Duplicate setting {key}"));
         }
-    }
-}
-unsafe extern "C" fn save(_button: Handle, data: Handle) {
-    let outcome = catch_unwind(AssertUnwindSafe(|| -> Result<SaveOutcome, String> {
-        let view = unsafe { &*data.cast::<View>() };
-        let config = Config {
-            enabled: unsafe { gtk_toggle_button_get_active(view.enabled) } != 0,
-            style: if unsafe { gtk_toggle_button_get_active(view.modern) } != 0 {
-                ToneStyle::Modern
-            } else {
-                ToneStyle::Traditional
-            },
-            max_word_keys: unsafe { gtk_spin_button_get_value_as_int(view.limit) } as usize,
-            experimental_rewrite: unsafe { gtk_toggle_button_get_active(view.experimental) } != 0,
-            webkit_compat: unsafe { gtk_toggle_button_get_active(view.webkit) } != 0,
-            ..Config::default()
-        };
-        config::save(&view.path, &config)
-    }))
-    .unwrap_or_else(|_| Err("Không lưu được: lỗi nội bộ đã được chặn tại biên giao diện.".into()));
-    let view = unsafe { &*data.cast::<View>() };
-    let message = match outcome {
-        Ok(SaveOutcome::Applied) => {
-            "Đã lưu. Kiểu dấu áp dụng khi đổi ô nhập; cầu nối WebKit từ lần mở ứng dụng tiếp theo. Không đổi bộ gõ hệ thống.".into()
-        }
-        Ok(SaveOutcome::AppliedAuditIncomplete) => {
-            "Cấu hình ĐÃ đổi nhưng đồng bộ đĩa/nhật ký chưa đầy đủ. Chưa thể xác nhận lưu bền vững."
-                .into()
-        }
-        Err(error) => format!("Không lưu được: {error}"),
-    };
-    label_text(view.status, &message);
-}
-unsafe fn connect(
-    widget: Handle,
-    signal: &CStr,
-    callback: unsafe extern "C" fn(Handle, Handle),
-    data: Handle,
-) {
-    let callback: unsafe extern "C" fn() = unsafe { std::mem::transmute(callback) };
-    unsafe {
-        f::g_signal_connect_data(widget, signal.as_ptr(), Some(callback), data, None, 0);
-    }
-}
-unsafe fn shell(title: &CStr) -> (Handle, Handle) {
-    unsafe {
-        let window = gtk_window_new(0);
-        f::g_object_ref_sink(window);
-        gtk_window_set_title(window, title.as_ptr());
-        gtk_window_set_default_size(window, 600, -1);
-        let layout = gtk_box_new(1, 12);
-        gtk_container_set_border_width(layout, 24);
-        gtk_container_add(window, layout);
-        connect(window, c"destroy", quit, ptr::null_mut());
-        (window, layout)
-    }
-}
-unsafe fn pack(layout: Handle, child: Handle) {
-    unsafe {
-        gtk_box_pack_start(layout, child, 0, 0, 0);
-    }
-}
-pub fn run() -> Result<(), String> {
-    let path = config::path()?;
-    let (config, problem) = match Config::load(&path) {
-        Ok(c) => (c, None),
-        Err(error) => (Config::default(), Some(error)),
-    };
-    unsafe {
-        if gtk_init_check(ptr::null_mut(), ptr::null_mut()) == 0 {
-            return Err("Cannot open settings display".into());
-        }
-        let (window, layout) = shell(c"zkey native — Thiết lập (bản phát triển)");
-        let title = gtk_label_new(c"zkey native · Rust độc lập".as_ptr());
-        pack(layout, title);
-        let enabled = gtk_check_button_new_with_label(c"Cho phép zkey hoạt động".as_ptr());
-        let modern = gtk_check_button_new_with_label(
-            c"Đặt dấu hiện đại: hoà, thuỷ (tắt: hòa, thủy)".as_ptr(),
-        );
-        let experimental = gtk_check_button_new_with_label(
-            c"Cho phép sửa surrounding thử nghiệm — CHƯA PHÁT HÀNH".as_ptr(),
-        );
-        let webkit = gtk_check_button_new_with_label(
-            c"Cầu nối WebKit GTK3 trong ứng dụng mở riêng (thử nghiệm)".as_ptr(),
-        );
-        gtk_toggle_button_set_active(enabled, config.enabled.into());
-        gtk_toggle_button_set_active(modern, (config.style == ToneStyle::Modern).into());
-        gtk_toggle_button_set_active(experimental, config.experimental_rewrite.into());
-        gtk_toggle_button_set_active(webkit, config.webkit_compat.into());
-        let warning=gtk_label_new(c"Mặc định phím đi nguyên trạng. Đường Telex thử nghiệm có thể nhân chữ trên WebKit; chưa dùng để thay bộ gõ toàn hệ thống. Không lưu nội dung gõ.".as_ptr());
-        gtk_label_set_line_wrap(warning, 1);
-        gtk_label_set_max_width_chars(warning, 66);
-        let limit = gtk_spin_button_new_with_range(8., 256., 1.);
-        gtk_spin_button_set_value(limit, config.max_word_keys as f64);
-        let status = gtk_label_new(ptr::null());
-        gtk_label_set_line_wrap(status, 1);
-        gtk_label_set_max_width_chars(status, 66);
-        label_text(
-            status,
-            &match problem {
-                Some(error) => {
-                    format!("Cấu hình lỗi: {error}. Đang hiện mặc định; chỉ thay khi bấm Lưu.")
+        seen.push(key);
+        match key {
+            "enabled" => base.enabled = boolean(value)?,
+            "experimental_rewrite" => base.experimental_rewrite = boolean(value)?,
+            "webkit_compat" => base.webkit_compat = boolean(value)?,
+            "tone_style" => {
+                base.style = match value {
+                    "modern" => ToneStyle::Modern,
+                    "traditional" => ToneStyle::Traditional,
+                    _ => return Err("tone_style must be modern or traditional".into()),
                 }
-                None => "Thiết lập chỉ áp dụng cho bản native; không đụng bản đang cài.".into(),
-            },
-        );
-        let button = gtk_button_new_with_label(c"Lưu thiết lập".as_ptr());
-        let mut view = Box::new(View {
-            enabled,
-            modern,
-            experimental,
-            webkit,
-            limit,
-            status,
-            path,
-        });
-        connect(button, c"clicked", save, (&mut *view as *mut View).cast());
-        for widget in [
-            enabled,
-            modern,
-            experimental,
-            webkit,
-            warning,
-            gtk_label_new(c"Giới hạn phím một từ (8–256):".as_ptr()),
-            limit,
-            button,
-            status,
-        ] {
-            pack(layout, widget);
+            }
+            "max_word_keys" => {
+                let limit: usize = value
+                    .parse()
+                    .map_err(|_| "max_word_keys must be a number")?;
+                if !(8..=HARD_KEY_LIMIT).contains(&limit) {
+                    return Err("max_word_keys must be 8..256".into());
+                }
+                base.max_word_keys = limit;
+            }
+            _ => return Err(format!("Unknown setting {key}; valid: {KEYS}")),
         }
-        let close = gtk_button_new_with_label(c"Đóng".as_ptr());
-        connect(close, c"clicked", quit, ptr::null_mut());
-        pack(layout, close);
-        gtk_widget_show_all(window);
-        gtk_main();
-        gtk_widget_destroy(window);
-        f::g_object_unref(window);
     }
-    Ok(())
+    Ok(base)
 }
-pub fn alert(message: &str) -> Result<(), String> {
-    let message = f::cstring(message)?;
-    unsafe {
-        if gtk_init_check(ptr::null_mut(), ptr::null_mut()) == 0 {
-            return Err("Cannot open native failure dialog".into());
+
+fn describe(config: &Config) -> String {
+    config.encode()
+}
+
+/// `--show`: print the current settings. A broken file is reported and defaults are
+/// shown, but the file is NOT touched; the exit code is 1 so scripts cannot miss it.
+pub fn show() -> Result<(), String> {
+    let path = config::path()?;
+    match Config::load(&path) {
+        Ok(config) => {
+            println!("# {}\n{}", path.display(), describe(&config));
+            Ok(())
         }
-        let (window, layout) = shell(c"zkey native — Cảnh báo");
-        let text = gtk_label_new(message.as_ptr());
-        gtk_label_set_line_wrap(text, 1);
-        gtk_label_set_max_width_chars(text, 66);
-        pack(layout, text);
-        let close = gtk_button_new_with_label(c"Đóng".as_ptr());
-        connect(close, c"clicked", quit, ptr::null_mut());
-        pack(layout, close);
-        gtk_widget_show_all(window);
-        gtk_main();
-        gtk_widget_destroy(window);
-        f::g_object_unref(window);
+        Err(error) => {
+            println!(
+                "# {}\n# Cấu hình lỗi: {error}. Đang hiện mặc định; chỉ thay khi chạy --set.\n{}",
+                path.display(),
+                describe(&Config::default())
+            );
+            Err("Settings file is invalid (not modified)".into())
+        }
     }
-    Ok(())
+}
+
+/// `--set key=value …`. On a broken file the defaults are the base (recovery).
+pub fn set(edits: &[String]) -> Result<(), String> {
+    if edits.is_empty() {
+        return Err(format!("Nothing to set; valid keys: {KEYS}"));
+    }
+    let path = config::path()?;
+    let (base, repaired) = match Config::load(&path) {
+        Ok(config) => (config, false),
+        Err(_) => (Config::default(), true),
+    };
+    let config = apply_edits(base, edits)?;
+    match config::save(&path, &config)? {
+        SaveOutcome::Applied => {
+            println!(
+                "Đã lưu{}. Kiểu dấu áp dụng khi đổi ô nhập; cầu nối WebKit từ lần mở ứng dụng tiếp theo. Không đổi bộ gõ hệ thống.",
+                if repaired {
+                    " (cấu hình cũ lỗi, đã thay bằng mặc định + giá trị vừa đặt)"
+                } else {
+                    ""
+                }
+            );
+            Ok(())
+        }
+        SaveOutcome::AppliedAuditIncomplete => Err(
+            "Cấu hình ĐÃ đổi nhưng đồng bộ đĩa/nhật ký chưa đầy đủ. Chưa thể xác nhận lưu bền vững."
+                .into(),
+        ),
+    }
+}
+
+/// No argument. At a terminal: show. Launched from a menu (no terminal): tell the
+/// user, with a notification, how to change settings — never fail silently.
+pub fn default_entry() -> Result<(), String> {
+    if std::io::stdout().is_terminal() {
+        return show();
+    }
+    let path = config::path()?;
+    let body = match Config::load(&path) {
+        Ok(config) => format!(
+            "Thiết lập hiện tại:\n{}\nĐể đổi, chạy trong terminal: zkey-native --set tone_style=traditional (khoá: {KEYS}).",
+            describe(&config)
+        ),
+        Err(error) => format!(
+            "Cấu hình lỗi: {error}. Chạy trong terminal: zkey-native --set enabled=true để sửa."
+        ),
+    };
+    notify::send("zkey native — Thiết lập", &body, false)
+        .map(|_| ())
+        .map_err(|e| format!("Cannot show settings: {e}"))
+}
+
+/// Visible warning: a critical desktop notification. Err when it could not be delivered.
+pub fn alert(message: &str) -> Result<(), String> {
+    notify::send("zkey native — Cảnh báo", message, true).map(|_| ())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn edit(items: &[&str]) -> Vec<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn valid_edits_change_only_the_named_keys() {
+        let config = apply_edits(
+            Config::default(),
+            &edit(&[
+                "tone_style=traditional",
+                "max_word_keys=64",
+                "enabled=false",
+            ]),
+        )
+        .unwrap();
+        assert_eq!(config.style, ToneStyle::Traditional);
+        assert_eq!(config.max_word_keys, 64);
+        assert!(!config.enabled);
+        assert_eq!(
+            config.experimental_rewrite,
+            Config::default().experimental_rewrite
+        );
+    }
+
+    #[test]
+    fn any_invalid_edit_rejects_the_whole_set() {
+        for bad in [
+            &["tone_style=sloppy"][..],
+            &["max_word_keys=7"],
+            &["max_word_keys=257"],
+            &["max_word_keys=abc"],
+            &["enabled=yes"],
+            &["unknown=1"],
+            &["noequals"],
+            &["enabled=true", "enabled=false"],
+            &["enabled=true", "tone_style=nope"],
+        ] {
+            assert!(
+                apply_edits(Config::default(), &edit(bad)).is_err(),
+                "{bad:?}"
+            );
+        }
+        assert!(apply_edits(Config::default(), &edit(&["max_word_keys=8"])).is_ok());
+        assert!(apply_edits(Config::default(), &edit(&["max_word_keys=256"])).is_ok());
+    }
 }

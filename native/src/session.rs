@@ -414,6 +414,21 @@ mod tests {
         }
     }
     #[test]
+    fn doubled_mark_key_is_the_classic_telex_undo_in_the_real_edit_flow() {
+        // Hà 19/11: "cuss" gives "cus" (the second s undoes the tone and is not doubled);
+        // "cứ" is typed cuws. Checked through delete+commit, not only the core.
+        let mut e = Editor::new();
+        for (k, text) in "cuss".chars().zip(["c", "cu", "cú", "cus"]) {
+            e.key(k);
+            assert_eq!(e.text, text);
+        }
+        let mut e = Editor::new();
+        for (k, text) in "cuws".chars().zip(["c", "cu", "cư", "cứ"]) {
+            e.key(k);
+            assert_eq!(e.text, text);
+        }
+    }
+    #[test]
     fn legacy_rewrite_is_never_enabled_implicitly() {
         let mut s = Session::new(ToneStyle::Modern, true, 256, false);
         s.capabilities(32);

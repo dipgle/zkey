@@ -6,6 +6,7 @@ The test controller uses system Python/GI, not the product. Reuses ONLY the
 workspace's required bus-isolation helper, never the legacy engine/core.
 """
 from pathlib import Path
+from xml.sax.saxutils import escape
 import ctypes as C
 import json
 import os
@@ -52,6 +53,25 @@ def inside():
         log_path = ROOT / f'.tmp/native-engine-{platform}-{"safe" if os.environ.get("ZKEY_NATIVE_SAFE_MODE")=="1" else "typing"}.log'
         with log_path.open('w') as log:
             try:
+                if os.environ.get('ZKEY_NATIVE_COMPONENT_MODE') == '1':
+                    components = scratch / 'component'
+                    components.mkdir(mode=0o700)
+                    flags = '' if os.environ.get('ZKEY_NATIVE_SAFE_MODE') == '1' else ' --experimental-rewrite'
+                    (components / 'zkey-native.xml').write_text(
+                        '<?xml version="1.0" encoding="utf-8"?>\n<component>\n'
+                        '  <name>org.freedesktop.IBus.ZkeyNative</name>\n'
+                        '  <description>zkey native</description>\n  <version>0.2.0-dev</version>\n'
+                        '  <license>AGPL-3.0-or-later</license>\n  <author>zkey contributors</author>\n'
+                        # ibus-daemon does not forward a child's stderr; the test needs the engine
+                        # trace, so run it through `sh -c exec … >> log` (test fixture only).
+                        + '  <exec>' + escape(f'/bin/sh -c "exec {binary} --ibus{flags} >> {log_path} 2>&1"')
+                        + '</exec>\n  <textdomain>zkey-native</textdomain>\n'
+                        '  <engines>\n    <engine>\n      <name>zkey-native</name>\n'
+                        '      <longname>zkey native</longname>\n      <description>Vietnamese Telex</description>\n'
+                        '      <language>vi</language>\n      <license>AGPL-3.0-or-later</license>\n'
+                        '      <author>zkey contributors</author>\n      <icon>input-keyboard</icon>\n'
+                        '      <layout>us</layout>\n    </engine>\n  </engines>\n</component>\n')
+                    env['IBUS_COMPONENT_PATH'] = f'/usr/share/ibus/component:{components}'
                 daemon = subprocess.Popen(['ibus-daemon', '--single', '--panel=disable', '--config=disable',
                     '--emoji-extension=disable', '--cache=none', f'--address={env["IBUS_ADDRESS"]}'],
                     env=env, stdout=log, stderr=log, start_new_session=True)
@@ -64,12 +84,18 @@ def inside():
                 args = [str(binary), '--engine']
                 if os.environ.get('ZKEY_NATIVE_SAFE_MODE') != '1':
                     args.append('--experimental-rewrite')
-                engine = subprocess.Popen(args, env=env, stdout=log, stderr=log, start_new_session=True)
-                children.append(engine)
-                while not (scratch / 'ready').exists():
-                    if engine.poll() is not None or time.monotonic() > until:
-                        raise AssertionError(f'Native engine did not register; see {log_path}')
-                    time.sleep(.01)
+                if os.environ.get('ZKEY_NATIVE_COMPONENT_MODE') == '1':
+                    # PRODUCTION path: no test-spawned engine and no RegisterComponent. The
+                    # daemon itself starts `zkey-native --ibus` from a component XML when the
+                    # engine is selected (same mechanism the installed component uses).
+                    engine = None
+                else:
+                    engine = subprocess.Popen(args, env=env, stdout=log, stderr=log, start_new_session=True)
+                    children.append(engine)
+                    while not (scratch / 'ready').exists():
+                        if engine.poll() is not None or time.monotonic() > until:
+                            raise AssertionError(f'Native engine did not register; see {log_path}')
+                        time.sleep(.01)
                 IBus.init()
                 bus = IBus.Bus.new()
                 if not bus.set_global_engine('zkey-native'):
@@ -127,12 +153,27 @@ def inside():
                     (password.get_delegate() if gtk4 else password).connect('preedit-changed', lambda _e, text: preedits.append(bool(text)))
                 main = GLib.MainContext.default()
 
+                def engine_dead():
+                    if engine is not None:
+                        return engine.poll() is not None
+                    # Component mode: the engine is the daemon's child running `--ibus`.
+                    for entry in Path('/proc').iterdir():
+                        if entry.name.isdigit():
+                            try:
+                                fields = (entry / 'stat').read_text().rsplit(')', 1)[1].split()
+                                cmdline = (entry / 'cmdline').read_bytes().split(b'\0')
+                            except OSError:
+                                continue
+                            if int(fields[1]) == daemon.pid and b'--ibus' in cmdline:
+                                return False
+                    return True
+
                 def pump(seconds=.08):
                     deadline = time.monotonic() + seconds
                     while time.monotonic() < deadline:
                         while main.pending():
                             main.iteration(False)
-                        if engine.poll() is not None:
+                        if engine_dead():
                             raise AssertionError('Native engine exited while typing')
                         time.sleep(.002)
 

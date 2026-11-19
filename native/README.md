@@ -5,7 +5,9 @@ Hà giao ngày 16/11/2026: tự thiết kế, viết lại, kiểm thử; không
 ## Ranh giới phụ thuộc
 
 - Rust và thư viện chuẩn; Cargo không có dependencies.
-- Giao tiếp desktop dùng ABI công khai của **GLib/GObject/GIO, IBus và GTK3 hệ thống**. Launcher gọi `dbus-daemon`/`ibus-daemon` của Ubuntu. Đây vẫn là phụ thuộc hệ thống, không phải «không cần hệ điều hành».
+- **Engine và launcher nói D-Bus + giao thức IBus bằng mã tự viết trên `std`** (`src/dbus.rs`, `src/ibus.rs`): KHÔNG nối GLib/GIO/libibus (đo `ldd` 18/11: 0 `libibus`). Đối chứng với `dbus-daemon`/`gdbus`/`dbus-monitor` thật ở `tests/dbus_live.rs` (chỉ là dụng cụ kiểm).
+- **Không còn GUI toolkit**: thiết lập là dòng lệnh (`--show`, `--set`), cảnh báo là thông báo `org.freedesktop.Notifications` qua D-Bus tự viết. `ldd` binary 18/11: chỉ `libc` + `libgcc_s` (+ loader). Launcher gọi chương trình `dbus-daemon`/`ibus-daemon` của Ubuntu (tiến trình, không phải thư viện). GNOME chỉ nói chuyện với bộ gõ qua IBus nên giao thức IBus vẫn phải đúng, nhưng do mã của dự án phát và nhận.
+- Ngoại lệ có chủ đích: `src/webkit_bridge.rs` là thư viện **nạp vào ứng dụng GTK3/WebKit khác** (chỉ với `--webkit-compat`, thử nghiệm) nên bản chất dùng GLib của chính ứng dụng đó; nó nằm trong binary dưới dạng dữ liệu, không làm binary nối thư viện nào.
 - Không nhập module Python, không liên kết `zkey-core`, không chép implementation cũ. Bảng chữ tiếng Việt và giao thức IBus là dữ liệu/quy ước tương thích, không phải gói mã bộ gõ.
 - Bản cũ, bài kiểm và bằng chứng được giữ nguyên để đối chiếu, không xoá hoặc tự cài đè.
 
@@ -15,10 +17,12 @@ Hà giao ngày 16/11/2026: tự thiết kế, viết lại, kiểm thử; không
 |---|---|
 | `src/compose.rs` | Lõi Telex tăng dần, chữ NFC/chữ hoa, dấu muộn, hoàn nguyên; không I/O |
 | `src/session.rs` | Quyền sở hữu từ, snapshot/caret/selection, bỏ qua protected context; ticket có xác nhận cho Reset sau Backspace thật |
-| `src/desktop.rs`, `engine.xml` | Xuất Factory/Engine D-Bus bằng GIO; không dựa offset vtable của lớp GObject |
-| `src/ffi.rs` | Binding ABI hệ thống tối thiểu, quản lý tham chiếu GVariant/GObject; không deserialize GObject tuỳ ý từ client |
+| `src/dbus.rs` | Client D-Bus trên `std`: mã hoá/giải mã dây, xác thực EXTERNAL, vòng nhận tin; mọi bộ giải mã trả `Err`, không panic, có trần cỡ |
+| `src/ibus.rs` | Dây IBus: `IBusText`, `IBusComponent`, `IBusEngineDesc` (chữ ký lấy từ libibus 1.5.34 để đối chiếu, không gọi libibus) |
+| `src/desktop.rs`, `engine.xml` | Engine IBus trên `dbus.rs`: Factory/Engine/Properties/Introspectable; chính sách riêng tư giữ nguyên |
+| `src/notify.rs` | Thông báo desktop (`Notify`) qua `dbus.rs`; cảnh báo critical không tự tắt; gửi lỗi ⇒ `Err`, không im lặng |
 | `src/config.rs` | Schema TOML chặt, khoá ghi của OS, audit intent → atomic rename → audit commit; phát hiện lần lưu bị gián đoạn |
-| `src/settings.rs` | Cửa sổ native: bật/tắt, kiểu dấu, giới hạn từ, cho phép thử nghiệm; báo lỗi và lưu qua UI |
+| `src/settings.rs` | Thiết lập bằng dòng lệnh: `--show` (file lỗi ⇒ báo + mã 1, không sửa), `--set key=value …` (hợp lệ toàn bộ mới lưu; qua `config::save` có nhật ký) |
 | `src/launch.rs` | Bus + IBus riêng, giám sát tiến trình, giữ dữ liệu phục hồi của ứng dụng ngoài cây runtime tạm; không đổi bộ gõ máy |
 | `build.rs` | Nhúng SHA-256 của chính nguồn được biên dịch; dùng `sha256sum` hệ thống lúc build, không phải phụ thuộc runtime |
 | `tools/stage.py` | Công cụ đóng gói phát triển, không cài; đối chiếu hash nguồn/binary, kèm source và manifest |
@@ -28,7 +32,8 @@ Python/GI/XTest trong `tests/` chỉ là **bộ kiểm**, không phải mã sả
 ## Cách chạy bản phát triển
 
 ```sh
-native/target/release/zkey-native --settings
+native/target/release/zkey-native --show
+native/target/release/zkey-native --set tone_style=traditional max_word_keys=64
 native/target/release/zkey-native --run [ứng-dụng tham-số]
 native/target/release/zkey-native --experimental-rewrite --run [ứng-dụng tham-số]
 native/target/release/zkey-native --compose tieengs
@@ -36,8 +41,9 @@ native/target/release/zkey-native --line
 native/target/release/zkey-native --build-info
 ```
 
-- Không tham số: mở thiết lập native, không cần cửa sổ terminal giữ chương trình. Các tệp menu `.desktop` được stage với `Terminal=false`, **chưa cài menu hệ thống**.
+- Không tham số: ở terminal thì in thiết lập; chạy từ menu (không terminal) thì gửi thông báo hướng dẫn `--set`, không im lặng. Thiết lập đổi áp dụng ở lần đổi ô nhập kế tiếp. Các tệp menu `.desktop` được stage với `Terminal=false`, **chưa cài menu hệ thống**.
 - `--run` tạo phiên riêng; mặc định mở Text Editor `--standalone`. Không tự đổi nguồn nhập GNOME hoặc đụng IBus/fcitx5 desktop.
+- `--ibus [--experimental-rewrite]`: engine do **ibus-daemon của người dùng** khởi chạy từ component XML (không tự đăng ký, chiếm tên `org.freedesktop.IBus.ZkeyNative`). Chỉ cài/gỡ qua `python3 scripts/native-ime.py enable|disable` (đảo ngược được, đối chiếu mã băm nguồn trước khi cài). Bài kiểm đường này: `ZKEY_NATIVE_COMPONENT_MODE=1` trong `tests/accept_desktop.py`. **Không có cờ rewrite thì engine chỉ để phím đi nguyên trạng.**
 - **Mặc định rewrite TẮT: phím nguyên trạng, không phải Telex đã hỗ trợ.** Chỉ cờ thử nghiệm hoặc lựa chọn rõ ràng trên màn thiết lập mới bật đường delete+commit chưa được chứng nhận. Màn có cảnh báo WebKit.
 - Cấu hình riêng: `$XDG_CONFIG_HOME/zkey-native/config.toml`; bản cũ dùng đường khác. `ZKEY_NATIVE_CONFIG_PATH` chọn tệp khi kiểm. Lưu có `generation` và `changes.log`; audit chưa commit thì cấu hình không được coi là hợp lệ.
 - `ZKEY_NATIVE_TRACE=1` chỉ ghi metadata trong phiên riêng, không ghi keyval/nội dung chữ. Không dùng trace làm bằng chứng ảnh đã hiện.

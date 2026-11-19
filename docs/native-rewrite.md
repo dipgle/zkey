@@ -2,7 +2,7 @@
 
 **16/11/2026 · bản viết mới theo Hà · DEVELOPMENT, CHƯA BÀN GIAO SẢN PHẨM CUỐI.**
 
-Phạm vi: Rust + thư viện chuẩn, không crate ngoài, không nhập engine Python hoặc liên kết `zkey-core` cũ. Không đồng nhất điều đó với «không có phụ thuộc Ubuntu»: hệ thống vẫn cung cấp GLib/GIO/IBus/GTK, D-Bus và cơ chế nhập của ứng dụng. Bản cũ và toàn bộ diff bàn giao được giữ, không cài hoặc đổi IME desktop.
+Phạm vi: Rust + thư viện chuẩn, không crate ngoài, không nhập engine Python hoặc liên kết `zkey-core` cũ. Không đồng nhất điều đó với «không có phụ thuộc Ubuntu»: hệ thống vẫn cung cấp daemon IBus/D-Bus, GTK (cửa sổ thiết lập) và cơ chế nhập của ứng dụng. Từ 18/11 engine + launcher tự nói D-Bus/IBus (`native/src/dbus.rs`, `ibus.rs`), không nối GLib/GIO/libibus. Bản cũ và toàn bộ diff bàn giao được giữ, không cài hoặc đổi IME desktop.
 
 ## Thiết kế đang có trong mã
 
