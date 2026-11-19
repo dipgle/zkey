@@ -38,6 +38,10 @@ class SystemImeTests(unittest.TestCase):
         self.env = patch.dict("os.environ", {"HOME": str(self.home), "ZKEY_SKIP_GSETTINGS": "1",
                                              "XDG_CONFIG_DIRS": str(self.home / "no-system")})
         self.env.start()
+        # Never ask the host's real ibus-daemon from a unit test; tests that care override this.
+        engines = patch.object(system_ime, "engine_names", create=True, return_value={"xkb:us::eng", "zkey"})
+        engines.start()
+        self.addCleanup(engines.stop)
 
     def tearDown(self):
         self.env.stop()
@@ -183,6 +187,26 @@ class SystemImeTests(unittest.TestCase):
             code, output = run("verify")
         self.assertEqual(code, 1)
         self.assertIn("QT_IM_MODULES", output)
+
+    def test_verify_is_red_when_the_running_daemon_has_no_zkey_engine(self):
+        # 18/11 20:55 measured after the reboot: ibus-daemon owned the name and the
+        # environment was right, yet `ibus list-engine` had 1261 engines and NO zkey
+        # (registry cache dated 12/11 never recorded ~/.local/share/ibus/component),
+        # so the input source ('ibus','zkey') pointed at nothing. Owner/env alone
+        # said OK; the daemon must also know the engine.
+        for engines, want in (({"xkb:us::eng", "zkey"}, 0), ({"xkb:us::eng"}, 1), (None, 2)):
+            with (patch.object(system_ime, "ibus_owner", return_value="ibus-daemon"),
+                  patch.object(system_ime, "engine_names", return_value=engines)):
+                code, output = run("verify")
+            self.assertEqual(code, want, (engines, output))
+            if want == 1:
+                self.assertIn("zkey", output)
+                self.assertIn("registry", output)
+
+    def test_parse_engine_names_reads_ibus_list_engine_output(self):
+        text = "language: Hawaiian\n  xkb:us:haw:haw - Hawaiian\nlanguage: Vietnamese\n  zkey - zkey\n"
+        self.assertEqual(system_ime.parse_engine_names(text), {"xkb:us:haw:haw", "zkey"})
+        self.assertEqual(system_ime.parse_engine_names("Can't connect to IBus.\n"), set())
 
 
 if __name__ == "__main__":

@@ -20,8 +20,9 @@ environment survive log out, so log out / log in alone keeps the old values):
 Every original is saved under ~/.local/state/zkey/system-ime/ first; `disable`
 restores each byte-for-byte (or removes what did not exist). Refuses to
 enable twice or to overwrite a 99-zkey.conf it did not write.
-`verify` only reads: who owns org.freedesktop.IBus, and whether the running
-systemd --user manager already has the 99-zkey.conf values.
+`verify` only reads: who owns org.freedesktop.IBus, whether the running
+systemd --user manager already has the 99-zkey.conf values, and whether the
+running ibus-daemon actually lists the zkey engine (`ibus list-engine`).
 ZKEY_SKIP_GSETTINGS=1 skips step 4 (tests). Exit 0 ok, 1 refused/red, 2 cannot run/measure.
 """
 from pathlib import Path
@@ -99,6 +100,44 @@ def ibus_owner():
         return Path(f"/proc/{match.group(1)}/comm").read_text().strip() or None
     except (OSError, subprocess.SubprocessError):
         return None
+
+
+def parse_engine_names(text):
+    """Engine names from `ibus list-engine` ('  name - description' lines under 'language:')."""
+    return {line.split(" - ", 1)[0].strip() for line in text.splitlines()
+            if line.startswith("  ") and " - " in line}
+
+
+def daemon_address():
+    """IBUS_ADDRESS of the LIVE ibus-daemon from ~/.config/ibus/bus; None = none found.
+
+    A shell without DISPLAY/WAYLAND_DISPLAY cannot find it itself and `ibus` then
+    prints "Can't connect to IBus" (measured 18/11), so read the file the daemon wrote.
+    """
+    bus = paths()["home"] / ".config/ibus/bus"
+    if not bus.is_dir():
+        return None
+    for entry in sorted(bus.iterdir(), key=lambda f: f.stat().st_mtime, reverse=True):
+        values = dict(line.split("=", 1) for line in entry.read_text().splitlines()
+                      if "=" in line and not line.startswith("#"))
+        pid = values.get("IBUS_DAEMON_PID", "")
+        if values.get("IBUS_ADDRESS") and pid.isdigit() and Path(f"/proc/{pid}/comm").exists():
+            return values["IBUS_ADDRESS"]
+    return None
+
+
+def engine_names():
+    """Engines the RUNNING ibus-daemon knows; None = unmeasurable (no daemon / cannot ask)."""
+    address = os.environ.get("IBUS_ADDRESS") or daemon_address()
+    if not address:
+        return None
+    try:
+        result = subprocess.run(["ibus", "list-engine"], capture_output=True, text=True, timeout=10,
+                                env={**os.environ, "IBUS_ADDRESS": address})
+    except (OSError, subprocess.SubprocessError):
+        return None
+    names = parse_engine_names(result.stdout)
+    return names if result.returncode == 0 and names else None
 
 
 def manager_env():
@@ -183,6 +222,15 @@ def verify():
         return 1
     if owner != "ibus-daemon":
         print(f"RED: org.freedesktop.IBus is owned by {owner}, not ibus-daemon; zkey receives no keys")
+        return 1
+    engines = engine_names()
+    if engines is None:
+        print("NOT MEASURABLE: cannot ask the running ibus-daemon for its engine list")
+        return 2
+    if SOURCE[1] not in engines:
+        print(f"RED: ibus-daemon is running but has no '{SOURCE[1]}' engine ({len(engines)} known); the input source "
+              f"{SOURCE} points at nothing. Its registry cache (~/.cache/ibus/bus/registry) probably predates "
+              "~/.local/share/ibus/component: rebuild the cache and restart ibus-daemon")
         return 1
     # Necessary, not sufficient: typing must still be measured in a real app.
     print("OK: org.freedesktop.IBus owned by ibus-daemon (typing itself not measured here)")
