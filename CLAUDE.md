@@ -19,3 +19,9 @@
 - Một việc bị chặn ⇒ ghi bằng chứng và chuyển sang việc độc lập còn làm được; không lấy desktop chờ đăng nhập lại làm lý do dừng việc lõi hoặc kiểm riêng.
 - Chỉ dừng khi người dùng yêu cầu dừng/đổi việc, phạm vi đã đạt đủ nghiệm thu, hoặc sau khi quét hết việc mở thì mọi đường tiếp đều cần quyền/quyết định/thao tác người dùng hay điều kiện ngoài khả năng phiên. Khi đó báo rõ đã thử gì, chặn ở đâu, cần gì; không vượt hàng rào an toàn để tránh dừng.
 - Sắp hết ngữ cảnh ⇒ làm gọn và bàn giao theo quy định chuyển phiên, không bỏ việc bằng một báo cáo "chưa xong".
+
+## Nhãn dự án và trạng thái việc phải hiện rõ (Hà 19/11/2026)
+
+- Lịch sử hội thoại (lời Hà + trả lời của model) là nguồn trạng thái việc đáng tin nhất. **Nhãn dự án = tên dự án Hà đã nêu trong hội thoại** (ở đây `zkey`), cố định cả phiên; không lấy từ thư mục làm việc.
+- Thư mục làm việc chính đổi theo `cd` trần (đã đo 19/11: `cd` trần đổi, `( cd … )` trong subshell không đổi) ⇒ **cấm `cd` trần**; dùng đường tuyệt đối, `git -C`, `cargo --manifest-path`, hoặc subshell. Đọc dự án khác không làm đổi nhãn.
+- Mọi trả lời mở đầu bằng `[zkey]`, và khi báo kết quả nói rõ ba thứ: đã chạy thật (kèm số đo) · chưa làm · đang chờ ai.
