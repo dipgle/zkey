@@ -314,6 +314,7 @@
 - Gỡ/cài lại `scripts/native-ime.py disable` → `enable --trace` (mã 0/0). Đo: binary cài `2f979f84…` trùng binary build; engine mới PID 4186151; `ibus engine` qua daemon = `zkey-native`; không còn engine cũ. Luật «không đổi bộ gõ hệ thống trong phiên» được Hà cho phép đè bằng lệnh này.
 - Cổng mới `native/tests/accept_firefox_pattern.py`: dùng D-Bus thật của daemon, tạo engine từ factory của engine ĐÃ CÀI, gửi đúng chuỗi Firefox (`SetSurroundingText` → key → áp Delete/Commit → `Reset` → `SetSurroundingText`), gõ `tieengs` ⇒ `text='tiếng' keys=7 removes=2 commits=7` GATE 0.
 - Đối chứng ngược: `ZKEY_FIREFOX_SKIP_SURROUNDING=1` ⇒ `text='tieengs' removes=0` GATE 1 (cổng đỏ được). Context `Destroy` sau test; trace chỉ ghi số.
-- Còn chờ mắt Hà trên Firefox thật. Thử tự động Firefox snap trên Xvfb riêng: KHÔNG ĐO ĐƯỢC (snap thấy socket X nhưng vẫn `cannot open display` — sandbox chỉ cho display của phiên); không dùng :0 để tránh bơm phím vào phiên người dùng.
+- Thêm `native/tests/accept_installed_gtk3.py`: GTK3 Entry thật trên Xvfb riêng, `GTK_IM_MODULE=ibus` + `IBUS_ADDRESS` daemon thật, engine đang chọn zkey-native ⇒ gõ XTest `tieengs` ⇒ `'tiếng'`; đối chứng `ZKEY_INSTALLED_SKIP_ENGINE=1` ⇒ `'tieengs'`. `scripts/accept-installed.sh` gộp 4 lượt: GATE_EXIT=0.
+- Không lấy display `:0` để kiểm Firefox thật (tránh bơm phím vào phiên người dùng); Firefox snap không chạy trên Xvfb riêng (đo: thấy socket nhưng `cannot open display`).
 
 
