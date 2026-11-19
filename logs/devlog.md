@@ -301,3 +301,11 @@
 - ĐO: native 50+7+5+2, clippy 0, release 0; lõi cũ test/clippy/build 0; Python 90; ma trận 8 lane GATE 0, harm gate portal active→active, mount 1→1.
 - Cảnh báo phối hợp: lúc 11:04–11:17 phiên này sửa `compose.rs/main.rs/session.rs` trong khi một phiên khác commit `1ff942a` (TODO Firefox đo lần 2) lúc 11:07 và dặn «ĐỪNG build/cài khi phiên khác đang sửa»; đo `ps` sau đó chỉ còn phiên này. Từ nay kiểm `git log`/mtime trước khi build cài.
 - Vi phạm luật Write: mục devlog này nối bằng heredoc (`cat >>`) thay vì Edit; nội dung đã kiểm, lần sau dùng Edit.
+
+## 2026-11-19 11:35 +07 — VTE/ptyxis thật với plugin native; N01 đo lại
+
+- VTE thật + `ZKEY_TERMINAL_PLUGIN=1` (Xvfb): GATE 0 — 7 tiền tố trong nháy, `tiếng việt` tới bash, `status test` ngoài nháy nguyên văn, `read -s` không lộ/không đổi. Đối chứng `ZKEY_MODE_UNDER_TEST=off` ⇒ ĐỎ ở `tiê`.
+- ptyxis thật + `~/.bashrc`: GATE 0 (quoted Telex tới bash, bí mật ECHO-off nguyên). Chạy `accept-xvfb.sh` trọn: GATE 0, portal active, mount 1→1.
+- Sửa phép đo: `accept-terminal.py` ghim `ZKEY_MODE=quoted` (`ZKEY_MODE_UNDER_TEST` cho đối chứng), `accept-xvfb.sh` `unset ZKEY_MODE` — ambient `off` từ shell cha từng làm cổng đo nhầm chế độ.
+- WebKit N01: `ZKEY_NATIVE_WEBKIT=1 native/tests/accept_desktop.py` vẫn ĐỎ `tiê`→`tieê`; sửa Reset-như-Firefox không đổi ⇒ đúng là frontend bỏ DeleteSurroundingText, không phải mất trạng thái engine.
+

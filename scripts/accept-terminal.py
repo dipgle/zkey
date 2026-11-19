@@ -28,6 +28,10 @@ MUTATE = os.environ.get("ZKEY_TERMINAL_MUTATE", "")
 # "home" = the user's own ~/.bashrc as installed by scripts/install-shell.sh.
 PLUGIN_MODE = os.environ.get("ZKEY_TERMINAL_PLUGIN", "0")
 PLUGIN = PLUGIN_MODE in ("1", "home")
+# The gate pins the plugin mode instead of inheriting an ambient ZKEY_MODE
+# (measured 19/11: a shell with ZKEY_MODE=off made the gate measure nothing).
+# Counter-check: ZKEY_MODE_UNDER_TEST=off must turn this gate RED.
+TEST_MODE = os.environ.get("ZKEY_MODE_UNDER_TEST", "quoted")
 
 
 def inside():
@@ -50,8 +54,8 @@ def inside():
         handlers = [GLib.log_set_handler(domain, GLib.LogLevelFlags.LEVEL_WARNING | GLib.LogLevelFlags.LEVEL_CRITICAL,
                                          lambda _d, _l, message, _u: errors.append(message), None)
                     for domain in ("Gtk", "Gdk", "IBUS", "VTE")]
-        shell_env = [f"{k}={v}" for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "TERM", "ZKEY_MODE")]
-        shell_env += ["PS1=$ ", "HISTFILE=/dev/null", "LANG=C.UTF-8"]
+        shell_env = [f"{k}={v}" for k, v in os.environ.items() if k in ("PATH", "HOME", "LANG", "LC_ALL", "TERM")]
+        shell_env += [f"ZKEY_MODE={TEST_MODE}", "PS1=$ ", "HISTFILE=/dev/null", "LANG=C.UTF-8"]
         spawned = []
         shell = {"1": ["/bin/bash", "--rcfile", str(ROOT / "shell/zkey.bash"), "-i"],
                  "home": ["/bin/bash", "-i"]}.get(PLUGIN_MODE, ["/bin/bash", "--norc", "--noprofile", "-i"])

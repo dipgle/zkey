@@ -45,6 +45,9 @@ fi
 
 # --- inside xvfb-run: DISPLAY/XAUTHORITY point at the private server ---
 cd "$ROOT" || exit 2
+# Ambients must not choose the plugin mode under test (measured 19/11:
+# a parent shell with ZKEY_MODE=off made the VTE plugin lane measure nothing).
+unset ZKEY_MODE
 export ZKEY_TEST_DISPLAY="$DISPLAY" ZKEY_CLIENT_GDK_BACKEND=x11 ZKEY_TRACE=1
 export ZKEY_APP_PID_FILE="$ROOT/.tmp/xvfb-editor-app.json"
 unset WAYLAND_DISPLAY IBUS_USE_PORTAL
