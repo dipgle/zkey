@@ -127,7 +127,8 @@ __zkey_cycle() {
 zkey-status() {
     local alive=no
     [[ -n ${ZKEY_LINE_PID-} ]] && kill -0 "$ZKEY_LINE_PID" 2>/dev/null && alive=yes
-    printf 'zkey: mode=%s tone=%s service=%s errors=%d\n' "$ZKEY_MODE" "$ZKEY_TONE" "$alive" "$ZKEY_ERRORS"
+    printf 'zkey: mode=%s tone=%s core=%s service=%s errors=%d\n' \
+        "$ZKEY_MODE" "$ZKEY_TONE" "$ZKEY_PROTO" "$alive" "$ZKEY_ERRORS"
 }
 
 for __zkey_c in {a..z} {A..Z}; do
