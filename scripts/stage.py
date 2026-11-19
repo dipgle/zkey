@@ -33,8 +33,12 @@ def stage(destination, prefix):
     for source in (ROOT / "zkey").glob("*.py"):
         shutil.copy2(source, package / "zkey" / source.name)
     shutil.copy2(library, package / "target/release/libzkey_core.so")
-    # Shell plugin finds zkey-line at <its dir>/../target/release (shell/zkey.bash).
+    # Shell plugin finds zkey-native at <its dir>/../target/release (shell/zkey.bash),
+    # and falls back to the legacy zkey-line when the native build is absent.
     shutil.copy2(line, package / "target/release/zkey-line")
+    native = ROOT / "native/target/release/zkey-native"
+    if native.is_file():
+        shutil.copy2(native, package / "target/release/zkey-native")
     shutil.copy2(ROOT / "shell/zkey.bash", package / "shell/zkey.bash")
     for notice in ("LICENSE", "NOTICE.md"):
         shutil.copy2(ROOT / notice, package / notice)

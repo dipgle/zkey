@@ -10,8 +10,8 @@ RC=${ZKEY_BASHRC:-$HOME/.bashrc}
 BEGIN='# >>> zkey shell plugin >>>'
 END='# <<< zkey shell plugin <<<'
 
-if [ ! -x "$ROOT/target/release/zkey-line" ]; then
-  echo "zkey: $ROOT/target/release/zkey-line chưa build (cargo build --offline --release)"; exit 2
+if [ ! -x "$ROOT/native/target/release/zkey-native" ] && [ ! -x "$ROOT/target/release/zkey-line" ]; then
+  echo "zkey: chưa build lõi dòng lệnh (cargo build --offline --release --manifest-path native/Cargo.toml)"; exit 2
 fi
 touch "$RC"
 backup="$RC.zkey-backup.$(date +%Y%m%d%H%M%S)"

@@ -18,11 +18,13 @@ SOCK=zkey-accept-$$
 T() { tmux -L "$SOCK" "$@"; }
 finish() { T kill-server 2>/dev/null; rm -rf "$OUT"; echo "GATE_EXIT=$1"; exit "$1"; }
 command -v tmux >/dev/null || { echo "NOT_MEASURABLE: tmux missing"; finish 2; }
-[ -x "$ROOT/target/release/zkey-line" ] || { echo "NOT_MEASURABLE: zkey-line not built"; finish 2; }
+if [ ! -x "$ROOT/native/target/release/zkey-native" ] && [ ! -x "$ROOT/target/release/zkey-line" ]; then
+  echo "NOT_MEASURABLE: zkey-native (native/target/release) not built"; finish 2
+fi
 
 PLUGIN=${ZKEY_PLUGIN:-$ROOT/shell/zkey.bash}  # counter-checks pass a broken copy
 T -f /dev/null new-session -d -x 200 -y 20 -- env -i HOME="$HOME" TERM=xterm-256color \
-  LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin ZKEY_MODE="${ZKEY_MODE:-quoted}" \
+  LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin ZKEY_MODE=quoted \
   bash --norc --noprofile -c "exec bash --rcfile '$PLUGIN' -i" \
   || { echo "NOT_MEASURABLE: tmux session did not start"; finish 2; }
 ready=""

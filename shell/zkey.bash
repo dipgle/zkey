@@ -22,12 +22,30 @@ ZKEY_MODE=${ZKEY_MODE:-quoted}   # quoted | all | off
 ZKEY_TONE=${ZKEY_TONE:-m}        # m = modern (hoà), c = classic (hòa)
 ZKEY_ERRORS=0
 
-if [[ ! -x $ZKEY_HOME/target/release/zkey-line ]]; then
-    printf 'zkey: %s chưa được build (cargo build --release); Telex dòng lệnh tắt.\n' \
-        "$ZKEY_HOME/target/release/zkey-line" >&2
+# Composer binary: the native engine's line protocol (--line). The legacy
+# zkey-line is only a fallback for packages staged before the native binary
+# shipped; it speaks the older 'm'+word / '=word' protocol.
+ZKEY_LINE_BIN=${ZKEY_LINE_BIN:-}
+ZKEY_PROTO=native
+if [[ -z $ZKEY_LINE_BIN ]]; then
+    for zkey_candidate in "$ZKEY_HOME/native/target/release/zkey-native" \
+            "$ZKEY_HOME/target/release/zkey-native"; do
+        if [[ -x $zkey_candidate ]]; then ZKEY_LINE_BIN=$zkey_candidate; break; fi
+    done
+fi
+if [[ -z $ZKEY_LINE_BIN && -x $ZKEY_HOME/target/release/zkey-line ]]; then
+    ZKEY_LINE_BIN=$ZKEY_HOME/target/release/zkey-line
+    ZKEY_PROTO=legacy
+fi
+if [[ -z $ZKEY_LINE_BIN ]]; then
+    printf 'zkey: không thấy zkey-native (cargo build --release --manifest-path native/Cargo.toml); Telex dòng lệnh tắt.\n' >&2
     return 1
 fi
-coproc ZKEY_LINE { exec "$ZKEY_HOME/target/release/zkey-line"; }
+if [[ $ZKEY_PROTO == native && $ZKEY_TONE == c ]]; then
+    coproc ZKEY_LINE { exec "$ZKEY_LINE_BIN" --line traditional; }
+else
+    coproc ZKEY_LINE { exec "$ZKEY_LINE_BIN" --line; }
+fi
 ZKEY_LOADED=1
 
 __zkey_in_quotes() {
@@ -87,9 +105,11 @@ __zkey_key() {
     else
         raw=$word$key
     fi
-    if printf '%s%s\n' "$ZKEY_TONE" "$raw" >&"${ZKEY_LINE[1]}" 2>/dev/null \
-            && IFS= read -r -t 1 -u "${ZKEY_LINE[0]}" reply && [[ $reply == =* ]]; then
-        text=${reply:1}
+    local request reply text
+    if [[ $ZKEY_PROTO == legacy ]]; then request=$ZKEY_TONE$raw; else request=$raw; fi
+    if printf '%s\n' "$request" >&"${ZKEY_LINE[1]}" 2>/dev/null \
+            && IFS= read -r -t 1 -u "${ZKEY_LINE[0]}" reply && [[ -n $reply && $reply != '!' ]]; then
+        text=${reply#=}   # legacy replies "=word"; --line replies the word
     else
         ZKEY_ERRORS=$((ZKEY_ERRORS + 1))   # visible via zkey-status; key still typed
         __zkey_plain "$key"; return

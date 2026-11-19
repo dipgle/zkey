@@ -1,5 +1,20 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 19/11 12:30 — plugin dòng lệnh dùng `zkey-native --line`; gốc lỗi Firefox
+
+### Đã chạy thật
+
+- **Firefox — tìm ra cơ chế, sửa có khoá hồi quy:** dấu vết máy Hà (`.local/state/zkey-native-ime/engine-trace.log`) cho thấy mỗi phím: `key-event handled=true` → client gọi `Reset` → `SetSurroundingText`; đo lần 2 cả **14/14 phím `edit sent remove=0 insert_chars=1`**. `Session::client_reset` cũ xoá cả từ đang ghép ⇒ engine mất trạng thái sau mỗi phím, các phím sau chỉ chèn nguyên ký tự (đúng số đo). Sửa: Reset của client chỉ **treo** trạng thái; `SetSurroundingText` kế tiếp xác nhận từ còn đúng vị trí (owns) thì ghép tiếp, sai thì xoá. Bài `client_reset_after_every_commit_keeps_the_word_composable`: cũ `tieengs` + mỗi phím insert=1/remove=0, mới `tiếng` (RED đã đo bằng cách tạm khôi phục `client_reset` cũ). **CHƯA đo trên Firefox thật**: cần build + cài lại binary (chờ Hà) rồi Hà gõ `tieengs`.
+- **Plugin bash dùng lõi native:** `shell/zkey.bash` chạy `zkey-native --line [traditional]`, giữ lõi `zkey-line` làm dự phòng (nhận cả `=word`). Thêm `valid_syllable` vào `native/src/compose.rs`: giao thức trả nguyên văn khi kết quả không phải âm tiết Việt — nếu không, `status→státu`, `add→ađ`, `class→clas` (đã đo). `--line` nhận thêm `traditional`; mặc định modern.
+- `scripts/accept-shell-tmux.sh`: **5/5 PASS, GATE_EXIT=0** (M1–M3 máy gõ nguyên văn, I định danh/hoa, H `tieengs vieetj→tiếng việt`). Sửa cổng: trước đó kế thừa `ZKEY_MODE=off` từ shell cha ⇒ đo sai chế độ (đã gặp thật); nay cổng **ghim `ZKEY_MODE=quoted`**.
+- Kiểm: native `cargo test` 50+7+5+2; clippy `-D warnings` 0; `cargo build --release` 0 (attestation khớp nguồn). Lõi cũ: `cargo test`/clippy/build release 0. Python 90/90. Ma trận `bash .tmp/accept-native-matrix.sh`: **8/8 lane GATE 0**, harm gate portal active→active, mount 1→1.
+- `scripts/stage.py` chép `zkey-native` vào gói khi đã build (plugin tìm ở `target/release`), vẫn giữ `zkey-line`. README/`docs/native-rewrite.md` N04 cập nhật.
+
+### CHƯA ĐO ĐƯỢC
+
+- Firefox thật với bản sửa (cần build đã cài lại; luật dự án cấm tự đổi bộ gõ hệ thống/restart IBus trong phiên).
+- WebKit N01 vẫn ĐỎ; VTE/ptyxis thật với plugin mới (mới có cổng tmux).
+
 ## 16/11 09:45 — chốt lượt, nhường phiên thiết kế theo yêu cầu mới của Hà
 
 - Python73/73 mã0; `impact.py --record`137 nút/82 test. Hai ca mới RED→GREEN: socket bus phải ở runtime riêng thay `/tmp` bị Snap che; runtime/session-bus phải cùng đời để document-portal không giữ mount trong thư mục engine đã dọn. `bus_config.py` giữ policy/auth hệ thống, chỉ đổi listen và resolve include tương đối; `launch.py`/`private_bus.py` cùng dùng. Chưa cài bản này ngoài repo.

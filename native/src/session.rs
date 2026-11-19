@@ -47,6 +47,7 @@ pub struct Session {
     max_keys: usize,
     native_backspace: Option<BackspaceTicket>,
     pending: Option<PendingSpan>,
+    reset_pending: bool,
 }
 
 impl Session {
@@ -71,6 +72,7 @@ impl Session {
             max_keys: max_keys.clamp(8, HARD_KEY_LIMIT),
             native_backspace: None,
             pending: None,
+            reset_pending: false,
         }
     }
     pub fn reset(&mut self) {
@@ -82,13 +84,16 @@ impl Session {
         self.snapshot = None;
         self.native_backspace = None;
         self.pending = None;
+        self.reset_pending = false;
     }
     pub fn client_reset(&mut self) {
-        // GTK resets its IM context as part of its own native Backspace path.
-        // Preserve no active composition, only a one-key, position-bound ticket
-        // that a subsequent real snapshot must prove before anything resumes.
+        // GTK resets its IM context as part of its own native Backspace path,
+        // and some clients (measured: Firefox) reset after every commit. Keep
+        // the word only until the next surrounding text proves it is still in
+        // the field; otherwise the next snapshot discards it.
         let ticket = self.native_backspace.take();
-        self.reset();
+        self.snapshot = None;
+        self.reset_pending = true;
         self.native_backspace = ticket;
     }
     pub fn leave_context(&mut self) {
@@ -140,6 +145,16 @@ impl Session {
             cursor,
             selection: cursor != anchor,
         });
+        if self.reset_pending {
+            self.reset_pending = false;
+            // The client reset its context, but some clients (measured: Firefox)
+            // do that after every commit. Continue the same word only when the
+            // surrounding text proves it is still there at the same caret.
+            if !self.owns() {
+                self.reset();
+                return self.snapshot(text, cursor, anchor);
+            }
+        }
         if let Some(ticket) = self.native_backspace.take() {
             let matches = self.snapshot.as_ref().is_some_and(|s| {
                 !s.selection && s.cursor == ticket.cursor && s.before.ends_with(&ticket.before)
@@ -264,6 +279,10 @@ impl Session {
         if !self.accepts() {
             self.reset();
             return Edit::default();
+        }
+        if self.reset_pending {
+            // No surrounding text confirmed the word after the client's reset.
+            self.reset();
         }
         if self.snapshot.as_ref().is_some_and(|s| s.selection) {
             self.reset();
@@ -580,6 +599,50 @@ mod tests {
         assert!(!e.s.key('s').handled);
         e.s.content(0, 0);
         assert!(e.s.key('s').handled);
+    }
+    #[test]
+    fn client_reset_after_every_commit_keeps_the_word_composable() {
+        // Measured behaviour of Firefox's GTK IM context (19/11): after each key it
+        // applies the edit, calls Reset on the engine, then republishes the text.
+        // A reset must not throw away a word the surrounding text still proves.
+        let mut s = Session::new(ToneStyle::Modern, true, 256, true);
+        s.capabilities(32);
+        s.content(0, 0);
+        let mut text = String::new();
+        for key in "tieengs".chars() {
+            let n = text.chars().count();
+            let ack = s.snapshot(&text, n, n);
+            for _ in 0..ack.remove {
+                text.pop();
+            }
+            text.push_str(&ack.insert);
+            let edit = s.key(key);
+            for _ in 0..edit.remove {
+                text.pop();
+            }
+            text.push_str(&edit.insert);
+            s.client_reset();
+            let n = text.chars().count();
+            let ack = s.snapshot(&text, n, n);
+            for _ in 0..ack.remove {
+                text.pop();
+            }
+            text.push_str(&ack.insert);
+        }
+        assert_eq!(text, "tiếng");
+    }
+    #[test]
+    fn client_reset_without_matching_surrounding_starts_a_new_word() {
+        let mut e = Editor::new();
+        for k in "aas".chars() {
+            e.key(k);
+        }
+        e.s.client_reset();
+        e.text = "other ".into();
+        e.s.snapshot(&e.text, 6, 6);
+        e.key('a');
+        e.key('s');
+        assert_eq!(e.text, "other á");
     }
     #[test]
     fn gtk_reset_after_native_backspace_requires_exact_app_confirmation() {

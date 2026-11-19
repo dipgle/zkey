@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 use std::io::{self, BufRead, Write};
-use zkey_native::compose::{Composer, HARD_KEY_LIMIT, ToneStyle};
+use zkey_native::compose::{Composer, HARD_KEY_LIMIT, ToneStyle, valid_syllable};
 mod desktop;
 mod launch;
 mod settings;
@@ -32,7 +32,7 @@ fn run() -> Result<(), String> {
         }
         [flag] if matches!(flag.as_str(), "--help" | "-h") => {
             println!(
-                "zkey-native — independent Rust development build\n\n--show                     Print the settings (also --settings, and the default at a terminal)\n--set KEY=VALUE ...        Validate and save settings (enabled, tone_style, max_word_keys, experimental_rewrite, webkit_compat)\n--ibus [--experimental-rewrite]\n                           IBus engine started by the user's ibus-daemon (install with scripts/native-ime.py)\n--run [APPLICATION ARGS]   Private application session; system IME unchanged\n--experimental-rewrite --run APPLICATION ARGS\n                           Explicit unverified surrounding rewrite\n--webkit-compat --experimental-rewrite --run APPLICATION ARGS\n                           Opt-in process-local GTK3/WebKit bridge\n--compose WORD             Print one Telex result\n--line                     Bounded UTF-8 word-per-line protocol\n--version                  Build version\n\nNot approved for system installation; compatibility is scoped to launched applications."
+                "zkey-native — independent Rust development build\n\n--show                     Print the settings (also --settings, and the default at a terminal)\n--set KEY=VALUE ...        Validate and save settings (enabled, tone_style, max_word_keys, experimental_rewrite, webkit_compat)\n--ibus [--experimental-rewrite]\n                           IBus engine started by the user's ibus-daemon (install with scripts/native-ime.py)\n--run [APPLICATION ARGS]   Private application session; system IME unchanged\n--experimental-rewrite --run APPLICATION ARGS\n                           Explicit unverified surrounding rewrite\n--webkit-compat --experimental-rewrite --run APPLICATION ARGS\n                           Opt-in process-local GTK3/WebKit bridge\n--compose WORD             Print one Telex result\n--line [traditional]       Bounded UTF-8 word-per-line protocol (default tone style: modern)\n--version                  Build version\n\nNot approved for system installation; compatibility is scoped to launched applications."
             );
             Ok(())
         }
@@ -75,19 +75,30 @@ fn run() -> Result<(), String> {
             println!("{}", composer.text());
             Ok(())
         }
-        [flag] if flag == "--line" => line_protocol(io::stdin().lock(), io::stdout().lock()),
+        [flag] if flag == "--line" => {
+            line_protocol(io::stdin().lock(), ToneStyle::Modern, io::stdout().lock())
+        }
+        [flag, style] if flag == "--line" && style == "traditional" => line_protocol(
+            io::stdin().lock(),
+            ToneStyle::Traditional,
+            io::stdout().lock(),
+        ),
         _ => Err("Unknown command; use zkey-native --help".into()),
     }
 }
 
-fn line_protocol(mut input: impl BufRead, mut output: impl Write) -> Result<(), String> {
+fn line_protocol(
+    mut input: impl BufRead,
+    style: ToneStyle,
+    mut output: impl Write,
+) -> Result<(), String> {
     let mut pending = Vec::new();
     let mut overflow = false;
     loop {
         let block = input.fill_buf().map_err(|_| "Cannot read line protocol")?;
         if block.is_empty() {
             if !pending.is_empty() || overflow {
-                line_reply(&pending, overflow, &mut output)?;
+                line_reply(&pending, overflow, style, &mut output)?;
             }
             break;
         }
@@ -103,21 +114,39 @@ fn line_protocol(mut input: impl BufRead, mut output: impl Write) -> Result<(), 
         }
         input.consume(used + usize::from(newline.is_some()));
         if newline.is_some() {
-            line_reply(&pending, overflow, &mut output)?;
+            line_reply(&pending, overflow, style, &mut output)?;
             pending.clear();
             overflow = false;
         }
     }
     Ok(())
 }
-fn line_reply(bytes: &[u8], overflow: bool, out: &mut impl Write) -> Result<(), String> {
+fn line_reply(
+    bytes: &[u8],
+    overflow: bool,
+    style: ToneStyle,
+    out: &mut impl Write,
+) -> Result<(), String> {
     // This is an explicit data protocol, never a diagnostic/input log.
-    let mut composer = Composer::new(ToneStyle::Modern);
+    let mut composer = Composer::new(style);
     let bytes = bytes.strip_suffix(b"\r").unwrap_or(bytes);
-    let valid = !overflow
-        && std::str::from_utf8(bytes)
-            .is_ok_and(|line| line.chars().all(|key| composer.push(key).is_ok()));
-    writeln!(out, "{}", if valid { composer.text() } else { "!".into() })
+    let raw = std::str::from_utf8(bytes).ok();
+    let valid =
+        !overflow && raw.is_some_and(|line| line.chars().all(|key| composer.push(key).is_ok()));
+    let reply = match raw {
+        // A result that is not a plausible Vietnamese syllable keeps the keys
+        // exactly as typed, so command words stay commands.
+        Some(line) if valid => {
+            let composed = composer.text();
+            if composed == line || valid_syllable(&composed) {
+                composed
+            } else {
+                line.to_string()
+            }
+        }
+        _ => "!".into(),
+    };
+    writeln!(out, "{reply}")
         .and_then(|_| out.flush())
         .map_err(|_| "Cannot write line protocol".into())
 }
@@ -161,7 +190,34 @@ mod tests {
         let mut input = vec![b'a'; 4096];
         input.extend_from_slice(b"\n\xff\naas\r\nhoaf");
         let mut output = Vec::new();
-        line_protocol(std::io::Cursor::new(input), &mut output).unwrap();
+        line_protocol(std::io::Cursor::new(input), ToneStyle::Modern, &mut output).unwrap();
         assert_eq!(String::from_utf8(output).unwrap(), "!\n!\nấ\nhoà\n");
+    }
+    #[test]
+    fn protocol_keeps_english_words_as_typed() {
+        // The shell plugin sends the word before the cursor on every printable key.
+        // Without a syllable check, ordinary command words come back mutated.
+        let mut output = Vec::new();
+        line_protocol(
+            std::io::Cursor::new(b"status\nadd\nclass\ndd\n"),
+            ToneStyle::Modern,
+            &mut output,
+        )
+        .unwrap();
+        assert_eq!(
+            String::from_utf8(output).unwrap(),
+            "status\nadd\nclass\nđ\n"
+        );
+    }
+    #[test]
+    fn protocol_honours_the_requested_tone_style() {
+        let mut output = Vec::new();
+        line_protocol(
+            std::io::Cursor::new(b"hoas\nthuyr\n"),
+            ToneStyle::Traditional,
+            &mut output,
+        )
+        .unwrap();
+        assert_eq!(String::from_utf8(output).unwrap(), "hóa\nthủy\n");
     }
 }

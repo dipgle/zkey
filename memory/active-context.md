@@ -1,10 +1,7 @@
-# zkey/core — native (19/11 sáng, phiên claude acc3 → kế nhiệm)
+# zkey/core — native (19/11 trưa, phiên kế nhiệm DeepSeek)
 
-XONG & ĐÃ CÀI (commit eb00710, 9769fc6): bản Rust tự nói D-Bus/IBus/Notify, binary chỉ nối libc+libgcc_s; thiết lập `--show/--set`; cài thật qua `python3 scripts/native-ime.py enable --trace`. Gõ OK trong Text Editor. Telex truyền thống: `cuss→cus`, `ww→w`.
-ĐO: cargo test 59, clippy 0, Python 90+6, ma trận 8 lane Xvfb riêng GATE 0 (`bash .tmp/accept-native-matrix.sh`), harm gate mount 1→1.
-
-CHƯA ĐƯỢC: (1) Firefox: engine xử lý 7/7 phím nhưng chữ hiện sai, gốc chưa rõ — Hà gõ `tieengs` ở ô tìm kiếm, báo chữ hiện ra, rồi đối chiếu `~/.local/state/zkey-native-ime/engine-trace.log` (dòng `edit sent remove= insert_chars=`). (2) tmux/ptyxis: bypass TERMINAL theo hợp đồng; plugin bash còn lõi cũ. (3) N01 WebKit đỏ.
-CHỜ HÀ: bỏ cấm Backspace qua IBus cho ô không surrounding? (cấm do phiên đầu tự ghi, không phải yêu cầu Hà). Không dùng preedit.
-HUBA (ngoài zkey): bản giao 4 mục nhãn/focus/footer/Tele chờ Hà dán vào phiên huba (không có phiên sống).
-LUẬT MỚI: CLAUDE.md «Nhãn dự án…»: nhãn = zkey cố định, CẤM `cd` trần (đo: cd trần đổi nhãn, subshell không).
-Nền: KHÔNG CÓ (trace chẩn đoán đang bật trên máy).
+XONG trong mã (chưa commit lúc ghi): (1) **Firefox** — gốc = client gọi `Reset` sau MỖI phím (14/14 `edit sent remove=0 insert_chars=1`); `client_reset` cũ xoá từ ⇒ không sửa dấu. Sửa `native/src/session.rs`: Reset treo trạng thái, snapshot kế xác nhận `owns` rồi mới ghép; test `client_reset_after_every_commit_keeps_the_word_composable` RED `tieengs`→GREEN `tiếng`. **Chưa cài lại binary** (cần Hà duyệt) nên CHƯA đo Firefox thật. (2) **Plugin bash** dùng `zkey-native --line [traditional]`; thêm `valid_syllable` (giữ `status`, không thành `státu`) + test; `accept-shell-tmux.sh` 5/5 GATE 0 (đã ghim `ZKEY_MODE=quoted`, trước đó kế thừa `off`). `stage.py` chép `zkey-native` khi có build.
+ĐO: native test 50+7+5+2, clippy 0, release 0; lõi cũ test/clippy/build 0; Python 90; ma trận 8 lane GATE 0, harm portal active→active/mount 1→1.
+CHƯA: Firefox thật (cần cài lại); WebKit N01 vẫn ĐỎ; VTE/ptyxis thật với plugin mới.
+CHỜ HÀ: (a) duyệt `native-ime.py disable` + `enable --trace` để đo bản sửa Firefox; (b) quyết bỏ cấm Backspace qua IBus (dòng cấm do phiên đầu tự ghi).
+DỞ GIỮA: một phiên khác đã commit `1ff942a` (TODO Firefox lần 2) lúc 11:07 khi phiên này đang sửa cùng cây; hiện không còn tiến trình zkey nào khác (đo `ps`). Nền: KHÔNG.

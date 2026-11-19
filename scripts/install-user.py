@@ -3,7 +3,8 @@
 """User-local install / uninstall of zkey (no root, no system input change).
 
 Installs into PREFIX (default ~/.local): bin/zkey, lib/zkey/** (Python engine +
-launcher, Rust core, zkey-line, shell plugin), share/applications/zkey.desktop.
+launcher, Rust core, zkey-line, zkey-native when native/ is built, shell plugin),
+share/applications/zkey.desktop.
 The IBus component (system input source path) is NOT installed unless
 --with-ibus-component: that path also needs IBUS_ENABLE_SYNC_MODE for the
 user session (docs/verification.md 15/11 16:50) and is the owner's decision.

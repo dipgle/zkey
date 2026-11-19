@@ -37,7 +37,7 @@ cargo build --offline --release
 /usr/bin/python3 scripts/install-user.py --uninstall  # gỡ đúng tệp đã cài
 ```
 
-- Cài `~/.local/bin/zkey`, `~/.local/lib/zkey/` (engine, launcher, lõi Rust, `zkey-line`, plugin bash) và mục menu **zkey — Gõ tiếng Việt** (`~/.local/share/applications/zkey.desktop`). Dùng: `~/.local/bin/zkey --run [ứng dụng]`.
+- Cài `~/.local/bin/zkey`, `~/.local/lib/zkey/` (engine, launcher, lõi Rust, `zkey-native --line` khi đã build `native/`, `zkey-line` dự phòng, plugin bash) và mục menu **zkey — Gõ tiếng Việt** (`~/.local/share/applications/zkey.desktop`). Dùng: `~/.local/bin/zkey --run [ứng dụng]`.
 - Mỗi tệp ghi SHA-256 trong `lib/zkey/MANIFEST.json`. Cài từ chối đè tệp không phải của zkey; gỡ chỉ xoá tệp còn nguyên, tệp đã sửa giữ lại và báo. Log engine của bản cài giữ 50 bản mới nhất.
 - Không sửa `~/.bashrc` (dùng `scripts/install-shell.sh`), không cài component IBus (bộ gõ hệ thống; tuỳ chọn `--with-ibus-component`, cần thêm `IBUS_ENABLE_SYNC_MODE=1` cho phiên — chưa quyết).
 - Đã đo: cài vào tiền tố thử, gõ thật GTK3 bằng **bản đã cài** XANH (30/30 gõ dồn), lõi hỏng ⇒ ĐỎ, gỡ sạch 0 tệp sót.
