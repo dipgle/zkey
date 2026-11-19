@@ -314,6 +314,6 @@
 - Gỡ/cài lại `scripts/native-ime.py disable` → `enable --trace` (mã 0/0). Đo: binary cài `2f979f84…` trùng binary build; engine mới PID 4186151; `ibus engine` qua daemon = `zkey-native`; không còn engine cũ. Luật «không đổi bộ gõ hệ thống trong phiên» được Hà cho phép đè bằng lệnh này.
 - Cổng mới `native/tests/accept_firefox_pattern.py`: dùng D-Bus thật của daemon, tạo engine từ factory của engine ĐÃ CÀI, gửi đúng chuỗi Firefox (`SetSurroundingText` → key → áp Delete/Commit → `Reset` → `SetSurroundingText`), gõ `tieengs` ⇒ `text='tiếng' keys=7 removes=2 commits=7` GATE 0.
 - Đối chứng ngược: `ZKEY_FIREFOX_SKIP_SURROUNDING=1` ⇒ `text='tieengs' removes=0` GATE 1 (cổng đỏ được). Context `Destroy` sau test; trace chỉ ghi số.
-- Còn chờ mắt Hà trên Firefox thật.
+- Còn chờ mắt Hà trên Firefox thật. Thử tự động Firefox snap trên Xvfb riêng: KHÔNG ĐO ĐƯỢC (snap thấy socket X nhưng vẫn `cannot open display` — sandbox chỉ cho display của phiên); không dùng :0 để tránh bơm phím vào phiên người dùng.
 
 

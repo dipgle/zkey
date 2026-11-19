@@ -25,6 +25,7 @@
 - **Cổng mới `native/tests/accept_firefox_pattern.py`** (D-Bus thật, không bơm phím, không đổi nguồn nhập, không đụng tài liệu người dùng): tạo engine qua factory của **engine đã cài**, gửi đúng chuỗi Firefox đã đo (`SetSurroundingText` → `ProcessKeyEvent` → áp `DeleteSurroundingText`/`CommitText` → `Reset` → `SetSurroundingText`), gõ `tieengs`. Kết quả: `text='tiếng' keys=7 removes=2 commits=7` ⇒ **PASS, GATE_EXIT=0**.
 - **Đối chứng ngược:** cùng cổng với client bỏ `SetSurroundingText` sau Reset (`ZKEY_FIREFOX_SKIP_SURROUNDING=1`) ⇒ `text='tieengs' removes=0` ⇒ **ĐỎ, GATE_EXIT=1**. Cổng đỏ được, không phải assert luôn xanh.
 - Trace của engine đã cài ghi `surrounding-event ... chars=N cursor=N anchor=N` (chỉ số); ngữ cảnh thử đã `Destroy`, không rò.
+- **Thử tự động Firefox snap trên Xvfb riêng = KHÔNG ĐO ĐƯỢC (đo lại, rõ hơn lần trước):** snap nhìn thấy `/tmp/.X11-unix/X80` (đã kiểm trong `snap run --shell firefox`) nhưng app vẫn `Error: cannot open display: :80` cả khi Xvfb `-ac` ⇒ sandbox snap chỉ cho display của phiên, không phải lỗi auth/đường dẫn. Không dùng display `:0` để tránh bơm phím vào phiên đang làm việc.
 - Còn lại cần mắt người: Hà gõ `tieengs` trong Firefox thật (engine trên máy đã là bản sửa).
 
 ## 16/11 09:45 — chốt lượt, nhường phiên thiết kế theo yêu cầu mới của Hà
