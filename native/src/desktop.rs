@@ -231,24 +231,28 @@ fn engine_method(
             Ok(vec![])
         }
         "SetSurroundingText" => {
-            if instance.trace {
-                eprintln!(
-                    "zkey-native: surrounding-event protected={}",
-                    instance.state.protected()
-                );
-            }
             if !instance.state.protected() {
                 let text = ibus::text_of(arg(0)?)?;
                 if text.len() > 1_048_576 {
                     instance.state.reset();
                     return Err("Surrounding payload exceeds safety bound".into());
                 }
-                let edit = instance.state.snapshot(
-                    &text,
-                    arg(1)?.as_u32()? as usize,
-                    arg(2)?.as_u32()? as usize,
-                );
+                let cursor = arg(1)?.as_u32()? as usize;
+                let anchor = arg(2)?.as_u32()? as usize;
+                if instance.trace {
+                    // Counts only, never the text. Tells whether a client's
+                    // snapshot lags behind the words the engine committed.
+                    eprintln!(
+                        "zkey-native: surrounding-event protected=false chars={} cursor={} anchor={}",
+                        text.chars().count(),
+                        cursor,
+                        anchor
+                    );
+                }
+                let edit = instance.state.snapshot(&text, cursor, anchor);
                 apply(conn, path, edit)?;
+            } else if instance.trace {
+                eprintln!("zkey-native: surrounding-event protected=true");
             }
             Ok(vec![])
         }
