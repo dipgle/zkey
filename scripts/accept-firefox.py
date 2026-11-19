@@ -139,7 +139,12 @@ def inside():
                        f"--unit=snap.firefox.firefox-{uuid.uuid4()}.scope", *command]
         browser = subprocess.Popen(command, env=env, stdout=log, stderr=log, start_new_session=True)
         try:
-            deadline, target = time.monotonic() + 60, None
+            # Waits are env-tunable for a loaded host (measured 19/11: load 9-11 on 4 cores, Firefox's
+            # real window appeared after 25-45 s). Defaults are the original values.
+            start_wait = float(os.environ.get("ZKEY_FF_START_SECONDS", "60"))
+            focus_wait = float(os.environ.get("ZKEY_FF_FOCUS_SECONDS", "15"))
+            expect_wait = float(os.environ.get("ZKEY_FF_EXPECT_SECONDS", "4"))
+            deadline, target = time.monotonic() + start_wait, None
             while time.monotonic() < deadline and target is None:
                 if browser.poll() is not None:
                     print(f"NOT_MEASURABLE: firefox exited {browser.returncode}; see .tmp/firefox-accept.log")
@@ -188,7 +193,8 @@ def inside():
             t.XTestFakeButtonEvent(display, 1, True, 0)
             t.XTestFakeButtonEvent(display, 1, False, 0)
             x.XSync(display, False)
-            deadline = time.monotonic() + 15
+            time.sleep(float(os.environ.get("ZKEY_FF_SETTLE_SECONDS", "0")))  # let a loaded Firefox finish starting
+            deadline = time.monotonic() + focus_wait
             while time.monotonic() < deadline and not ((s := state()) and s["focus"] == "text"):
                 time.sleep(0.1)
             if not (s := state()) or s["focus"] != "text":
@@ -207,7 +213,7 @@ def inside():
                 t.XTestFakeKeyEvent(display, code, False, 0)
                 x.XFlush(display)
 
-            def expect(field, want, seconds=4):
+            def expect(field, want, seconds=expect_wait):
                 until = time.monotonic() + seconds
                 while time.monotonic() < until:
                     s = state()
@@ -215,7 +221,8 @@ def inside():
                         return s
                     time.sleep(0.02)
                 screenshot()
-                raise AssertionError(f"page field {field}: expected={want!r}, actual={(state() or {}).get(field)!r}")
+                raise AssertionError(f"page field {field}: expected={want!r}, actual={(state() or {}).get(field)!r}, "
+                                     f"page state={state()}")
 
             for key, want in zip("tieengs", ("t", "ti", "tie", "tiê", "tiên", "tiêng", "tiếng")):
                 send(key)

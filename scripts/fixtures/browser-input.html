@@ -14,7 +14,7 @@
 <input id="text" autofocus autocomplete="off" spellcheck="false">
 <input id="secret" type="password" autocomplete="off">
 <script>
-  const state = { text: "", secret: "", inputs: 0, compText: 0, compSecret: 0, focus: "" };
+  const state = { text: "", secret: "", inputs: 0, compText: 0, compSecret: 0, focus: "", keys: 0 };
   const text = document.getElementById("text"), secret = document.getElementById("secret");
   function report() {
     state.text = text.value; state.secret = secret.value;
@@ -26,5 +26,8 @@
     field.addEventListener("compositionstart", () => { state[key]++; report(); });
     field.addEventListener("focus", report);
   }
+  // Diagnostic only: how many key events the page itself received (separates "no key reached the
+  // browser" from "keys arrived but no text appeared").
+  window.addEventListener("keydown", () => { state.keys++; report(); }, true);
   window.addEventListener("load", () => { text.focus(); report(); });
 </script>

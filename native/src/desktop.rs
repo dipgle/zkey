@@ -413,7 +413,7 @@ fn handle(app: &mut Application, message: &Message) -> Result<Vec<Value>, Reject
         conn, instances, ..
     } = app;
     let instance = instances.get_mut(path).ok_or(UNKNOWN_OBJECT)?;
-    if instance.trace && member != "ProcessKeyEvent" {
+    if instance.trace {
         // Which calls a client's input path makes, in order (protocol names only).
         eprintln!("zkey-native: call {member}");
     }
