@@ -342,6 +342,7 @@
 - **Đường pixel đã thử và HỎNG (đừng làm lại y hệt):** `XGetImage` vùng ô nhập so byte ảnh — caret nhấp nháy trong vùng mẫu ⇒ "đổi" báo sai cả khi cấy chậm 200 ms; cấu trúc `XImage` đã kiểm (196×30, bpl 784) nên không phải lỗi đọc. ⇒ giữ số ở mức toolkit, ghi rõ N05 **chưa đóng**.
 - Vi phạm luật Write: 1 lần dùng `sed -i` để đổi đúng một dòng trong tệp nháp mới của mình (sau đó viết lại cả tệp bằng Write) — lần sau dùng Edit.
 - Ma trận nay **có trong repo** (`scripts/accept-native-matrix.sh`, trước chỉ nằm `.tmp/`): thêm lane `latency`, `env -u ZKEY_MODE` cho mọi lane. Chạy trọn: **9/9 lane GATE 0**, harm gate portal active→active, mount 1→1 (`.tmp/matrix-versioned-20261120-2130.log`).
+- **Gửi huba (Hà yêu cầu 20/11 20:5x):** hòm thư phiên = `/tmp/claude-1000/-mnt-data-projects/ses_e06f09837ffedkvJJi0ZBam657/scratchpad/huba-run.txt` (đo: hubd ghi `runin_inbox_queued` đúng tệp rồi đổi tên `huba-run.taken-…`). huba chạy `git push origin master` (2503149..e5c1f29, 72,7 s) và `rm -f native/tests/accept_seed_dbus.py` (0,1 s). Verify: `git fetch origin` ⇒ `HEAD == origin/master == e5c1f29`; `git status --short` rỗng; tệp nháp không còn.
 
 
 
