@@ -8,4 +8,4 @@ Plugin bash: mặc định `ZKEY_MODE=all`; máy-gõ = có byte xếp hàng + 2 
 
 VIỆC KẾ: (1) chạy `accept_desktop.py` (kịch bản `săc`+space+BS+`s⇒sắc` đã viết) sau khi gỡ quota; (2) Firefox: chờ Hà gõ `tieengs`; (3) Files «từ đầu tiên» — chờ Hà đồng ý bộ đệm riêng; (4) TUI terminal (b) chưa làm.
 
-Nền: KHÔNG. Luật: nhãn `zkey`, CẤM `cd` trần. Phiên cũ `4210` (pts/0) vẫn sống, cây chưa sạch nên KHÔNG đóng.
+Nền: KHÔNG. Luật: nhãn `zkey`, CẤM `cd` trần. Phiên cũ `4210` (pts/0) vẫn sống, cây chưa sạch nên KHÔNG đóng. Nháp `native/tests/accept_seed_dbus.py` untracked (cổng D-Bus headless thử hỏng, `rm` bị chặn).

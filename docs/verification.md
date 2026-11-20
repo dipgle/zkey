@@ -248,3 +248,5 @@ Nguồn: `src/lib.rs`, `src/telex.rs`, `zkey/engine.py`, `zkey/session.py`, `tes
 - Firefox thật: vẫn chờ Hà gõ `tieengs` để nghiệm thu bằng mắt (TODO dòng 3).
 
 **Ghi chú thiết kế:** chốt an toàn của "nhận lại từ đã commit" là **bằng chứng sở hữu** (từ do chính engine vừa commit + con trỏ khớp + chuỗi cuối văn bản khớp + không chọn vùng + dài < `max_keys`), mạnh hơn `valid_syllable` mà Hà đề xuất; đổi lại «this»+space+BS+`s` ra «thiss» như Hà yêu cầu thay vì «thíss». Từ lạ/không sở hữu vẫn không bị sửa (đối chứng `backspace_ticket_never_survives_focus_or_a_different_caret` xanh).
+
+**Đường đo thay thế đã THỬ và HỎNG (đừng đoán lại):** định làm cổng headless (D-Bus thật + binary build, không cần X) tại `native/tests/accept_seed_dbus.py` (tệp nháp còn trong cây, CHƯA commit). Chạy `--engine` trên `dbus-daemon` trần: engine gọi `RegisterComponent` với `org.freedesktop.IBus`; dựng stub Python giữ tên đó vẫn bị từ chối (`Private IBus rejected native component`). Dùng `ibus-daemon` thật thì nó cần display: không có X thì daemon hỏng (GLib-CRITICAL, client `CreateEngine` hết giờ). ⇒ Muốn đo đường này vẫn phải có Xvfb ⇒ kẹt quota `/tmp`.
