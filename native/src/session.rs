@@ -48,6 +48,9 @@ pub struct Session {
     native_backspace: Option<BackspaceTicket>,
     pending: Option<PendingSpan>,
     reset_pending: bool,
+    /// (text, caret) of the word most recently committed before a separator;
+    /// used only to adopt that word back when the separator is deleted.
+    committed: Option<(String, usize)>,
 }
 
 impl Session {
@@ -73,6 +76,7 @@ impl Session {
             native_backspace: None,
             pending: None,
             reset_pending: false,
+            committed: None,
         }
     }
     pub fn reset(&mut self) {
@@ -98,6 +102,7 @@ impl Session {
     }
     pub fn leave_context(&mut self) {
         self.reset();
+        self.committed = None;
         self.protected = true;
     }
     pub fn configure(&mut self, config: &crate::config::Config, experimental: bool) {
@@ -106,9 +111,11 @@ impl Session {
         self.max_keys = config.max_word_keys;
         self.rewrite_allowed = experimental || config.experimental_rewrite;
         self.reset();
+        self.committed = None;
     }
     pub fn capabilities(&mut self, caps: u32) {
         self.capable = caps & (1 << 5) != 0;
+        self.committed = None;
         if !self.capable {
             self.reset();
         }
@@ -117,6 +124,7 @@ impl Session {
         // Public IBus purposes 0..7 are non-secret. PASSWORD/PIN/TERMINAL and
         // any future/unknown purpose stay closed until explicitly supported.
         self.protected = !matches!(purpose, 0..=7) || hints & ((1 << 11) | (1 << 12)) != 0;
+        self.committed = None;
         if self.protected {
             self.reset();
         }
@@ -241,6 +249,32 @@ impl Session {
         self.origin
             .is_none_or(|origin| s.cursor - word.len() == origin)
     }
+    /// Adopt the syllable we just committed when the client deleted the
+    /// separator with a native Backspace: the caret is still exactly where that
+    /// word ends, and the text still ends with it. Nothing else is adopted, so a
+    /// foreign caret can never make us delete someone else's text.
+    fn seed_from_surrounding(&mut self) -> bool {
+        let Some((text, caret)) = self.committed.take() else {
+            return false;
+        };
+        let Some(s) = &self.snapshot else {
+            return false;
+        };
+        let word: Vec<char> = text.chars().collect();
+        if !s.selection
+            && s.cursor == caret
+            && word.len() <= s.before.len()
+            && s.before[s.before.len() - word.len()..] == word[..]
+            && word.len() < self.max_keys
+            && let Ok(seeded) = Composer::seed(self.style, &text)
+        {
+            self.word = seeded;
+            self.visible = text;
+            self.origin = Some(caret - word.len());
+            return true;
+        }
+        false
+    }
     fn replacement(&mut self, wanted: String) -> Edit {
         let common = self
             .visible
@@ -278,6 +312,7 @@ impl Session {
         self.native_backspace = None;
         if !self.accepts() {
             self.reset();
+            self.committed = None;
             return Edit::default();
         }
         if self.reset_pending {
@@ -294,6 +329,20 @@ impl Session {
             } else {
                 self.word.text()
             };
+            let mut committed = None;
+            let word = match &self.pending {
+                Some(previous) => format!("{}{wanted}", previous.wanted),
+                None => wanted.clone(),
+            };
+            let start = self.pending.as_ref().and_then(|p| p.origin).or(self.origin);
+            if !self.literal
+                && let Some(origin) = start
+            {
+                // Remember the word we just committed and where an app that
+                // deleted the separator would leave the caret, so a later mark
+                // key can finish it instead of starting a new word.
+                committed = Some((word.clone(), origin + word.chars().count()));
+            }
             let pending = if self.pending.is_some() || wanted != self.visible {
                 let previous = self.pending.take().unwrap_or(PendingSpan {
                     visible: String::new(),
@@ -301,7 +350,7 @@ impl Session {
                     origin: self.origin,
                 });
                 let visible = format!("{}{}{key}", previous.visible, self.visible);
-                let wanted = format!("{}{wanted}{key}", previous.wanted);
+                let wanted = format!("{}{key}", word);
                 // Match the bounded snapshot window; overflow keeps committed
                 // keys literal instead of retaining unbounded document text.
                 (visible.chars().count() <= HARD_KEY_LIMIT).then_some(PendingSpan {
@@ -314,6 +363,7 @@ impl Session {
             };
             self.reset();
             self.pending = pending;
+            self.committed = committed;
             return Edit {
                 handled: true,
                 insert: key.to_string(),
@@ -330,13 +380,14 @@ impl Session {
             };
         }
         let owned = self.owns();
-        if self.visible.is_empty() {
+        if self.visible.is_empty() && !self.seed_from_surrounding() {
             self.origin = self
                 .snapshot
                 .as_ref()
                 .filter(|s| !s.selection)
                 .map(|s| s.cursor);
         }
+        let owned = owned || self.owns();
         // Validated above and bounded here; preserve the key if a future core
         // validation rule rejects it instead of panicking across the ABI.
         if self.word.push(key).is_err() {
@@ -692,6 +743,84 @@ mod tests {
         let edit = e.s.escape();
         e.apply(edit);
         assert_eq!(e.text, "âs");
+    }
+    #[test]
+    fn deleted_separator_lets_a_mark_finish_the_previous_syllable() {
+        // Hà 20/11: "săc" + space, delete the space with native Backspace, then
+        // "s" must give "sắc" — the syllable already on screen is still mine.
+        let mut e = Editor::new();
+        for k in "sawc".chars() {
+            e.key(k);
+        }
+        assert_eq!(e.text, "săc");
+        e.key(' ');
+        assert_eq!(e.text, "săc ");
+        let n = e.text.chars().count();
+        e.s.snapshot(&e.text, n, n);
+        e.s.backspace();
+        e.text.pop();
+        e.key('s');
+        assert_eq!(e.text, "sắc");
+    }
+    #[test]
+    fn seed_never_rewrites_a_word_we_did_not_commit() {
+        let mut e = Editor::new();
+        e.text = "săc".into();
+        e.s.snapshot(&e.text, 3, 3);
+        let edit = e.s.key('s');
+        assert_eq!(edit.remove, 0);
+        e.apply(edit);
+        assert_eq!(e.text, "săcs");
+    }
+    #[test]
+    fn literal_words_are_not_adopted_after_a_deleted_separator() {
+        // Ctrl/Escape froze "u" as typed: the next mark key appends, never edits.
+        let mut e = Editor::new();
+        e.key('u');
+        e.s.freeze();
+        e.key('s');
+        assert_eq!(e.text, "us");
+        e.key(' ');
+        assert_eq!(e.text, "us ");
+        e.text.pop();
+        e.key('s');
+        assert_eq!(e.text, "uss");
+    }
+    #[test]
+    fn seed_requires_the_recorded_caret_and_no_selection() {
+        let mut e = Editor::new();
+        for k in "sawc ".chars() {
+            e.key(k);
+        }
+        e.text.pop();
+        e.s.snapshot(&e.text, 3, 0);
+        assert_eq!(e.s.key('s').remove, 0);
+        let mut e = Editor::new();
+        e.s.max_keys = 8;
+        for k in "khonggch ".chars() {
+            e.key(k);
+        }
+        assert_eq!(e.text, "khonggch ");
+        e.text.pop();
+        let n = e.text.chars().count();
+        e.s.snapshot(&e.text, n, n);
+        assert_eq!(e.s.key('s').remove, 0, "a word at the key limit is not adopted");
+    }
+    #[test]
+    fn seed_stops_at_a_separator_and_document_start() {
+        let mut e = Editor::new();
+        e.text = "săc ".into();
+        e.s.snapshot(&e.text, 4, 4);
+        assert_eq!(e.s.key('s').remove, 0);
+        // Our own word at the very start of the field is still ours.
+        let mut e = Editor::new();
+        for k in "aw ".chars() {
+            e.key(k);
+        }
+        assert_eq!(e.text, "ă ");
+        e.text.pop();
+        e.key('s');
+        assert_eq!(e.text, "ắ");
     }
     #[test]
     fn word_limit_keeps_remaining_keys_literal_until_boundary() {

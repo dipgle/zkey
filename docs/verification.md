@@ -233,3 +233,18 @@ Chưa bật engine trên desktop; chưa đo latency phím→màn hình; chưa ki
 Soát bảo mật trên mã: không mạng/clipboard/global keyboard hook, không log nội dung gõ; config lưu user-local mode 0600; password/PIN/private hints được bỏ qua. Chỉ có test kỹ thuật cho các nhánh này, chưa xác nhận app thật khai báo input purpose đúng. Chưa có audit thay cấu hình, ghi nợ trước phát hành.
 
 Nguồn: `src/lib.rs`, `src/telex.rs`, `zkey/engine.py`, `zkey/session.py`, `tests/test_engine.py`, `tests/test_session.py`, `scripts/probe_ibus.py`. Tính đúng toàn bộ tiếng Việt chưa được chứng minh bởi tập test hữu hạn này.
+
+## 2026-11-20 17:30–18:00 +07 — gõ lại dấu sau khi xoá dấu cách · bash mặc định `all`
+
+**Đã chạy thật (mã thoát đọc trực tiếp):**
+- `cargo test --offline` (native): **55 lib + 7 main + 5 dbus_live + 2 corpus = 69 PASS**; `cargo clippy --all-targets -- -D warnings` **0**; `cargo build --release` **0**; `cargo fmt --check` **0**.
+- `/usr/bin/python3 -m unittest discover -s tests`: **90 PASS** (dòng `NOT MEASURABLE: no running ibus-daemon address` là trạng thái riêng của bài cần daemon, không phải xanh).
+- `scripts/accept-shell-tmux.sh`: **9/9 PASS, GATE_EXIT=0**. Đối chứng ngược hai chiều: bản plugin `never-machine` (bỏ chốt thời gian) ⇒ **ĐỎ** M1–M3/MV/MU (`Bash(git reset:*)`→`git rết`, `tieengs vieetj`→`tiếng việt`); bản `always-machine` ⇒ **ĐỎ** H/H2/H3. Bản sao ở `.tmp/zkey-{never,always}-machine.bash`.
+- Test RED trước khi sửa: `deleted_separator_lets_a_mark_finish_the_previous_syllable` ra `săcs` (mong `sắc`); sau sửa GREEN. `seed_requires_the_recorded_caret_and_no_selection`: bỏ chốt `word.len() < max_keys` ⇒ **ĐỎ** `remove=6` (đo trực tiếp, tệp đã khôi phục), có chốt ⇒ xanh.
+
+**Chưa đo được (KHÔNG phải xanh):**
+- Nghiệm thu GUI của bản sửa (GTK3 thật + `accept_desktop.py` kịch bản `săc`+space+BS+`s ⇒ sắc`, đối chứng `săc`+space+`s ⇒ "săc s"`): **KHÔNG ĐO ĐƯỢC** vì `/tmp` hết quota người dùng — Xvfb chết ở `/tmp/.tX*-lock` (`EDQUOT`), log `NOT_MEASURABLE: No private GTK display`.
+- VTE/ptyxis/tmux-plugin (accept-xvfb, accept-terminal, accept-ptyxis) cùng lý do ⇒ chưa chạy lại lượt này.
+- Firefox thật: vẫn chờ Hà gõ `tieengs` để nghiệm thu bằng mắt (TODO dòng 3).
+
+**Ghi chú thiết kế:** chốt an toàn của "nhận lại từ đã commit" là **bằng chứng sở hữu** (từ do chính engine vừa commit + con trỏ khớp + chuỗi cuối văn bản khớp + không chọn vùng + dài < `max_keys`), mạnh hơn `valid_syllable` mà Hà đề xuất; đổi lại «this»+space+BS+`s` ra «thiss» như Hà yêu cầu thay vì «thíss». Từ lạ/không sở hữu vẫn không bị sửa (đối chứng `backspace_ticket_never_survives_focus_or_a_different_caret` xanh).

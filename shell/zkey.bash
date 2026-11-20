@@ -9,17 +9,23 @@
 # being typed. Readline only edits the command line, so prompts that read
 # secrets (sudo, `read -s`, ssh) never pass through this code.
 #
-# Modes (Alt+Z cycles): quoted (default: only inside '...' or "...", where
-# Vietnamese text lives; commands/flags/paths stay as typed) -> all -> off.
+# Modes (Alt+Z cycles): all (default: every word position on the command line,
+# identifiers/flags stay as typed) -> quoted (only inside '...' or "...") -> off.
 # Results that are not a plausible Vietnamese syllable stay as typed.
 # Typed text is never logged.
+#
+# Machine-typed lines (tmux send-keys, launchers, automation) arrive as ONE write:
+# the next key is already queued within microseconds while we handle this one, so
+# the whole line stays exactly as typed. A person's next key is tens of ms away.
+# Threshold: `ZKEY_MACHINE_GAP_US` (default 8000 µs) + bytes already queued.
 
 [[ $- == *i* ]] || return 0
 [[ -n ${ZKEY_LOADED-} ]] && return 0
 
 ZKEY_HOME=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-ZKEY_MODE=${ZKEY_MODE:-quoted}   # quoted | all | off
+ZKEY_MODE=${ZKEY_MODE:-all}      # all | quoted | off
 ZKEY_TONE=${ZKEY_TONE:-m}        # m = modern (hoà), c = classic (hòa)
+ZKEY_MACHINE_GAP_US=${ZKEY_MACHINE_GAP_US:-8000}  # keys closer than this = one write
 ZKEY_ERRORS=0
 
 # Composer binary: the native engine's line protocol (--line). The legacy
@@ -71,15 +77,36 @@ __zkey_plain() {  # insert the key as typed
     ZKEY_TEXT=
 }
 
+__zkey_machine() {
+    # True when this key arrived together with more queued input (one write).
+    local now=${EPOCHREALTIME-} frac gap
+    if [[ -z $now ]]; then
+        # bash < 5 has no microsecond clock: any queued byte is machine-typed.
+        read -r -t 0 2>/dev/null
+        return
+    fi
+    frac=${now#*.}
+    frac=${frac}000000
+    now=$((10#${now%%.*} * 1000000 + 10#${frac:0:6}))
+    if [[ -n ${ZKEY_LAST_US-} ]]; then
+        gap=$((now - ZKEY_LAST_US))
+    else
+        gap=99999999
+    fi
+    ZKEY_LAST_US=$now
+    ((gap <= ZKEY_MACHINE_GAP_US)) && read -r -t 0 2>/dev/null
+}
+
 __zkey_key() {
     local key=$1 left=${READLINE_LINE:0:READLINE_POINT} right=${READLINE_LINE:READLINE_POINT}
     # Machine-typed input (tmux send-keys, launchers, automation) arrives as one
-    # write: more bytes are already queued while we handle this key. A person's
-    # next key is not. Such a line stays exactly as typed until it is emptied
-    # (Enter, Ctrl+U) — commands typed by programs must never be rewritten
-    # (15/11: `git reset` inside a quoted --disallowedTools became `git rết`).
+    # write: more bytes are already queued while we handle this key, and the next
+    # key follows within microseconds. A person's next key is tens of ms away.
+    # Such a line stays exactly as typed until it is emptied (Enter, Ctrl+U) —
+    # commands typed by programs must never be rewritten (15/11: `git reset`
+    # inside a quoted --disallowedTools became `git rết`).
     [[ -z $READLINE_LINE ]] && ZKEY_LITERAL=
-    if [[ -n ${ZKEY_LITERAL-} ]] || read -r -t 0 2>/dev/null; then
+    if [[ -n ${ZKEY_LITERAL-} ]] || __zkey_machine; then
         ZKEY_LITERAL=1
         __zkey_plain "$key"; return
     fi

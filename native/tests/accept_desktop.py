@@ -243,6 +243,26 @@ def inside():
                                 for key in typed:send({' ':'space','\b':'BackSpace'}.get(key,key),pause=0)
                                 pump(.2);expect(entry,wanted);pump(.1);expect(entry,wanted);burst_count+=1
                         print(f'PASS native GTK{4 if gtk4 else 3} burst: {burst_count}/{total} zero-delay rounds with native Backspace')
+                    if not safe and not webkit:
+                        # Hà 20/11: after a native Backspace deletes the separator,
+                        # a mark key must finish the word already on screen.
+                        ctrl=x.XKeysymToKeycode(display,x.XStringToKeysym(b'Control_L'))
+                        def clear():
+                            t.XTestFakeKeyEvent(display,ctrl,True,0);x.XFlush(display);send('a')
+                            t.XTestFakeKeyEvent(display,ctrl,False,0);x.XFlush(display);send('BackSpace');expect(entry,'')
+                        clear()
+                        for key in 'sawc':send(key)
+                        expect(entry,'săc')
+                        send('space');expect(entry,'săc ')
+                        send('BackSpace');expect(entry,'săc')
+                        send('s');expect(entry,'sắc')
+                        # Reverse control: with the separator still there the mark
+                        # key must start a new word, never edit the committed one.
+                        clear()
+                        for key in 'sawc':send(key)
+                        send('space');send('s')
+                        expect(entry,'săc s')
+                        print('PASS native GTK separator: săc+space+BS+s -> sắc (control: săc space s -> "săc s")')
                     send('Tab')
                     focused=window.get_focus()
                     password_focused=page().get('focus')=='secret' if webkit else focused is not None and (focused==password or focused.is_ancestor(password))

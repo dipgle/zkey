@@ -108,6 +108,29 @@ impl Composer {
     pub fn raw(&self) -> &str {
         &self.raw
     }
+    /// Rebuild a word from text already on screen: each scalar is a letter plus
+    /// its tone, never a Telex mark key, so "this" stays "this" instead of
+    /// becoming "thí". Used when the client deleted a separator with a native
+    /// Backspace and the engine no longer holds the keys that produced the word.
+    pub fn seed(style: ToneStyle, text: &str) -> Result<Self, InputError> {
+        let mut seeded = Self::new(style);
+        for c in text.chars() {
+            if seeded.keys >= HARD_KEY_LIMIT {
+                return Err(InputError::TooLong);
+            }
+            let (letter, tone) = Letter::decode(c).ok_or(InputError::UnsupportedCharacter)?;
+            seeded.raw.push(c);
+            seeded.keys += 1;
+            seeded.letters.push(letter);
+            if tone != 0 {
+                seeded.tone = tone;
+            }
+        }
+        if seeded.letters.is_empty() {
+            return Err(InputError::UnsupportedCharacter);
+        }
+        Ok(seeded)
+    }
     pub fn push(&mut self, key: char) -> Result<(), InputError> {
         if self.keys >= HARD_KEY_LIMIT {
             return Err(InputError::TooLong);

@@ -24,7 +24,7 @@ fi
 
 PLUGIN=${ZKEY_PLUGIN:-$ROOT/shell/zkey.bash}  # counter-checks pass a broken copy
 T -f /dev/null new-session -d -x 200 -y 20 -- env -i HOME="$HOME" TERM=xterm-256color \
-  LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin ZKEY_MODE=quoted \
+  LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=/usr/bin:/bin ZKEY_MODE=all \
   bash --norc --noprofile -c "exec bash --rcfile '$PLUGIN' -i" \
   || { echo "NOT_MEASURABLE: tmux session did not start"; finish 2; }
 ready=""
@@ -38,6 +38,11 @@ machine() { T send-keys -l -- "$1"; T send-keys Enter; }
 human() {  # one key per tmux call, ~60 ms apart (fast human typist)
   local s=$1 i
   for ((i = 0; i < ${#s}; i++)); do T send-keys -l -- "${s:i:1}"; sleep 0.06; done
+  T send-keys Enter
+}
+fast() {  # one key per tmux call, ~30 ms apart: still a person, not one write
+  local s=$1 i
+  for ((i = 0; i < ${#s}; i++)); do T send-keys -l -- "${s:i:1}"; sleep 0.03; done
   T send-keys Enter
 }
 wait_file() { local f=$1; for _ in $(seq 1 50); do [ -s "$f" ] && return 0; sleep 0.1; done; return 1; }
@@ -56,5 +61,13 @@ done
 human "printf '%s\n' 'project_doc_max_bytes PROJECTS_ROOT' > $OUT/i"
 check "I human-typed identifiers" "project_doc_max_bytes PROJECTS_ROOT" "$OUT/i"
 human "printf '%s\n' 'tieengs vieetj' > $OUT/h"
-check "H human-typed Vietnamese" "tiếng việt" "$OUT/h"
+check "H human-typed Vietnamese in quotes" "tiếng việt" "$OUT/h"
+human "printf '%s\n' tieengs vieetj > $OUT/h2"
+check "H2 human-typed Vietnamese unquoted (default all)" $'tiếng\nviệt' "$OUT/h2"
+fast "printf '%s\n' tieengs vieetj > $OUT/h3"
+check "H3 fast human unquoted" $'tiếng\nviệt' "$OUT/h3"
+machine "printf '%s\n' 'tieengs vieetj' > $OUT/mv"
+check "MV machine-typed Vietnamese stays raw" "tieengs vieetj" "$OUT/mv"
+machine "printf '%s\n' tieengs vieetj > $OUT/mu"
+check "MU machine-typed Vietnamese unquoted stays raw" $'tieengs\nvieetj' "$OUT/mu"
 finish "$fail"
