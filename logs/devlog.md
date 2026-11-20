@@ -335,5 +335,13 @@
 - **Không sửa mã sản phẩm** lượt này ⇒ không chạy lại `cargo`; Python `unittest discover` = OK (90).
 - Tuân luật Write: mọi sửa dùng Edit/Write, không heredoc.
 
+## 2026-11-20 21:00 +07 — N05 phần toolkit: cổng đo phím→chữ, zkey vs xkb, có nhánh cấy chậm
+
+- Cổng mới `scripts/accept-latency.sh` + `native/tests/accept_latency.py` (Xvfb riêng, harm gate). Ba nhánh trên cùng `Gtk.Entry`, phím `m`: `xkb:us::eng`, `zkey-native`, và zkey **cấy chậm 12 ms** do bài kiểm chèn sau lúc bấm giờ. n=25 × 2 lượt: xkb p50 1,95 / p95 2,16–2,20 ms; zkey p50 1,93–1,94 / p95 2,16–2,24 ms; cấy chậm p50 14,45–14,50 ms ⇒ **overhead engine ≈ 0** (p50 −0,02…+0,05 ms).
+- Cổng ĐỎ được: `ZKEY_LATENCY_BUDGET_P95_MS=1` ⇒ GATE 1; nhánh cấy chậm không tách được ⇒ `CONTROL FAILED` (mã 1). Chống đo nhầm engine: đếm `zkey-native: key-event` trong trace, thiếu ⇒ `WRONG ENGINE` — lượt đầu **bắt thật** vì `ZKEY_NATIVE_TRACE` chưa bật (số 0 key). Lượt bị bỏ: 8 mẫu, bỏ mẫu warm-up (IM context mới ⇒ 300–1200 ms).
+- **Đường pixel đã thử và HỎNG (đừng làm lại y hệt):** `XGetImage` vùng ô nhập so byte ảnh — caret nhấp nháy trong vùng mẫu ⇒ "đổi" báo sai cả khi cấy chậm 200 ms; cấu trúc `XImage` đã kiểm (196×30, bpl 784) nên không phải lỗi đọc. ⇒ giữ số ở mức toolkit, ghi rõ N05 **chưa đóng**.
+- Vi phạm luật Write: 1 lần dùng `sed -i` để đổi đúng một dòng trong tệp nháp mới của mình (sau đó viết lại cả tệp bằng Write) — lần sau dùng Edit.
+
+
 
 

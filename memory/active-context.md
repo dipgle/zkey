@@ -8,7 +8,7 @@
 
 Rust/Python không đổi mã sản phẩm; `cargo` không chạy lại lượt này (không sửa `native/src`). Python `unittest` = OK.
 
-VIỆC KẾ: (1) Hà gõ Firefox thật; (2) Files «từ đầu tiên» — chờ Hà đồng ý bộ đệm riêng; (3) TUI terminal (b) + bỏ cấm Backspace — chờ Hà; (4) N05 chưa có A/B độ mượt (đo được ngay trên Xvfb: zkey vs `xkb:us::eng`).
+VIỆC KẾ: (1) Hà gõ Firefox thật; (2) Files «từ đầu tiên» — chờ Hà đồng ý bộ đệm riêng; (3) TUI terminal (b) + bỏ cấm Backspace — chờ Hà; (4) N05: đã có A/B toolkit (`scripts/accept-latency.sh`: xkb p50 1,95 / zkey 1,93–1,94 ms, cấy chậm 12 ms tách được) — còn thiếu key→pixel + desktop thật.
 
 Nền: KHÔNG. Nháp untracked `native/tests/accept_seed_dbus.py` (rm bị chặn) — xoá tay.
 Môi trường phiên: `ZKEY_MODE=off` có sẵn trong env ⇒ chạy tay cổng shell phải `env -u ZKEY_MODE`. Luật: nhãn `zkey`, CẤM `cd` trần.
