@@ -1,11 +1,14 @@
-# zkey/core — native (20/11 chiều, phiên kế nhiệm 17:28)
+# zkey/core — native (20/11 tối)
 
-ĐÃ LÀM (chưa commit lúc viết): gõ lại dấu sau khi xoá dấu cách — `session.rs` nhận lại từ vừa commit khi snapshot chứng minh đúng con trỏ/chuỗi/không chọn/độ dài; `Composer::seed`. Rust 69 PASS, clippy 0, release 0, fmt 0; Python 90. RED→GREEN có đối chứng.
+ĐÃ ĐO THẬT lượt này: quota `/tmp` đã được gỡ ⇒ mọi cổng GUI chạy lại được.
+(1) ma trận native `bash .tmp/accept-native-matrix.sh` **8/8 lane GATE 0** (log `.tmp/matrix-full-20261120-1800.log`), trong đó GTK3+GTK4 thật XTest: `săc+space+BS+s → sắc`, đối chứng `săc space s → "săc s"` ⇒ **NỢ «seed» đóng phần GUI**.
+(2) `scripts/accept-xvfb.sh` **GATE_EXIT=0** (editor GTK4, VTE ×2, ptyxis, settings, shell-tmux 9/9), harm gate «MÁY NGUYÊN» portal active, mount 1→1.
+(3) Sửa lỗi cổng: `accept-ptyxis.py` gõ `[ "$p" = as ]` ở dòng lệnh ⇒ `ZKEY_MODE=all` Telex thành `= á` ⇒ DIFF oan. Nay câu so sánh ở tệp `bash .tmp/ptyxis-secret-check.sh`; đối chứng `ZKEY_PTYXIS_EXPECT_SECRET=ax` ⇒ ĐỎ (GATE 1), mặc định ⇒ PASS.
+(4) Firefox thật: thêm `ZKEY_FF_WM` + tải twm/openbox vào `.tmp/tools`; phím tới X window (xev KeymapNotify, focus=child) nhưng DOM `keys=0`; `NO_E10S`, `testmode`, `GFX` đều 0 ⇒ **KHÔNG ĐO ĐƯỢC trên Xvfb+WM tối thiểu**, không phải lỗi zkey. Vẫn chờ Hà gõ `tieengs` bằng mắt.
 
-Plugin bash: mặc định `ZKEY_MODE=all`; máy-gõ = có byte xếp hàng + 2 phím ≤ 8000 µs. `accept-shell-tmux.sh` 9/9 GATE 0 + đối chứng 2 chiều ĐỎ đúng ca.
+Rust/Python không đổi mã sản phẩm; `cargo` không chạy lại lượt này (không sửa `native/src`). Python `unittest` = OK.
 
-🔴 CHẶN: `/tmp` hết quota user (5,9 G ở `/tmp/claude-1000`; còn 1,6 G mà ghi 2 MB vẫn EDQUOT) ⇒ Xvfb không tạo lock ⇒ MỌI cổng GUI KHÔNG ĐO ĐƯỢC. Hà chọn: đổi `CLAUDE_CODE_TMPDIR` hoặc duyệt dọn `/tmp/claude-1000`.
+VIỆC KẾ: (1) Hà gõ Firefox thật; (2) Files «từ đầu tiên» — chờ Hà đồng ý bộ đệm riêng; (3) TUI terminal (b) + bỏ cấm Backspace — chờ Hà; (4) N05 chưa có A/B độ mượt (đo được ngay trên Xvfb: zkey vs `xkb:us::eng`).
 
-VIỆC KẾ: (1) chạy `accept_desktop.py` (kịch bản `săc`+space+BS+`s⇒sắc` đã viết) sau khi gỡ quota; (2) Firefox: chờ Hà gõ `tieengs`; (3) Files «từ đầu tiên» — chờ Hà đồng ý bộ đệm riêng; (4) TUI terminal (b) chưa làm.
-
-Nền: KHÔNG. Luật: nhãn `zkey`, CẤM `cd` trần. Phiên cũ `4210` (pts/0) vẫn sống, cây chưa sạch nên KHÔNG đóng. Nháp `native/tests/accept_seed_dbus.py` untracked (cổng D-Bus headless thử hỏng, `rm` bị chặn).
+Nền: KHÔNG. Nháp untracked `native/tests/accept_seed_dbus.py` (rm bị chặn) — xoá tay.
+Môi trường phiên: `ZKEY_MODE=off` có sẵn trong env ⇒ chạy tay cổng shell phải `env -u ZKEY_MODE`. Luật: nhãn `zkey`, CẤM `cd` trần.

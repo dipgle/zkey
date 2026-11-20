@@ -1,5 +1,22 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 20/11 18:00–20:00 — quota `/tmp` gỡ: đo lại GUI; sửa cổng ptyxis; WM cho Firefox
+
+**Đo thật (mã thoát đọc trực tiếp, không `|tail`):**
+
+| Cổng | Lệnh | Kết quả |
+|---|---|---|
+| Ma trận native (8 lane) | `bash .tmp/accept-native-matrix.sh` | **8/8 exit=0**; GTK3+GTK4: `săc+space+BS+s → sắc`, đối chứng `săc space s → "săc s"` |
+| Nghiệm thu Xvfb gộp | `bash scripts/accept-xvfb.sh` | **GATE_EXIT=0** (editor GTK4, VTE ×2, ptyxis, settings, shell-tmux 9/9); harm gate «MÁY NGUYÊN» portal active, mount 1→1 |
+| Đơn vị Python | `/usr/bin/python3 -m unittest discover -s tests` | OK |
+
+**Lỗi cổng tìm ra và đã sửa (RED→GREEN, giữ đối chứng):** `scripts/accept-ptyxis.py` gõ nguyên câu so sánh trên dòng lệnh; từ 20/11 `ZKEY_MODE=all` khiến plugin Telex `[ "$p" = as ]` thành `= á` ⇒ `DIFF` oan (engine trace `protected=true`, không `key-state`). Nay câu so sánh nằm trong tệp do bài kiểm viết (`bash .tmp/ptyxis-secret-check.sh`). **Đối chứng ngược:** `ZKEY_PTYXIS_EXPECT_SECRET=ax` ⇒ `DIFF`, GATE 1. **Không** nới kỳ vọng của cổng.
+
+**Firefox thật — vẫn KHÔNG ĐO ĐƯỢC, đã loại thêm một giả thuyết:** thêm WM (twm và openbox, tải về `.tmp/tools`, bật bằng `ZKEY_FF_WM`). Phím **tới** X window (xev: KeymapNotify trên cửa sổ nội dung, focus = con của Firefox, có grab bàn phím) nhưng DOM `keys=0`; `ZKEY_FF_NO_E10S=1`, `focusmanager.testmode`, GFX phần mềm đều 0; engine chỉ thấy `FocusIn` + `caps=41` rồi im. ⇒ giới hạn của Xvfb + WM tối thiểu trên máy này; nghiệm thu mắt vẫn chờ Hà.
+
+**Bẫy phép đo (ghi để không lặp):** env phiên có `ZKEY_MODE=off` ⇒ chạy tay cổng shell phải `env -u ZKEY_MODE`; nếu không sẽ đo chữ nguyên và tưởng plugin hỏng.
+
+
 ## 19/11 11:40 — plugin dòng lệnh dùng `zkey-native --line`; gốc lỗi Firefox
 
 ### Đã chạy thật

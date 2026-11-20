@@ -23,6 +23,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import private_bus  # noqa: E402  (never dbus-run-session directly)
 OUT = ROOT / ".tmp/ptyxis-out.txt"
 MARKER = ROOT / ".tmp/ptyxis-app.json"
+# The comparison for the ECHO-off secret lives in a script FILE, not on the typed command line:
+# since 20/11 the shell plugin Telexes unquoted human-typed words by design (ZKEY_MODE=all), so a
+# typed `[ "$p" = as ]` becomes `[ "$p" = á ]` and would report DIFF while measuring nothing about
+# the secret. Typing `bash <file>` keeps the measurement on the secret alone.
+CHECK = ROOT / ".tmp/ptyxis-secret-check.sh"
 SESSION_LOG = ROOT / ".tmp/ptyxis-session.log"
 SHIFTED = set('"<>_:|&$!?{}()+~@#%^*') | set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 NAMES = {" ": "space", "-": "minus", "$": "dollar", "=": "equal", '"': "quotedbl", "[": "bracketleft",
@@ -38,6 +43,14 @@ def main():
     for path in (OUT, MARKER):
         if path.exists():
             path.write_text("")
+    CHECK.write_text(
+        "#!/bin/bash\n"
+        "# Written and run by scripts/accept-ptyxis.py: one synthetic secret, ECHO off.\n"
+        "read -s -r p\n"
+        f'[ "$p" = {os.environ.get("ZKEY_PTYXIS_EXPECT_SECRET", "as")} ] && echo SAME >> "{OUT}" || echo DIFF >> "{OUT}"\n'
+        "unset p\n"
+    )
+    CHECK.chmod(0o700)
     env = os.environ.copy()
     env.pop("WAYLAND_DISPLAY", None)
     env.pop("IBUS_USE_PORTAL", None)
@@ -210,7 +223,7 @@ def run(display_name):
         out = str(OUT)
         send(f'echo "tieengs vieetj" > {out}\n')
         time.sleep(0.6)
-        send(f"read -s -r p; [ \"$p\" = as ] && echo SAME >> {out} || echo DIFF >> {out}; unset p\n")
+        send(f"bash {CHECK}\n")
         time.sleep(0.6)
         send("as\n")
         until = time.monotonic() + 5

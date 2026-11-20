@@ -15,6 +15,7 @@ import contextlib
 import importlib.util
 import re  # noqa: F401  (used by the xev watcher)
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -196,6 +197,14 @@ user_pref("browser.tabs.remote.autostart", true);
             os.environ[name] = "1"
         os.environ["LIBGL_ALWAYS_SOFTWARE"] = "1"
 
+    if os.environ.get("ZKEY_FF_NO_E10S") == "1":
+        # Variant: run the page in the parent process. Page JS already runs (the title reports
+        # state) yet keydown stays 0 even with a WM; e10s delivers keys from the parent over IPC,
+        # which needs the parent to treat the window as active.
+        base.PREFS += """user_pref("browser.tabs.remote.autostart", false);
+user_pref("browser.tabs.remote.autostart.2", false);
+user_pref("fission.autostart", false);
+"""
     if os.environ.get("ZKEY_FF_TESTMODE") == "1":
         # Measured 19/11 with xev: the key REACHES Firefox's content window (KeyPress, synthetic NO)
         # yet the page sees keys=0. No window manager here, so Firefox never counts its window as
@@ -257,7 +266,42 @@ def main():
     env.pop("WAYLAND_DISPLAY", None)
     env.pop("IBUS_USE_PORTAL", None)
     env.update(ZKEY_ISOLATED_BUS="1", GTK_IM_MODULE="ibus", GDK_BACKEND="x11", NO_AT_BRIDGE="1", GIO_USE_VFS="local")
-    return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside"], env)
+    # Measured 19/11: on a bare Xvfb there is NO window manager, so XTest keys reach Firefox's
+    # content window while the PAGE sees keys=0 (focus=text). A real desktop always has a WM;
+    # ZKEY_FF_WM=1 starts a minimal one (twm from .tmp/tools) for the same private display.
+    wm = None
+    choice = os.environ.get("ZKEY_FF_WM")
+    if choice:
+        wm_binary = shutil.which("twm") if choice == "1" else choice
+        if not wm_binary:
+            print("NOT_MEASURABLE: ZKEY_FF_WM requested but no window manager on PATH")
+            return 2
+        log = (ROOT / ".tmp/firefox-wm.log").open("w")
+        staged_libs = str(ROOT / ".tmp/tools/root/usr/lib/x86_64-linux-gnu")
+        wm_env = dict(env, DISPLAY=display, LD_LIBRARY_PATH=staged_libs,
+                      XDG_DATA_DIRS=f"{ROOT}/.tmp/tools/root/usr/share:/usr/share")
+        arguments = [wm_binary]
+        if Path(wm_binary).name == "twm":
+            # An explicit rc keeps twm away from font-set lookups (80 "charset lacking" warnings and
+            # the search for a default rc that does not exist on this host); NoGrabServer matters:
+            # a WM that grabs the server while still initialising stalls every client on the display.
+            rc = ROOT / ".tmp/firefox-wm.twmrc"
+            rc.write_text('NoGrabServer\nRandomPlacement\nNoTitle\nTitleFont "fixed"\nMenuFont "fixed"\n'
+                          'ResizeFont "fixed"\nIconFont "fixed"\n')
+            arguments += ["-f", str(rc), "-display", display]
+        elif Path(wm_binary).name == "openbox":
+            arguments += ["--sm-disable"]
+        wm = subprocess.Popen(arguments, env=wm_env, stdout=log, stderr=log, start_new_session=True)
+        time.sleep(float(os.environ.get("ZKEY_FF_WM_SECONDS", "2")))
+        if wm.poll() is not None:
+            print(f"NOT_MEASURABLE: window manager exited {wm.returncode}; see .tmp/firefox-wm.log")
+            return 2
+    try:
+        return private_bus.call([sys.executable, str(Path(__file__).resolve()), "--inside"], env)
+    finally:
+        if wm is not None and wm.poll() is None:
+            os.killpg(wm.pid, signal.SIGTERM)
+            wm.wait(timeout=5)
 
 
 if __name__ == "__main__":

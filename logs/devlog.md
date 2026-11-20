@@ -325,4 +325,15 @@
 - **KHÔNG ĐO ĐƯỢC:** mọi cổng GUI (GTK3 thật `accept_desktop.py` có kịch bản mới, VTE/ptyxis/tmux) vì `/tmp` hết quota user ⇒ Xvfb chết ở `/tmp/.tX*-lock`. Đo được: `/tmp/claude-1000/-mnt-data-projects` = 5,9 G; `df` còn 1,6 G nhưng ghi 2 MB vẫn `EDQUOT`. Chưa xoá gì. Đã thử cổng headless D-Bus để né X: engine `--engine` bị `Private IBus rejected native component` (stub) hoặc `ibus-daemon` cần display ⇒ bỏ; nháp `native/tests/accept_seed_dbus.py` còn untracked (rm bị chặn).
 - **Vi phạm luật:** mục này và khối `docs/verification.md` được nối bằng heredoc (`cat >>`) thay vì tool Edit — nội dung đã kiểm; lần sau dùng Edit.
 
+## 2026-11-20 20:00 +07 — quota /tmp đã gỡ: chạy lại TOÀN BỘ cổng GUI; sửa lỗi cổng ptyxis; thử WM cho Firefox
+
+- **Hạ tầng:** `/tmp` còn 7,4 G trống, `/tmp/claude-1000` = 104 K (trước: 5,9 G, `EDQUOT`) ⇒ Xvfb tạo lock được. Không xoá dữ liệu của ai.
+- **Ma trận native:** `bash .tmp/accept-native-matrix.sh` → **8/8 lane GATE 0** (launcher, launcher-vte, launcher-health, desktop-gtk3, desktop-gtk4, desktop-settings, component-gtk3, component-gtk4), harm gate portal active→active, mount 1→1. GTK3+GTK4 in `PASS native GTK separator: săc+space+BS+s -> sắc (control: săc space s -> "săc s")` ⇒ nợ «gõ lại dấu» nay đã đo trên GUI.
+- **`scripts/accept-xvfb.sh`:** lượt đầu **GATE_EXIT=1** ở lane ptyxis: `Secret typed with ECHO off: shell verdict ['DIFF']`. Gốc: bài kiểm gõ nguyên `[ "$p" = as ]` ở dòng lệnh; mặc định mới `ZKEY_MODE=all` Telex **dòng lệnh** thành `= á` ⇒ DIFF dù bí mật không bị đổi (engine trace: `protected=true`, 0 `key-state`). Sửa `scripts/accept-ptyxis.py`: câu so sánh nằm trong tệp `.tmp/ptyxis-secret-check.sh` do bài kiểm viết, dòng lệnh chỉ `bash <tệp>`. Đối chứng ngược: `ZKEY_PTYXIS_EXPECT_SECRET=ax` ⇒ `DIFF` + GATE 1; mặc định ⇒ PASS. Lượt trọn sau sửa: **GATE_EXIT=0**.
+- **Bẫy môi trường:** shell của phiên có `ZKEY_MODE=off`; chạy tay `accept-ptyxis.py` mà không `env -u ZKEY_MODE` ra chữ nguyên (đo được 1 lần, đã loại). Cổng `accept-xvfb.sh` tự `unset` nên số của cổng không bị ảnh hưởng.
+- **Firefox thật + WM (mới):** `apt-get download` twm, openbox(+libobt2, libobrender32, libimlib2t64, libstartup-notification0) vào `.tmp/tools`; `native/tests/accept_firefox_real.py` thêm `ZKEY_FF_WM` (mặc định tắt) + variant `ZKEY_FF_NO_E10S`. twm thiếu rc ⇒ treo X mỗi lệnh `xwininfo` (font-set + `XGrabServer`), có rc `NoGrabServer`/font `fixed` thì hết. Cả twm và openbox: focus vào Firefox (`focus=4194309`), xev thấy **KeymapNotify** trên cửa sổ nội dung (có grab bàn phím) mà DOM `keys=0`; tắt e10s/fission, `focusmanager.testmode`, GFX phần mềm đều 0; engine nhận `FocusIn`+`capabilities caps=41 surrounding=true` nhưng **0 key-state** ⇒ GTK không đưa phím vào IM context. Kết luận: giới hạn Xvfb+WM tối thiểu, KHÔNG phải zkey; vẫn chờ Hà gõ.
+- **Không sửa mã sản phẩm** lượt này ⇒ không chạy lại `cargo`; Python `unittest discover` = OK (90).
+- Tuân luật Write: mọi sửa dùng Edit/Write, không heredoc.
+
+
 
