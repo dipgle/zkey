@@ -341,6 +341,7 @@
 - Cổng ĐỎ được: `ZKEY_LATENCY_BUDGET_P95_MS=1` ⇒ GATE 1; nhánh cấy chậm không tách được ⇒ `CONTROL FAILED` (mã 1). Chống đo nhầm engine: đếm `zkey-native: key-event` trong trace, thiếu ⇒ `WRONG ENGINE` — lượt đầu **bắt thật** vì `ZKEY_NATIVE_TRACE` chưa bật (số 0 key). Lượt bị bỏ: 8 mẫu, bỏ mẫu warm-up (IM context mới ⇒ 300–1200 ms).
 - **Đường pixel đã thử và HỎNG (đừng làm lại y hệt):** `XGetImage` vùng ô nhập so byte ảnh — caret nhấp nháy trong vùng mẫu ⇒ "đổi" báo sai cả khi cấy chậm 200 ms; cấu trúc `XImage` đã kiểm (196×30, bpl 784) nên không phải lỗi đọc. ⇒ giữ số ở mức toolkit, ghi rõ N05 **chưa đóng**.
 - Vi phạm luật Write: 1 lần dùng `sed -i` để đổi đúng một dòng trong tệp nháp mới của mình (sau đó viết lại cả tệp bằng Write) — lần sau dùng Edit.
+- Ma trận nay **có trong repo** (`scripts/accept-native-matrix.sh`, trước chỉ nằm `.tmp/`): thêm lane `latency`, `env -u ZKEY_MODE` cho mọi lane. Chạy trọn: **9/9 lane GATE 0**, harm gate portal active→active, mount 1→1 (`.tmp/matrix-versioned-20261120-2130.log`).
 
 
 

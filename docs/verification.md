@@ -25,7 +25,7 @@
 | 1 (n=25) | 1,95 / 2,20 ms | 1,93 / 2,24 ms | 14,50 ms |
 | 2 (n=25) | 1,95 / 2,16 ms | 1,94 / 2,16 ms | 14,45 ms |
 
-⇒ overhead của engine so với engine không ghép: **p50 ≈ 0 (−0,02…+0,05 ms)**. Cổng đỏ được: `ZKEY_LATENCY_BUDGET_P95_MS=1` ⇒ GATE 1; nhánh cấy chậm không tách được ⇒ `CONTROL FAILED`. Chống "đo người khác": đếm `zkey-native: key-event` trong trace, thiếu ⇒ `WRONG ENGINE` (bắt thật ở lượt đầu vì trace chưa bật).
+⇒ overhead của engine so với engine không ghép: **p50 ≈ 0 (−0,02…+0,05 ms)**. Ma trận native nay có bản trong repo `scripts/accept-native-matrix.sh` (9 lane, gồm `latency`): **9/9 GATE 0**, harm gate «MÁY NGUYÊN». Cổng đỏ được: `ZKEY_LATENCY_BUDGET_P95_MS=1` ⇒ GATE 1; nhánh cấy chậm không tách được ⇒ `CONTROL FAILED`. Chống "đo người khác": đếm `zkey-native: key-event` trong trace, thiếu ⇒ `WRONG ENGINE` (bắt thật ở lượt đầu vì trace chưa bật).
 
 **Giới hạn đã ghi:** đây là **key → GtkEntry nhận chữ liệu** (toolkit), KHÔNG phải key → pixel; không phải desktop Wayland/GPU thật ⇒ N05 **chưa đóng**. Đường pixel đã thử: `XGetImage` vùng ô nhập — caret nhấp nháy trong vùng lấy mẫu làm "đổi" báo sai ngay cả khi cấy chậm **200 ms** ⇒ đã bỏ (đo được cái luôn xanh thì không phải phép đo).
 

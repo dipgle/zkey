@@ -1,7 +1,7 @@
 # zkey/core — native (20/11 tối)
 
 ĐÃ ĐO THẬT lượt này: quota `/tmp` đã được gỡ ⇒ mọi cổng GUI chạy lại được.
-(1) ma trận native `bash .tmp/accept-native-matrix.sh` **8/8 lane GATE 0** (log `.tmp/matrix-full-20261120-1800.log`), trong đó GTK3+GTK4 thật XTest: `săc+space+BS+s → sắc`, đối chứng `săc space s → "săc s"` ⇒ **NỢ «seed» đóng phần GUI**.
+(1) ma trận native `bash scripts/accept-native-matrix.sh` **9/9 lane GATE 0** (log `.tmp/matrix-versioned-20261120-2130.log`), trong đó GTK3+GTK4 thật XTest: `săc+space+BS+s → sắc`, đối chứng `săc space s → "săc s"` ⇒ **NỢ «seed» đóng phần GUI**; bản ma trận nay nằm trong repo (trước chỉ ở `.tmp`).
 (2) `scripts/accept-xvfb.sh` **GATE_EXIT=0** (editor GTK4, VTE ×2, ptyxis, settings, shell-tmux 9/9), harm gate «MÁY NGUYÊN» portal active, mount 1→1.
 (3) Sửa lỗi cổng: `accept-ptyxis.py` gõ `[ "$p" = as ]` ở dòng lệnh ⇒ `ZKEY_MODE=all` Telex thành `= á` ⇒ DIFF oan. Nay câu so sánh ở tệp `bash .tmp/ptyxis-secret-check.sh`; đối chứng `ZKEY_PTYXIS_EXPECT_SECRET=ax` ⇒ ĐỎ (GATE 1), mặc định ⇒ PASS.
 (4) Firefox thật: thêm `ZKEY_FF_WM` + tải twm/openbox vào `.tmp/tools`; phím tới X window (xev KeymapNotify, focus=child) nhưng DOM `keys=0`; `NO_E10S`, `testmode`, `GFX` đều 0 ⇒ **KHÔNG ĐO ĐƯỢC trên Xvfb+WM tối thiểu**, không phải lỗi zkey. Vẫn chờ Hà gõ `tieengs` bằng mắt.
