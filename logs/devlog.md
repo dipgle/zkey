@@ -344,6 +344,14 @@
 - Ma trận nay **có trong repo** (`scripts/accept-native-matrix.sh`, trước chỉ nằm `.tmp/`): thêm lane `latency`, `env -u ZKEY_MODE` cho mọi lane. Chạy trọn: **9/9 lane GATE 0**, harm gate portal active→active, mount 1→1 (`.tmp/matrix-versioned-20261120-2130.log`).
 - **Gửi huba (Hà yêu cầu 20/11 20:5x):** hòm thư phiên = `/tmp/claude-1000/-mnt-data-projects/ses_e06f09837ffedkvJJi0ZBam657/scratchpad/huba-run.txt` (đo: hubd ghi `runin_inbox_queued` đúng tệp rồi đổi tên `huba-run.taken-…`). huba chạy `git push origin master` (2503149..e5c1f29, 72,7 s) và `rm -f native/tests/accept_seed_dbus.py` (0,1 s). Verify: `git fetch origin` ⇒ `HEAD == origin/master == e5c1f29`; `git status --short` rỗng; tệp nháp không còn.
 
+## 2026-11-21 07:30 — Hà «vẫn chưa nhận» kiểu gõ lại dấu: engine trên máy là bản 19/11; cài lại + cổng đo trên bản CÀI
+
+- **Chẩn đoán (đo, không đoán):** `~/.local/lib/zkey-native/zkey-native` mtime **19/11 11:28**, engine PID 4186151 bật 19/11 11:47; `provenance.verify` ⇒ «stale»; build hiện tại `dbb97c16` attest nguồn `e0feb0bf`. Vậy bản chạy trên máy **không có** `Composer::seed` (commit 20/11 17:30) ⇒ đúng triệu chứng `săcs`.
+- **Cổng mới đo trên engine ĐÃ CÀI:** mở rộng `native/tests/accept_installed_gtk3.py` kịch bản của Hà — `săc`+space+BackSpace+`s` ⇒ mong `sắc`, đối chứng giữ dấu cách ⇒ `săc s`. Chạy TRƯỚC khi cài: `entry='săcs'` ⇒ **GATE 1** (tái hiện lời Hà). 
+- **Cài lại:** `python3 scripts/native-ime.py disable` (0) → `enable --trace` (0); binary cài = build (sha256 trùng), engine mới PID 2197899, `ibus-daemon lists zkey-native: True`, `gsettings sources` = `[('ibus','zkey-native')]`. Chạy `scripts/accept-installed.sh`: **4/4 GATE 0** (firefox-pattern XANH; đối chứng bỏ surrounding ⇒ ĐỎ đúng ca; gtk3-entry XANH gồm `sắc`; gtk3-control XANH).
+- **Rò rỉ môi trường kiểm ra máy (phát hiện trong lúc sửa):** `systemctl --user show-environment` chứa `XDG_CACHE_HOME/XDG_CONFIG_HOME/XDG_DATA_HOME` trỏ `.tmp/native-ui-*` + `IBUS_ADDRESS(_FILE)` trỏ socket thử ⇒ unit IBus của GNOME nghe socket trong thư mục tạm; journal `ibus_write_address: assertion 'pf != NULL' failed`; file `~/.config/ibus/bus/*` đứng PID cũ ⇒ `native-ime.py` báo «no running ibus-daemon address». Đã dọn (`unset-environment` 5 biến + restart unit) và **kiểm chứng**: daemon 2197869 ghi `IBUS_DAEMON_PID` khớp, socket về `~/.cache/ibus/dbus-*`. ⚠ Bẫy: lần `unset-environment` đầu để lại **biến rỗng** (`IBUS_ADDRESS_FILE=`) nên daemon vẫn hỏng — phải `show-environment | grep` xác nhận ĐÃ MẤT.
+- **Cổng canh mới** trong `scripts/accept-native-matrix.sh`: chụp env user manager (XDG_*/IBUS_*) + `IBUS_DAEMON_PID` trước/sau mỗi lượt; khác ⇒ `harm=1`, exit 1, in trước/sau. Đối chứng ngược: lane `ONLY=self-test-leak` cấy `XDG_CACHE_HOME` ⇒ **exit 1** đúng thông điệp, tự dọn; lượt sạch ⇒ `MÁY NGUYÊN: env user manager và IBUS_DAEMON_PID không đổi`, exit 0.
+
 
 
 

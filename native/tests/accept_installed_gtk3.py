@@ -135,12 +135,24 @@ def main():
         x.XSetInputFocus(display, window.get_window().get_xid(), 1, 0)
         x.XFlush(display)
         pump(0.4)
-        for char in WORD:
-            code = x.XKeysymToKeycode(display, x.XStringToKeysym(char.encode()))
+        def send(name, pause=0.12):
+            code = x.XKeysymToKeycode(display, x.XStringToKeysym(name.encode()))
             t.XTestFakeKeyEvent(display, code, True, 0)
             t.XTestFakeKeyEvent(display, code, False, 0)
             x.XFlush(display)
-            pump(0.12)
+            pump(pause)
+
+        def clear():
+            ctrl = x.XKeysymToKeycode(display, x.XStringToKeysym(b"Control_L"))
+            t.XTestFakeKeyEvent(display, ctrl, True, 0)
+            x.XFlush(display)
+            send("a")
+            t.XTestFakeKeyEvent(display, ctrl, False, 0)
+            x.XFlush(display)
+            send("BackSpace")
+
+        for char in WORD:
+            send(char)
         pump(0.6)
         text = entry.get_text()
         print(f"RESULT entry={text!r} expected={EXPECTED!r} engine={os.environ['GTK_IM_MODULE']}")
@@ -151,9 +163,38 @@ def main():
             return 0 if ok else 1
         if text == EXPECTED:
             print("PASS installed-engine GTK3: real Entry shows tiếng")
+        else:
+            print("FAIL installed-engine GTK3: installed engine did not compose in a real Entry")
+            print("GATE_EXIT=1")
+            return 1
+        # Hà 20/11/21: a word already committed, the separator deleted, then another mark
+        # must finish that word (seed from surrounding text). Measured against the INSTALLED
+        # engine: the build being green says nothing about what the user is running.
+        clear()
+        for key in "sawc":
+            send(key)
+        send("space")
+        send("BackSpace")
+        send("s")
+        pump(0.4)
+        seeded = entry.get_text()
+        print(f"RESULT separator entry={seeded!r} expected='sắc'")
+        # Reverse control in the same run: with the separator still there the mark must start
+        # a new word instead of editing the committed one.
+        clear()
+        for key in "sawc":
+            send(key)
+        send("space")
+        send("s")
+        pump(0.4)
+        separate = entry.get_text()
+        print(f"RESULT separator-control entry={separate!r} expected='săc s'")
+        if seeded == "sắc" and separate == "săc s":
+            print("PASS installed-engine GTK3: 'săc'+space+BackSpace+'s' -> 'sắc' "
+                  "(control: separator kept -> 'săc s')")
             print("GATE_EXIT=0")
             return 0
-        print("FAIL installed-engine GTK3: installed engine did not compose in a real Entry")
+        print("FAIL installed-engine GTK3: separator/seed scenario wrong on the installed engine")
         print("GATE_EXIT=1")
         return 1
     finally:

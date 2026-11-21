@@ -1,5 +1,14 @@
 # Kết quả 2026-11-14 — prototype, CHƯA nghiệm thu sản phẩm
 
+## 21/11 07:30 — Hà «gõ cách rồi xoá, thêm dấu vẫn không nhận»: engine trên máy là bản 19/11
+
+**Gốc (đo):** bản đang chạy là binary CÀI ngày 19/11 11:28 (engine PID 4186151, bật 19/11 11:47), `provenance.verify` ⇒ «stale»; build mới `dbb97c16` attest nguồn `e0feb0bf`. Bản 19/11 chưa có `Composer::seed` (commit 20/11 17:30) ⇒ `săc`+space+BackSpace+`s` ra `săcs`, đúng triệu chứng.
+
+**RED→GREEN trên engine ĐÃ CÀI (không chỉ build):** `native/tests/accept_installed_gtk3.py` thêm kịch bản Hà. Trước khi cài: `RESULT separator entry='săcs' expected='sắc'` ⇒ GATE 1. Sau `native-ime.py disable` → `enable --trace` (0/0): binary cài = build (sha256 `dbb97c16`), engine mới PID 2197899, daemon liệt kê `zkey-native`, `gsettings sources` = `[('ibus','zkey-native')]` (đọc bằng env thật); `scripts/accept-installed.sh` ⇒ **4/4 GATE 0**, trong đó `săc+space+BackSpace+s → sắc` và đối chứng `săc s`.
+
+**Sự cố môi trường cùng lượt (đã sửa, đã có cổng canh):** user manager systemd giữ `XDG_CACHE_HOME/XDG_CONFIG_HOME/XDG_DATA_HOME` trỏ `.tmp/native-ui-*` và `IBUS_ADDRESS(_FILE)` trỏ socket thử ⇒ unit IBus của GNOME nghe socket trong thư mục tạm, journal ghi `ibus_write_address: assertion 'pf != NULL' failed`, file `~/.config/ibus/bus/*` đứng PID cũ. Dọn: `systemctl --user unset-environment` (5 biến) + restart unit ⇒ file bus ghi lại PID sống, socket về `~/.cache/ibus/dbus-*`. **Bẫy:** lần unset đầu để lại biến RỖNG ⇒ daemon vẫn hỏng; phải `show-environment | grep` xác nhận mất hẳn. **Cổng:** `scripts/accept-native-matrix.sh` so env + `IBUS_DAEMON_PID` trước/sau; lane tự kiểm `ONLY=self-test-leak` ⇒ exit 1 (đã đo), lượt sạch ⇒ `MÁY NGUYÊN` exit 0.
+
+
 ## 20/11 18:00–20:00 — quota `/tmp` gỡ: đo lại GUI; sửa cổng ptyxis; WM cho Firefox
 
 **Đo thật (mã thoát đọc trực tiếp, không `|tail`):**
