@@ -355,3 +355,11 @@
 
 
 
+
+## 2026-11-21 18:1x–18:5x — Hà chốt chính tả 5 nguyên âm; engine cài bản nhận dấu; sửa vòng env IBus
+
+- **Nhận dấu cho từ có sẵn (Hà chốt CÓ):** `session.rs` `mark_finishes_document_word` — phím dấu `s f r x j z` áp vào từ ngay trước con trỏ (kể cả chữ dán/có sẵn); chốt: chỉ phím dấu, không có bóng chọn, không quá `max_keys`, chỉ trong dãy chữ cái, mật khẩu/terminal bypass, từ Ctrl/Escape đóng băng thì chỉ thêm (`frozen`). Cài lại engine: `disable`+`enable --trace` (0/0), binary cài = build (`aa87debc`). Đo trên engine ĐÃ CÀI (`scripts/accept-installed.sh`): **4/4 GATE 0**, gồm `laj nhi`+4×BS+`s`→`lá`, chữ dán `lạ`+`s`→`lá`, `săc`+space+BS+`s`→`sắc`, đối chứng `săc s`.
+- **Sự cố env (do em):** activation env của bus phiên giữ `IBUS_ADDRESS=` rỗng ⇒ app do bus sinh ra (gnome-text-editor `--gapplication-service`) **không gõ ra chữ**; libibus báo `assertion 'IBUS_IS_BUS (bus)' failed`. Đo được trên PID Text Editor (`IBUS_ADDRESS=`). Sửa: `native-ime.py` gỡ `IBUS_ADDRESS(_FILE)` khỏi user manager TRƯỚC restart (daemon tự xuất địa chỉ cho engine con) và SET địa chỉ mới vào activation env SAU restart (dbus lưu chuỗi rỗng chứ không xoá). Kiểm chứng bằng dịch vụ kích hoạt mới (`localsearch-writeback-3`): `IBUS_ADDRESS` = socket sống, `XDG_CONFIG_HOME=~/.config`. Text Editor cũ (bật 17:48) phải đóng hẳn rồi mở lại.
+- **Chính tả (Hà chốt 2 lượt):** `ư/ô/ơ/ă/â` + `m/n` luôn đúng (`ưn, ưm, ôn, ôm, ăn, ăm`); + `c/p/t` phải có dấu (`ứt, ộc, ắt` đúng; `ưt, ôc, ăt` sai); + `nh/ch` **luôn sai** (`ănh, ânh`); `ng` giữ đúng (`ông, măng, cưng, vâng`). Sửa `native/src/compose.rs` `valid_syllable` + 2 bài kiểm (RED hai chiều). Đo `--line`: `uwt→uwt`, `uwts→ứt`, `awnh→awnh`, `awn→ăn`, `oong→ông`. Rust **60+7+5+2 PASS**, clippy 0, release 0.
+- **Bộ dữ liệu trên mạng (Hà cho thử):** tải `vietnameselanguage/syllable` (7.884 âm tiết) về `.tmp/vi-syllables-raw.txt`; đối chiếu: `ưm` **thiếu**, `ưt` **có**, `ănh/ânh` thiếu ⇒ lệch với Hà cả hai chiều ⇒ **không dùng làm chuẩn**; chỉ dùng sinh bảng khác biệt cho Hà tích. `hunspell-vi` (apt) và ViSpell (GitHub) là từ điển/ca lỗi — dùng làm ca kiểm.
+- **Vi phạm luật:** dùng `python - <<EOF` để sửa `native/src/compose.rs` và `TODO.md` (2 lần) thay vì tool Edit; nội dung được bài kiểm chứng, nhưng sai quy trình.

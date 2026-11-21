@@ -1,13 +1,11 @@
-# zkey/core — native (21/11 sáng)
+# zkey/core — native (21/11 chiều)
 
-21/11: Hà báo «gõ cách rồi xoá, thêm dấu vẫn không nhận» ⇒ **gốc: engine TRÊN MÁY là bản cài 19/11** (thiếu `Composer::seed`). Đã cài lại build 20/11 (`disable`+`enable --trace`, mã 0/0): binary cài = build `dbb97c16`, engine PID 2197899, `gsettings sources` = `[('ibus','zkey-native')]`.
-Cổng **đo trên engine ĐÃ CÀI** (`native/tests/accept_installed_gtk3.py`, kịch bản của Hà): RED `săcs` trước khi cài → GREEN `sắc` sau; `scripts/accept-installed.sh` **4/4 GATE 0**.
-Sự cố cùng lượt: user manager giữ `XDG_*HOME`/`IBUS_ADDRESS(_FILE)` trỏ `.tmp` ⇒ unit IBus GNOME nghe socket tạm (`ibus_write_address: pf != NULL`), file bus đứng PID cũ. Đã dọn + restart unit; **cổng canh mới** trong `scripts/accept-native-matrix.sh` (so env + `IBUS_DAEMON_PID` trước/sau, lane `ONLY=self-test-leak` chứng minh ĐỎ được).
+ĐÃ CÀI + ĐO trên engine ĐÃ CÀI (21/11):
+(1) **Nhận dấu cho từ có sẵn** (Hà chốt CÓ): phím `s f r x j z` áp vào từ ngay trước con trỏ, kể cả chữ dán; chốt an toàn (chỉ phím dấu, không bóng chọn, ≤ `max_keys`, chỉ dãy chữ cái, mật khẩu/terminal bypass, Ctrl/Escape đóng băng chỉ thêm). `scripts/accept-installed.sh` **4/4 GATE 0**: `laj nhi`+4×BS+`s`→`lá`, `lạ`(dán)+`s`→`lá`, `săc`+space+BS+`s`→`sắc`, đối chứng `săc s`.
+(2) **Chính tả 5 nguyên âm** (`compose.rs` `valid_syllable`): `ư/ô/ơ/ă/â`+`m/n` luôn đúng (`ưn, ưm, ôn, ôm, ăn, ăm`); +`c/p/t` phải có dấu (`ứt, ộc, ắt`; `ưt, ôc, ăt` sai); +`nh/ch` luôn sai (`ănh, ânh`); `ng` giữ đúng (`ông, măng, cưng, vâng`). Rust **60+7+5+2 PASS**, clippy 0, release 0.
+(3) **Sự cố env (đã sửa):** activation env bus phiên giữ `IBUS_ADDRESS=` rỗng ⇒ app do bus sinh ra (Text Editor) **không ra chữ**. `native-ime.py` nay gỡ `IBUS_ADDRESS(_FILE)` khỏi user manager trước restart + SET địa chỉ mới vào activation env sau restart. Kiểm: dịch vụ kích hoạt mới có `IBUS_ADDRESS` = socket sống. **Text Editor cũ phải đóng hẳn rồi mở lại** (chưa xác nhận từ Hà).
+(4) **Dataset chính tả:** `vietnameselanguage/syllable` (7.884, ở `.tmp/vi-syllables-raw.txt`) **lệch Hà cả hai chiều** (`ưm` thiếu, `ưt` có) ⇒ không dùng làm chuẩn; chỉ sinh bảng khác biệt cho Hà tích.
 
-Lượt 20/11 (vẫn đúng): ma trận native **9/9 GATE 0** (`scripts/accept-native-matrix.sh`), `accept-xvfb.sh` GATE_EXIT=0, sửa cổng ptyxis (so sánh `= as` bị Telex ở dòng lệnh) — `scripts/accept-latency.sh` cho N05 toolkit: xkb p50 1,95 / zkey 1,93–1,94 ms (chưa phải pixel).
+VIỆC KẾ: (1) Hà mở lại Text Editor ⇒ đo env tiến trình mới + xác nhận gõ ra chữ; (2) in bảng **khác biệt dataset vs quy tắc** cho Hà tích (ưt, ơm, ơng, ưm, ănh…); (3) Firefox thật bằng mắt (`tieengs`); (4) «từ đầu tiên» Files — chờ Hà duyệt bộ đệm riêng; (5) TUI terminal + bỏ cấm Backspace — chờ Hà.
 
-Mã sản phẩm không đổi lượt này (chỉ cài lại + mở rộng cổng); Rust không chạy lại; Python `unittest` OK.
-
-VIỆC KẾ: (1) Hà thử lại `săc`+space+BS+`s` (và Firefox thật); (2) Files «từ đầu tiên» — chờ Hà duyệt bộ đệm riêng; (3) TUI terminal + bỏ cấm Backspace — chờ Hà; (4) N05 thiếu key→pixel + desktop.
-
-Nền: KHÔNG. Luật: nhãn `zkey`, CẤM `cd` trần; env phiên có `ZKEY_MODE=off` + `XDG_CONFIG_HOME` của opencode ⇒ chạy tay cổng/gsettings phải `env -u`. Hòm thư huba phiên: `/tmp/claude-1000/-mnt-data-projects/ses_e06f09837ffedkvJJi0ZBam657/scratchpad/huba-run.txt`.
+Nền: KHÔNG. Hòm thư huba phiên: `/tmp/claude-1000/-mnt-data-projects/ses_e06f09837ffedkvJJi0ZBam657/scratchpad/huba-run.txt`. Luật: nhãn `zkey`, CẤM `cd` trần; env phiên có `ZKEY_MODE=off` + `XDG_CONFIG_HOME` của opencode ⇒ chạy tay phải `env -u`.
