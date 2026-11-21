@@ -350,6 +350,19 @@ pub fn valid_syllable(word: &str) -> bool {
     }
     let nucleus: String = rest[..nucleus_len].iter().collect();
     let coda: String = rest[nucleus_len..].iter().collect();
+    // Hà 21/11: with these vowels a SINGLE consonant coda other than m/n is only
+    // pronounceable when the syllable carries a tone: "ưt"/"ôc"/"ăt" are misspelled,
+    // "ứt"/"ốc"/"ắt" are real. "m"/"n" need no tone ("ăn", "âm", "ơn", "ôm"), and the
+    // digraph codas stay valid either way ("ông", "măng", "cưng", "vâng").
+    let toned = word
+        .chars()
+        .any(|c| Letter::decode(c).is_some_and(|(_, tone)| tone != 0));
+    if !toned
+        && matches!(nucleus.as_str(), "ư" | "ô" | "ơ" | "ă" | "â")
+        && matches!(coda.as_str(), "c" | "p" | "t")
+    {
+        return false;
+    }
     NUCLEI.contains(&nucleus.as_str()) && CODAS.contains(&coda.as_str())
 }
 
@@ -498,6 +511,21 @@ mod tests {
             "statú", "ađ", "clá", "đd", "stá", "ăb", "tứo", "aaaá", "ês", "clas",
         ] {
             assert!(!valid_syllable(word), "{word}");
+        }
+    }
+    #[test]
+    fn toneless_special_vowel_with_a_single_stop_coda_is_a_misspelling() {
+        // Hà 21/11: ư/ô/ơ/ă/â + one consonant other than m,n needs a tone.
+        for word in ["ưt", "ưc", "ôc", "ôt", "ơt", "ơp", "ăc", "ăt", "âc", "ât"] {
+            assert!(!valid_syllable(word), "{word} must be rejected without a tone");
+        }
+        for word in ["ứt", "ứa", "ốc", "ốt", "ớt", "ợp", "ắc", "ắt", "ấc", "ất", "ộc"] {
+            assert!(valid_syllable(word), "{word} is a real tonal syllable");
+        }
+        // m/n never need a tone; digraph codas stay valid (Hà: «ông», «măng», «cưng»).
+        for word in ["ăn", "ăm", "âm", "ân", "ơn", "ôm", "ôn", "ông", "măng", "cưng", "vâng",
+                     "ứng", "ưn", "ưm"] {
+            assert!(valid_syllable(word), "{word} must stay valid");
         }
     }
     #[test]
