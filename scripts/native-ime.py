@@ -101,6 +101,11 @@ def restart_and_wait(module, want_engine, timeout=25):
     if address is None:
         print("NOT MEASURABLE: no running ibus-daemon address; restart ibus yourself, then run verify")
         return None
+    # A stale or EMPTY IBUS_ADDRESS in the user manager is inherited by the daemon and then by
+    # every engine child (measured 21/11: engines log "Cannot connect to IBus", SetGlobalEngine
+    # times out). Unset it so ibus-daemon exports its own address instead.
+    subprocess.run(["systemctl", "--user", "unset-environment", "IBUS_ADDRESS", "IBUS_ADDRESS_FILE"],
+                   capture_output=True, text=True, timeout=10)
     result = subprocess.run(["ibus", "restart"], capture_output=True, text=True, timeout=20,
                             env={**os.environ, "IBUS_ADDRESS": address})
     if result.returncode:
@@ -111,8 +116,30 @@ def restart_and_wait(module, want_engine, timeout=25):
         time.sleep(1)
         names = module.engine_names()
         if names is not None and ("zkey-native" in names) == want_engine:
+            refresh_activation_environment(module)
             return True
     return False
+
+
+def refresh_activation_environment(module):
+    """New apps are often DBUS-ACTIVATED and inherit the session bus activation environment.
+
+    Measured 21/11: a stale or EMPTY IBUS_ADDRESS in that environment makes libibus fail
+    (`assertion 'IBUS_IS_BUS (bus)' failed`) and such apps receive no characters at all —
+    gnome-text-editor is a `--gapplication-service`, so it died this way while every gate was
+    green. After every ibus restart, publish the address of the daemon that is now running.
+    """
+    address = module.daemon_address()
+    if not address:
+        print("WARN: cannot refresh the D-Bus activation environment (no daemon address)")
+        return
+    variant = '{"IBUS_ADDRESS": "' + address.replace('"', '') + '"}'
+    result = subprocess.run(["gdbus", "call", "--session", "--dest", "org.freedesktop.DBus",
+                             "--object-path", "/org/freedesktop/DBus",
+                             "--method", "org.freedesktop.DBus.UpdateActivationEnvironment", variant],
+                            capture_output=True, text=True, timeout=10)
+    if result.returncode:
+        print(f"WARN: activation environment not refreshed: {result.stderr.strip()[:120]}")
 
 
 def enable():

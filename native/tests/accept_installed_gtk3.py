@@ -189,12 +189,31 @@ def main():
         pump(0.4)
         separate = entry.get_text()
         print(f"RESULT separator-control entry={separate!r} expected='săc s'")
-        if seeded == "sắc" and separate == "săc s":
-            print("PASS installed-engine GTK3: 'săc'+space+BackSpace+'s' -> 'sắc' "
-                  "(control: separator kept -> 'săc s')")
+        # Hà 21/11: deleting back several characters (not only the separator) and typing a mark
+        # must still finish the word that is on screen.
+        clear()
+        for key in "laj nhi":
+            send("space" if key == " " else key)
+        for _ in range(4):
+            send("BackSpace")
+        send("s")
+        pump(0.4)
+        deleted_back = entry.get_text()
+        print(f"RESULT delete-back entry={deleted_back!r} expected='lá'")
+        # Hà 21/11: a word the app put there (pasted / existing document) also takes the mark.
+        clear()
+        entry.set_text("lạ")
+        entry.set_position(-1)
+        pump(0.4)
+        send("s")
+        pump(0.4)
+        pasted = entry.get_text()
+        print(f"RESULT pasted-word entry={pasted!r} expected='lá'")
+        if seeded == "sắc" and separate == "săc s" and deleted_back == "lá" and pasted == "lá":
+            print("PASS installed-engine GTK3: separator+seed, multi-delete back, pasted word all take the mark")
             print("GATE_EXIT=0")
             return 0
-        print("FAIL installed-engine GTK3: separator/seed scenario wrong on the installed engine")
+        print("FAIL installed-engine GTK3: separator/seed/delete-back/pasted scenario wrong on the installed engine")
         print("GATE_EXIT=1")
         return 1
     finally:
