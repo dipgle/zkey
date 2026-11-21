@@ -28,6 +28,12 @@ Không thể hứa một engine IBus sẽ sửa chữ đã commit an toàn trong
 
 Hướng tiếp cần đo: tích hợp hợp tác với terminal/toolkit để có trạng thái nhập đáng tin và thao tác sửa có thể kiểm chứng. Khi chưa có đường đã được kiểm chứng, phải có bypass nguyên trạng cho ngữ cảnh đó và báo rõ chưa hỗ trợ; không gọi đây là hỗ trợ Telex đồng nhất. Nhận diện theo nội dung prompt/cửa sổ hoặc đọc bàn phím toàn hệ thống không phải giải pháp bảo mật.
 
+## Hà chốt 21/11 — nhận dấu cho từ ĐÃ CÓ trên màn hình
+
+- «Cứ con trỏ đứng cuối từ là gõ dấu vẫn nhận» (Hà 21/11, trả lời câu hỏi của phiên): một phím dấu (`s f r x j z`) áp vào **từ đứng ngay trước con trỏ**, kể cả từ **không phải do zkey gõ** (dán vào, từ phiên trước, từ tài liệu có sẵn).
+- Chốt an toàn giữ nguyên: chỉ phím DẤU (không áp `a`/`w` — không dán chữ vào từ lạ); không làm khi có **bóng chọn**; không làm khi từ dài ≥ `max_keys`; không làm qua **ranh giới không phải chữ cái** (chỉ lấy dãy chữ cái sát con trỏ); không làm ở ngữ cảnh **mật khẩu/TERMINAL/protected** (đường bypass cũ); từ đã **Ctrl/Escape đóng băng** thì chỉ thêm, không sửa.
+- Hệ quả so với bản trước: bỏ điều kiện «phải là từ chính engine vừa commit» trong trường hợp con trỏ đứng cuối từ; `docs/input-contract.md` trước đây cấm sửa chữ ngoài ⇒ nay Hà cho phép, có các chốt trên.
+
 ## Nghiệm thu bắt buộc trước đóng P0
 
 1. Input thường trên trình duyệt: kiểm giá trị/input event của ứng dụng thay đổi theo phím, không chỉ quan sát IME.

@@ -51,6 +51,8 @@ pub struct Session {
     /// (text, caret) of the word most recently committed before a separator;
     /// used only to adopt that word back when the separator is deleted.
     committed: Option<(String, usize)>,
+    /// Word frozen by Ctrl/Escape: later mark keys must append, never rewrite it.
+    frozen: Option<String>,
 }
 
 impl Session {
@@ -77,6 +79,7 @@ impl Session {
             pending: None,
             reset_pending: false,
             committed: None,
+            frozen: None,
         }
     }
     pub fn reset(&mut self) {
@@ -103,6 +106,7 @@ impl Session {
     pub fn leave_context(&mut self) {
         self.reset();
         self.committed = None;
+        self.frozen = None;
         self.protected = true;
     }
     pub fn configure(&mut self, config: &crate::config::Config, experimental: bool) {
@@ -275,6 +279,63 @@ impl Session {
         }
         false
     }
+    /// A mark key whose caret sits right after a word that is on screen but was NOT typed in
+    /// this composition (pasted text, an earlier session, another app). Hà 21/11: «cứ con trỏ
+    /// đứng cuối từ là gõ dấu vẫn nhận». Adopted only when the key actually CHANGES the word
+    /// (a mark), never to glue a plain letter onto it, never with a selection, never across a
+    /// non-letter boundary, never for a word at/over max_keys. Contexts that must stay literal
+    /// (terminal, password, protected, Ctrl-frozen words) never reach here.
+    fn mark_finishes_document_word(&mut self, key: char) -> Option<Edit> {
+        // Tone marks only (s f r x j z). 'a'/'w' are Telex modifiers too, but applying them
+        // to text the user did not type would rewrite words nobody asked to compose.
+        if !matches!(key, 's' | 'f' | 'r' | 'x' | 'j' | 'z' | 'S' | 'F' | 'R' | 'X' | 'J' | 'Z') {
+            return None;
+        }
+        let (word, caret) = {
+            let s = self.snapshot.as_ref()?;
+            if s.selection {
+                return None;
+            }
+            let mut start = s.before.len();
+            while start > 0 && s.before[start - 1].is_alphabetic() {
+                start -= 1;
+            }
+            let word: String = s.before[start..].iter().collect();
+            if word.is_empty() || word.chars().count() >= self.max_keys {
+                return None;
+            }
+            if self
+                .frozen
+                .as_ref()
+                .is_some_and(|frozen| !frozen.is_empty() && word.starts_with(frozen.as_str()))
+            {
+                return None; // Ctrl/Escape froze this word: later keys append, never rewrite
+            }
+            (word, s.cursor)
+        };
+        let mut composer = Composer::seed(self.style, &word).ok()?;
+        if composer.push(key).is_err() {
+            return None;
+        }
+        let wanted = composer.text();
+        if wanted.chars().count() > word.chars().count() {
+            return None; // the key would only add a character: a new word, not a mark
+        }
+        let common = word
+            .chars()
+            .zip(wanted.chars())
+            .take_while(|(a, b)| a == b)
+            .count();
+        self.word = composer;
+        self.visible = wanted.clone();
+        self.origin = Some(caret - word.chars().count());
+        self.snapshot = None;
+        Some(Edit {
+            handled: true,
+            remove: (word.chars().count() - common) as u32,
+            insert: wanted.chars().skip(common).collect(),
+        })
+    }
     fn replacement(&mut self, wanted: String) -> Edit {
         let common = self
             .visible
@@ -307,6 +368,7 @@ impl Session {
             }
         }
         self.literal = true;
+        self.frozen = Some(self.visible.clone());
     }
     pub fn key(&mut self, key: char) -> Edit {
         self.native_backspace = None;
@@ -381,6 +443,9 @@ impl Session {
         }
         let owned = self.owns();
         if self.visible.is_empty() && !self.seed_from_surrounding() {
+            if let Some(edit) = self.mark_finishes_document_word(key) {
+                return edit;
+            }
             self.origin = self
                 .snapshot
                 .as_ref()
@@ -712,7 +777,10 @@ mod tests {
         assert_eq!(e.text, "tiền");
     }
     #[test]
-    fn backspace_ticket_never_survives_focus_or_a_different_caret() {
+    fn document_word_gets_the_mark_without_reviving_an_old_composition() {
+        // Hà 21/11: a mark at the caret finishes the word that is THERE. An old
+        // backspace ticket must not make the engine delete the whole previous word,
+        // and focus change must not smuggle the old composition in either.
         for leave in [false, true] {
             let mut e = Editor::new();
             for k in "tieengs".chars() {
@@ -727,7 +795,8 @@ mod tests {
                 e.s.content(0, 0);
             }
             e.s.snapshot("foreign tiến", 12, 12);
-            assert_eq!(e.s.key('f').remove, 0);
+            let edit = e.s.key('f');
+            assert_eq!((edit.remove, edit.insert.as_str()), (2, "ền"));
         }
     }
     #[test]
@@ -763,14 +832,64 @@ mod tests {
         assert_eq!(e.text, "sắc");
     }
     #[test]
-    fn seed_never_rewrites_a_word_we_did_not_commit() {
+    fn mark_finishes_a_word_that_was_already_on_screen() {
+        // Hà 21/11: a word on screen that this engine never typed (pasted, earlier
+        // session) still gets the mark when the caret is at its end.
         let mut e = Editor::new();
-        e.text = "săc".into();
-        e.s.snapshot(&e.text, 3, 3);
+        e.text = "lạ".into();
+        e.s.snapshot(&e.text, 2, 2);
         let edit = e.s.key('s');
+        assert_eq!((edit.remove, edit.insert.as_str()), (1, "á"));
+        e.apply(edit);
+        assert_eq!(e.text, "lá");
+    }
+    #[test]
+    fn plain_letter_after_a_document_word_is_appended_not_adopted() {
+        // Adoption is for marks only: a plain letter must not glue to the old word.
+        let mut e = Editor::new();
+        e.text = "lạ".into();
+        e.s.snapshot(&e.text, 2, 2);
+        let edit = e.s.key('a');
         assert_eq!(edit.remove, 0);
         e.apply(edit);
-        assert_eq!(e.text, "săcs");
+        assert_eq!(e.text, "lạa");
+    }
+    #[test]
+    fn document_word_is_not_adopted_with_a_selection_or_across_a_boundary() {
+        let mut e = Editor::new();
+        e.text = "lạ".into();
+        e.s.snapshot(&e.text, 2, 0);
+        assert_eq!(e.s.key('s').remove, 0);
+        let mut e = Editor::new();
+        e.text = "lạ1".into();
+        e.s.snapshot(&e.text, 3, 3);
+        let edit = e.s.key('s');
+        e.apply(edit);
+        assert_eq!(e.text, "lạ1s");
+        // A letter run right before the caret is adopted even after a digit boundary.
+        let mut e = Editor::new();
+        e.text = "1lạ".into();
+        e.s.snapshot(&e.text, 3, 3);
+        let edit = e.s.key('s');
+        assert_eq!((edit.remove, edit.insert.as_str()), (1, "á"));
+        e.apply(edit);
+        assert_eq!(e.text, "1lá");
+        // The word before the caret is only the one inside a letter run: here "ạ".
+        let mut e = Editor::new();
+        e.text = "a lạ".into();
+        e.s.snapshot(&e.text, 4, 4);
+        let edit = e.s.key('s');
+        assert_eq!((edit.remove, edit.insert.as_str()), (1, "á"));
+        e.apply(edit);
+        assert_eq!(e.text, "a lá");
+    }
+    #[test]
+    fn document_word_is_not_adopted_beyond_max_keys() {
+        let mut e = Editor::new();
+        e.s.max_keys = 8;
+        e.text = "nghieeng".into();
+        e.s.snapshot(&e.text, 8, 8);
+        assert_eq!(e.s.key('s').remove, 0);
     }
     #[test]
     fn literal_words_are_not_adopted_after_a_deleted_separator() {
