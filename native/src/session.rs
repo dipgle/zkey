@@ -37,6 +37,10 @@ pub struct Session {
     pub enabled: bool,
     capable: bool,
     protected: bool,
+    /// Purpose TERMINAL (10). Bypassed unless the client ALSO reports surrounding text:
+    /// measured 21/11 — GNOME Text Editor (GTK4) declares TERMINAL while sending
+    /// surrounding text, and the old rule left the user unable to type Vietnamese there.
+    terminal: bool,
     rewrite_allowed: bool,
     snapshot: Option<Snapshot>,
     word: Composer,
@@ -67,6 +71,7 @@ impl Session {
             enabled,
             capable: false,
             protected: true,
+            terminal: false,
             rewrite_allowed: experimental_rewrite,
             snapshot: None,
             word: Composer::new(style),
@@ -127,7 +132,11 @@ impl Session {
     pub fn content(&mut self, purpose: u32, hints: u32) {
         // Public IBus purposes 0..7 are non-secret. PASSWORD/PIN/TERMINAL and
         // any future/unknown purpose stay closed until explicitly supported.
-        self.protected = !matches!(purpose, 0..=7) || hints & ((1 << 11) | (1 << 12)) != 0;
+        // Purposes: 8 PASSWORD, 9 PIN, 10 TERMINAL, 11.. unknown. Terminal is decided in
+        // accepts(): it only bypasses while the client gives no surrounding text.
+        self.terminal = purpose == 10;
+        self.protected = (!matches!(purpose, 0..=7) && purpose != 10)
+            || hints & ((1 << 11) | (1 << 12)) != 0;
         self.committed = None;
         if self.protected {
             self.reset();
@@ -136,11 +145,19 @@ impl Session {
     pub fn protected(&self) -> bool {
         self.protected
     }
-    pub fn accepts(&self) -> bool {
+    /// Contexts where text may be tracked at all (no password/PIN/unknown purpose).
+    fn tracks(&self) -> bool {
         self.enabled && self.capable && !self.protected && self.rewrite_allowed
     }
+    /// Keys are composed only when the client also proves it can be edited (surrounding
+    /// text) in a TERMINAL context; otherwise the engine keeps its hands off.
+    pub fn accepts(&self) -> bool {
+        self.tracks() && (!self.terminal || self.snapshot.is_some())
+    }
     pub fn snapshot(&mut self, text: &str, cursor: usize, anchor: usize) -> Edit {
-        if !self.accepts() {
+        // Tracking is required even for a TERMINAL context that turns out to send
+        // surrounding text (GNOME Text Editor): accepts() then needs that snapshot.
+        if !self.tracks() {
             self.snapshot = None;
             return Edit::default();
         }
@@ -639,6 +656,30 @@ mod tests {
         s.content(0, 0);
         s.capabilities(1);
         assert!(!s.key('a').handled);
+    }
+    #[test]
+    fn terminal_bypasses_only_without_surrounding_text() {
+        // VTE/readline: purpose TERMINAL, no surrounding text -> engine keeps hands off
+        // (handled=false, the app inserts the key itself).
+        let mut s = Session::new(ToneStyle::Modern, true, 256, true);
+        s.capabilities(32);
+        s.content(10, 0);
+        assert!(!s.key('a').handled);
+        assert!(!s.key('s').handled);
+        // GNOME Text Editor (measured 21/11): TERMINAL + surrounding text -> compose.
+        let mut e = Editor::new();
+        e.s.content(10, 0);
+        for k in "tieengs".chars() {
+            e.key(k);
+        }
+        assert_eq!(e.text, "tiếng");
+        // Password/PIN stay closed no matter what surrounding text arrives.
+        let mut s = Session::new(ToneStyle::Modern, true, 256, true);
+        s.capabilities(32);
+        s.content(8, 0);
+        s.snapshot("pass", 4, 4);
+        assert!(!s.key('a').handled);
+        assert!(!s.key('s').handled);
     }
     #[test]
     fn explicit_unknown_purpose_is_protected_not_inferred_public() {
