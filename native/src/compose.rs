@@ -357,10 +357,13 @@ pub fn valid_syllable(word: &str) -> bool {
     let toned = word
         .chars()
         .any(|c| Letter::decode(c).is_some_and(|(_, tone)| tone != 0));
-    if !toned
-        && matches!(nucleus.as_str(), "ư" | "ô" | "ơ" | "ă" | "â")
-        && matches!(coda.as_str(), "c" | "p" | "t")
-    {
+    let special = matches!(nucleus.as_str(), "ư" | "ô" | "ơ" | "ă" | "â");
+    // Hà 21/11: these vowels never form "nh"/"ch" rimes — "ănh", "ânh", "ônh" are not
+    // syllables at all, with or without a tone ("ông", "măng", "cưng", "vâng" stay valid).
+    if special && matches!(coda.as_str(), "nh" | "ch") {
+        return false;
+    }
+    if !toned && special && matches!(coda.as_str(), "c" | "p" | "t") {
         return false;
     }
     NUCLEI.contains(&nucleus.as_str()) && CODAS.contains(&coda.as_str())
@@ -524,8 +527,15 @@ mod tests {
         }
         // m/n never need a tone; digraph codas stay valid (Hà: «ông», «măng», «cưng»).
         for word in ["ăn", "ăm", "âm", "ân", "ơn", "ôm", "ôn", "ông", "măng", "cưng", "vâng",
-                     "ứng", "ưn", "ưm"] {
+                     "ứng", "ưn", "ưm", "ảnh"] {
             assert!(valid_syllable(word), "{word} must stay valid");
+        }
+    }
+    #[test]
+    fn special_vowels_never_take_nh_or_ch() {
+        // Hà 21/11: «ănh», «ânh» … không phải âm tiết, dù có dấu hay không.
+        for word in ["ănh", "ânh", "ônh", "ơnh", "ưnh", "ắnh", "ấnh", "ôch", "ăch", "âch"] {
+            assert!(!valid_syllable(word), "{word} must be rejected");
         }
     }
     #[test]
