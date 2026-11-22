@@ -210,6 +210,19 @@ mod tests {
         );
     }
     #[test]
+    fn protocol_lets_a_syllable_keep_composing_before_its_tone_arrives() {
+        // Measured 22/11 in a terminal: `sawc` came back raw, so the following `s`
+        // could never make "sắc". "săc" is a legitimate unfinished syllable.
+        let mut output = Vec::new();
+        line_protocol(
+            std::io::Cursor::new(b"sawc\nsawcs\n"),
+            ToneStyle::Modern,
+            &mut output,
+        )
+        .unwrap();
+        assert_eq!(String::from_utf8(output).unwrap(), "săc\nsắc\n");
+    }
+    #[test]
     fn protocol_honours_the_requested_tone_style() {
         let mut output = Vec::new();
         line_protocol(

@@ -16,11 +16,19 @@ fn reply(request: &str) -> Option<String> {
         _ => return None,
     };
     let word = chars.as_str();
-    if word.chars().count() > MAX_KEYS || !word.chars().all(|c| c.is_ascii_alphabetic() || is_vietnamese(c)) {
+    if word.chars().count() > MAX_KEYS
+        || !word
+            .chars()
+            .all(|c| c.is_ascii_alphabetic() || is_vietnamese(c))
+    {
         return None;
     }
     let composed = compose(word, modern);
-    Some(if composed == word || valid_syllable(&composed) { composed } else { word.to_string() })
+    Some(if composed == word || valid_syllable(&composed) {
+        composed
+    } else {
+        word.to_string()
+    })
 }
 
 fn main() -> io::Result<()> {

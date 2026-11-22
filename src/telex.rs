@@ -184,8 +184,7 @@ pub fn valid_syllable(word: &str) -> bool {
     }
     let nucleus: String = rest[..nucleus_len].iter().collect();
     let coda: String = rest[nucleus_len..].iter().collect();
-    NUCLEI.contains(&nucleus.as_str())
-        && CODAS.contains(&coda.as_str())
+    NUCLEI.contains(&nucleus.as_str()) && CODAS.contains(&coda.as_str())
 }
 
 /// Replay a single ASCII word. Callers bound input to MAX_KEYS on the interactive path.
@@ -283,9 +282,31 @@ mod tests {
     #[test]
     fn syllable_check_accepts_vietnamese_rejects_english_shapes() {
         for word in [
-            "tiếng", "Việt", "Điện", "đường", "được", "nguyễn", "thưởng", "quá", "giá", "gì",
-            "nghiêng", "NGUYỄN", "ắ", "mưa", "quăng", "hoà", "thuỷ", "khuya", "oanh", "ạ",
-            "tiê", "tiên", "ngh", "t", "",
+            "tiếng",
+            "Việt",
+            "Điện",
+            "đường",
+            "được",
+            "nguyễn",
+            "thưởng",
+            "quá",
+            "giá",
+            "gì",
+            "nghiêng",
+            "NGUYỄN",
+            "ắ",
+            "mưa",
+            "quăng",
+            "hoà",
+            "thuỷ",
+            "khuya",
+            "oanh",
+            "ạ",
+            "tiê",
+            "tiên",
+            "ngh",
+            "t",
+            "",
         ] {
             assert!(valid_syllable(word), "{word}");
         }

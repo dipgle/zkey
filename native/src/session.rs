@@ -57,6 +57,19 @@ pub struct Session {
     committed: Option<(String, usize)>,
     /// Word frozen by Ctrl/Escape: later mark keys must append, never rewrite it.
     frozen: Option<String>,
+    /// The client published surrounding text at least once in this focus session:
+    /// it has shown us the field it types into.
+    published: bool,
+    /// The client republished text AFTER one of our commits/resets. Such a client
+    /// watches the field, so its silence is never taken as permission to guess.
+    reports_caret: bool,
+    /// Continuing a word whose only copy is our own buffer. Measured 20/11: the
+    /// Files search entry publishes one empty snapshot at focus, then resets after
+    /// every commit and never sends another snapshot, so `owns()` can never be
+    /// proven again and the whole word would collapse into per-key inserts.
+    blind: bool,
+    /// Content type the client last announced (purpose, hints).
+    content_type: Option<(u32, u32)>,
 }
 
 impl Session {
@@ -85,6 +98,10 @@ impl Session {
             reset_pending: false,
             committed: None,
             frozen: None,
+            published: false,
+            reports_caret: false,
+            blind: false,
+            content_type: None,
         }
     }
     pub fn reset(&mut self) {
@@ -97,6 +114,7 @@ impl Session {
         self.native_backspace = None;
         self.pending = None;
         self.reset_pending = false;
+        self.blind = false;
     }
     pub fn client_reset(&mut self) {
         // GTK resets its IM context as part of its own native Backspace path,
@@ -112,6 +130,8 @@ impl Session {
         self.reset();
         self.committed = None;
         self.frozen = None;
+        self.published = false;
+        self.reports_caret = false;
         self.protected = true;
     }
     pub fn configure(&mut self, config: &crate::config::Config, experimental: bool) {
@@ -134,11 +154,15 @@ impl Session {
         // any future/unknown purpose stay closed until explicitly supported.
         // Purposes: 8 PASSWORD, 9 PIN, 10 TERMINAL, 11.. unknown. Terminal is decided in
         // accepts(): it only bypasses while the client gives no surrounding text.
+        let changed = self.content_type != Some((purpose, hints));
+        self.content_type = Some((purpose, hints));
         self.terminal = purpose == 10;
-        self.protected = (!matches!(purpose, 0..=7) && purpose != 10)
-            || hints & ((1 << 11) | (1 << 12)) != 0;
+        self.protected =
+            (!matches!(purpose, 0..=7) && purpose != 10) || hints & ((1 << 11) | (1 << 12)) != 0;
         self.committed = None;
-        if self.protected {
+        if self.protected || changed {
+            // A different field may sit at a different caret: never carry a word
+            // (or an unconfirmed buffer) across a content-type change.
             self.reset();
         }
     }
@@ -174,6 +198,24 @@ impl Session {
             cursor,
             selection: cursor != anchor,
         });
+        self.published = true;
+        // A snapshot that arrives after a commit/reset and lands on text we are
+        // composing is proof this client watches the caret. Such a client is never
+        // composed for blindly again in this focus session.
+        if (self.reset_pending || self.blind)
+            && (!self.visible.is_empty() || self.pending.is_some())
+        {
+            self.reports_caret = true;
+        }
+        if self.blind {
+            // The buffer was a guess. Now the client showed the field: keep the
+            // word only if it is still exactly there, otherwise drop it untouched.
+            self.blind = false;
+            if !self.owns() {
+                self.reset();
+                return Edit::default();
+            }
+        }
         if self.reset_pending {
             self.reset_pending = false;
             // The client reset its context, but some clients (measured: Firefox)
@@ -270,6 +312,19 @@ impl Session {
         self.origin
             .is_none_or(|origin| s.cursor - word.len() == origin)
     }
+    /// Whether a client Reset may be answered by continuing our own word. Only for
+    /// a context that has already shown us its field (`published`) but has never
+    /// republished it after a commit (`reports_caret`): the measured Files search
+    /// entry. The buffer must be a word we composed ourselves, still identical to
+    /// what we committed, with no pending span and no Ctrl/Escape freeze.
+    fn blind_continuation_allowed(&self) -> bool {
+        self.published
+            && !self.reports_caret
+            && !self.literal
+            && self.pending.is_none()
+            && !self.visible.is_empty()
+            && self.word.text() == self.visible
+    }
     /// Adopt the syllable we just committed when the client deleted the
     /// separator with a native Backspace: the caret is still exactly where that
     /// word ends, and the text still ends with it. Nothing else is adopted, so a
@@ -305,7 +360,10 @@ impl Session {
     fn mark_finishes_document_word(&mut self, key: char) -> Option<Edit> {
         // Tone marks only (s f r x j z). 'a'/'w' are Telex modifiers too, but applying them
         // to text the user did not type would rewrite words nobody asked to compose.
-        if !matches!(key, 's' | 'f' | 'r' | 'x' | 'j' | 'z' | 'S' | 'F' | 'R' | 'X' | 'J' | 'Z') {
+        if !matches!(
+            key,
+            's' | 'f' | 'r' | 'x' | 'j' | 'z' | 'S' | 'F' | 'R' | 'X' | 'J' | 'Z'
+        ) {
             return None;
         }
         let (word, caret) = {
@@ -395,8 +453,17 @@ impl Session {
             return Edit::default();
         }
         if self.reset_pending {
-            // No surrounding text confirmed the word after the client's reset.
-            self.reset();
+            // A Reset means the client dropped its IM state, not that the field is
+            // empty. Keep our word only for a client that has shown us the field but
+            // never republishes it (the snapshot that follows a Reset must prove the
+            // word otherwise); everything else starts a new word here.
+            if self.blind_continuation_allowed() {
+                self.reset_pending = false;
+                self.blind = true;
+                self.origin = None; // The caret is unverified now; no origin claim.
+            } else {
+                self.reset();
+            }
         }
         if self.snapshot.as_ref().is_some_and(|s| s.selection) {
             self.reset();
@@ -458,7 +525,7 @@ impl Session {
                 ..Edit::default()
             };
         }
-        let owned = self.owns();
+        let owned = self.owns() || self.blind;
         if self.visible.is_empty() && !self.seed_from_surrounding() {
             if let Some(edit) = self.mark_finishes_document_word(key) {
                 return edit;
@@ -469,7 +536,7 @@ impl Session {
                 .filter(|s| !s.selection)
                 .map(|s| s.cursor);
         }
-        let owned = owned || self.owns();
+        let owned = owned || self.owns() || self.blind;
         // Validated above and bounded here; preserve the key if a future core
         // validation rule rejects it instead of panicking across the ABI.
         if self.word.push(key).is_err() {
@@ -513,6 +580,9 @@ impl Session {
             None
         };
         self.visible.pop();
+        if self.visible.is_empty() {
+            self.blind = false;
+        }
         self.word = Composer::new(self.style);
         for key in self.visible.chars() {
             if self.word.push(key).is_err() {
@@ -757,6 +827,110 @@ mod tests {
         e.s.content(0, 0);
         assert!(e.s.key('s').handled);
     }
+    fn apply_edit(text: &mut String, edit: &Edit) -> u32 {
+        for _ in 0..edit.remove {
+            text.pop();
+        }
+        text.push_str(&edit.insert);
+        edit.remove
+    }
+    /// Measured 20/11 (Files search entry): the context publishes ONE empty snapshot
+    /// when it is created, then calls Reset after every commit and never sends
+    /// surrounding text again. Our own buffer is then the only copy of the word.
+    fn silent_client() -> (Session, String) {
+        let mut s = Session::new(ToneStyle::Modern, true, 256, true);
+        s.capabilities(32);
+        s.content(0, 0);
+        s.snapshot("", 0, 0);
+        (s, String::new())
+    }
+    fn silent_keys(s: &mut Session, text: &mut String, keys: &str) -> u32 {
+        let mut removes = 0;
+        for key in keys.chars() {
+            let edit = s.key(key);
+            removes += apply_edit(text, &edit);
+            s.client_reset();
+        }
+        removes
+    }
+    #[test]
+    fn client_that_never_republishes_after_reset_still_composes() {
+        let (mut s, mut text) = silent_client();
+        let removes = silent_keys(&mut s, &mut text, "tieengs");
+        assert_eq!(text, "tiếng");
+        assert!(removes > 0, "a composed word needs at least one rewrite");
+    }
+    #[test]
+    fn first_word_mark_lands_without_any_caret_report() {
+        // The screenshot case from Telegram web: "mowis" must become "mới" in a
+        // context that never confirms the caret.
+        let (mut s, mut text) = silent_client();
+        silent_keys(&mut s, &mut text, "mowis");
+        assert_eq!(text, "mới");
+    }
+    #[test]
+    fn silent_contexts_keep_composing_after_a_separator() {
+        let (mut s, mut text) = silent_client();
+        silent_keys(&mut s, &mut text, "tieengs vieetj");
+        assert_eq!(text, "tiếng việt");
+    }
+    #[test]
+    fn a_context_that_never_published_text_is_never_guessed_at() {
+        // No snapshot at all: the client never showed us the field, so every key
+        // stays a literal insert (this is the reverse control for the buffer).
+        let mut s = Session::new(ToneStyle::Modern, true, 256, true);
+        s.capabilities(32);
+        s.content(0, 0);
+        let mut text = String::new();
+        let mut removes = 0;
+        for key in "tieengs".chars() {
+            removes += apply_edit(&mut text, &s.key(key));
+            s.client_reset();
+        }
+        assert_eq!(text, "tieengs");
+        assert_eq!(removes, 0);
+    }
+    #[test]
+    fn a_contradicting_snapshot_drops_the_unconfirmed_word() {
+        let (mut s, mut text) = silent_client();
+        silent_keys(&mut s, &mut text, "tie");
+        assert_eq!(
+            s.snapshot("xyz", 3, 3),
+            Edit::default(),
+            "a snapshot that does not end with our word must not be edited"
+        );
+        text = "xyz".into();
+        let edit = s.key('n');
+        assert_eq!((edit.remove, edit.insert.as_str()), (0, "n"));
+        apply_edit(&mut text, &edit);
+        assert_eq!(text, "xyzn");
+    }
+    #[test]
+    fn leaving_the_context_drops_the_unconfirmed_word() {
+        let (mut s, mut text) = silent_client();
+        silent_keys(&mut s, &mut text, "tie");
+        s.leave_context();
+        s.content(0, 0);
+        let edit = s.key('n');
+        assert_eq!((edit.remove, edit.insert.as_str()), (0, "n"));
+    }
+    #[test]
+    fn native_backspace_inside_an_unconfirmed_word_keeps_the_rest_composable() {
+        let (mut s, mut text) = silent_client();
+        silent_keys(&mut s, &mut text, "sawc");
+        assert_eq!(text, "săc");
+        s.backspace();
+        text.pop();
+        assert_eq!(text, "să");
+        let edit = s.key('s');
+        apply_edit(&mut text, &edit);
+        s.client_reset();
+        assert_eq!(text, "sắ");
+        let edit = s.key('c');
+        apply_edit(&mut text, &edit);
+        s.client_reset();
+        assert_eq!(text, "sắc");
+    }
     #[test]
     fn client_reset_after_every_commit_keeps_the_word_composable() {
         // Measured behaviour of Firefox's GTK IM context (19/11): after each key it
@@ -964,7 +1138,11 @@ mod tests {
         e.text.pop();
         let n = e.text.chars().count();
         e.s.snapshot(&e.text, n, n);
-        assert_eq!(e.s.key('s').remove, 0, "a word at the key limit is not adopted");
+        assert_eq!(
+            e.s.key('s').remove,
+            0,
+            "a word at the key limit is not adopted"
+        );
     }
     #[test]
     fn seed_stops_at_a_separator_and_document_start() {

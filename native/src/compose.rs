@@ -316,11 +316,10 @@ fn base_of(c: char) -> char {
     Letter::decode(c).map_or(c, |(letter, _)| letter.plain)
 }
 
-/// Plausible (possibly still being typed) Vietnamese syllable: onset, vowel
-/// nucleus from the Vietnamese set, final consonant. The shell line protocol
-/// uses it to keep English/command words as typed ("status" must not become
-/// "státu"). It is a spelling-shape check, not a dictionary.
-pub fn valid_syllable(word: &str) -> bool {
+/// Split into (nucleus, coda) after the longest plausible onset. The nucleus is
+/// empty when the word is only an onset (or empty), which the callers treat
+/// differently. Pure shape, no spelling policy.
+fn split_syllable(word: &str) -> (String, String) {
     let chars: Vec<char> = word.chars().map(base_of).collect();
     let text: String = chars.iter().collect();
     let next_is_vowel = |at: usize| {
@@ -338,35 +337,51 @@ pub fn valid_syllable(word: &str) -> bool {
             .map_or(0, |onset| onset.chars().count())
     };
     let rest = &chars[onset_len..];
-    if rest.is_empty() {
-        return true; // Only an onset so far, or nothing.
-    }
     let nucleus_len = rest
         .iter()
         .take_while(|c| Letter::decode(**c).is_some_and(|(l, _)| l.vowel()))
         .count();
-    if nucleus_len == 0 {
+    (
+        rest[..nucleus_len].iter().collect(),
+        rest[nucleus_len..].iter().collect(),
+    )
+}
+
+/// Plausible (possibly still being typed) Vietnamese syllable: onset, vowel
+/// nucleus from the Vietnamese set, final consonant. The shell line protocol
+/// uses it to keep English/command words as typed ("status" must not become
+/// "státu"). It is a spelling-SHAPE check, not a dictionary, and deliberately
+/// not the spelling table in `spell_ok`: composition must accept "săc" while
+/// the tone is still missing, otherwise the terminal can never reach "sắc".
+pub fn valid_syllable(word: &str) -> bool {
+    let (nucleus, coda) = split_syllable(word);
+    if nucleus.is_empty() {
+        return coda.is_empty(); // Only an onset so far, or nothing.
+    }
+    NUCLEI.contains(&nucleus.as_str()) && CODAS.contains(&coda.as_str())
+}
+
+/// Spelling rules Hà confirmed 21/11, applied only to a FINISHED word:
+/// `ư/ô/ơ/ă/â` with a single stop coda must carry a tone ("ứt"/"ốc"/"ắt" are real,
+/// "ưt"/"ôc"/"ăt" are misspellings), and these vowels never take "nh"/"ch"
+/// ("ănh"/"ânh"), while "m"/"n" need no tone and the digraph codas stay valid
+/// ("ăn", "âm", "ông", "măng", "cưng", "vâng"). Kept separate from
+/// `valid_syllable` so a warning about a misspelt word can never block the
+/// keystrokes that are still producing it.
+pub fn spell_ok(word: &str) -> bool {
+    let (nucleus, coda) = split_syllable(word);
+    if nucleus.is_empty() || !NUCLEI.contains(&nucleus.as_str()) || !CODAS.contains(&coda.as_str())
+    {
         return false;
     }
-    let nucleus: String = rest[..nucleus_len].iter().collect();
-    let coda: String = rest[nucleus_len..].iter().collect();
-    // Hà 21/11: with these vowels a SINGLE consonant coda other than m/n is only
-    // pronounceable when the syllable carries a tone: "ưt"/"ôc"/"ăt" are misspelled,
-    // "ứt"/"ốc"/"ắt" are real. "m"/"n" need no tone ("ăn", "âm", "ơn", "ôm"), and the
-    // digraph codas stay valid either way ("ông", "măng", "cưng", "vâng").
     let toned = word
         .chars()
         .any(|c| Letter::decode(c).is_some_and(|(_, tone)| tone != 0));
     let special = matches!(nucleus.as_str(), "ư" | "ô" | "ơ" | "ă" | "â");
-    // Hà 21/11: these vowels never form "nh"/"ch" rimes — "ănh", "ânh", "ônh" are not
-    // syllables at all, with or without a tone ("ông", "măng", "cưng", "vâng" stay valid).
     if special && matches!(coda.as_str(), "nh" | "ch") {
         return false;
     }
-    if !toned && special && matches!(coda.as_str(), "c" | "p" | "t") {
-        return false;
-    }
-    NUCLEI.contains(&nucleus.as_str()) && CODAS.contains(&coda.as_str())
+    !(!toned && special && matches!(coda.as_str(), "c" | "p" | "t"))
 }
 
 #[cfg(test)]
@@ -520,23 +535,43 @@ mod tests {
     fn toneless_special_vowel_with_a_single_stop_coda_is_a_misspelling() {
         // Hà 21/11: ư/ô/ơ/ă/â + one consonant other than m,n needs a tone.
         for word in ["ưt", "ưc", "ôc", "ôt", "ơt", "ơp", "ăc", "ăt", "âc", "ât"] {
-            assert!(!valid_syllable(word), "{word} must be rejected without a tone");
+            assert!(!spell_ok(word), "{word} must be rejected without a tone");
         }
-        for word in ["ứt", "ứa", "ốc", "ốt", "ớt", "ợp", "ắc", "ắt", "ấc", "ất", "ộc"] {
-            assert!(valid_syllable(word), "{word} is a real tonal syllable");
+        for word in [
+            "ứt", "ứa", "ốc", "ốt", "ớt", "ợp", "ắc", "ắt", "ấc", "ất", "ộc",
+        ] {
+            assert!(spell_ok(word), "{word} is a real tonal syllable");
         }
         // m/n never need a tone; digraph codas stay valid (Hà: «ông», «măng», «cưng»).
-        for word in ["ăn", "ăm", "âm", "ân", "ơn", "ôm", "ôn", "ông", "măng", "cưng", "vâng",
-                     "ứng", "ưn", "ưm", "ảnh"] {
-            assert!(valid_syllable(word), "{word} must stay valid");
+        for word in [
+            "ăn", "ăm", "âm", "ân", "ơn", "ôm", "ôn", "ông", "măng", "cưng", "vâng", "ứng", "ưn",
+            "ưm", "ảnh",
+        ] {
+            assert!(spell_ok(word), "{word} must stay valid");
         }
     }
     #[test]
     fn special_vowels_never_take_nh_or_ch() {
         // Hà 21/11: «ănh», «ânh» … không phải âm tiết, dù có dấu hay không.
-        for word in ["ănh", "ânh", "ônh", "ơnh", "ưnh", "ắnh", "ấnh", "ôch", "ăch", "âch"] {
-            assert!(!valid_syllable(word), "{word} must be rejected");
+        for word in [
+            "ănh", "ânh", "ônh", "ơnh", "ưnh", "ắnh", "ấnh", "ôch", "ăch", "âch",
+        ] {
+            assert!(!spell_ok(word), "{word} must be rejected");
         }
+    }
+    #[test]
+    fn composition_shape_accepts_a_syllable_whose_tone_is_still_missing() {
+        // Measured 22/11 in a terminal: the line protocol rejected "săc" as a
+        // misspelling, so the user's `sawc` was sent back raw and the following `s`
+        // could never make "sắc". The shape check must accept the intermediate.
+        for word in ["săc", "să", "tiê", "tiên", "ưt", "ănh"] {
+            assert!(valid_syllable(word), "{word} must stay composable");
+        }
+        // …while the finished-word spelling table keeps Hà's verdict.
+        assert!(!spell_ok("săc"));
+        assert!(!spell_ok("ưt"));
+        assert!(!spell_ok("ănh"));
+        assert!(spell_ok("sắc"));
     }
     #[test]
     fn invalid_input_is_rejected_without_mutating_the_word() {

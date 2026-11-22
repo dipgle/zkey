@@ -34,6 +34,14 @@ Hướng tiếp cần đo: tích hợp hợp tác với terminal/toolkit để c
 - Chốt an toàn giữ nguyên: chỉ phím DẤU (không áp `a`/`w` — không dán chữ vào từ lạ); không làm khi có **bóng chọn**; không làm khi từ dài ≥ `max_keys`; không làm qua **ranh giới không phải chữ cái** (chỉ lấy dãy chữ cái sát con trỏ); không làm ở ngữ cảnh **mật khẩu/TERMINAL/protected** (đường bypass cũ); từ đã **Ctrl/Escape đóng băng** thì chỉ thêm, không sửa.
 - Hệ quả so với bản trước: bỏ điều kiện «phải là từ chính engine vừa commit» trong trường hợp con trỏ đứng cuối từ; `docs/input-contract.md` trước đây cấm sửa chữ ngoài ⇒ nay Hà cho phép, có các chốt trên.
 
+## Hà duyệt 22/11 — bộ đệm riêng cho từ ĐẦU TIÊN của ngữ cảnh không gửi snapshot
+
+- Đo 20/11 (ô tìm kiếm Files; trace `engine-trace.log` dòng 2939–2973): ngữ cảnh gửi **một** snapshot `chars=0` lúc tạo rồi `Reset` sau mỗi phím và **không gửi snapshot nữa** ⇒ engine không có bằng chứng sở hữu, cả từ gõ ra thô (`tieengs`, `móiw`).
+- Luật mới (Hà duyệt): khi ứng dụng **chưa từng** gửi snapshot sau một commit/Reset trong phiên focus này, engine giữ **bộ đệm riêng** cho từ do chính nó vừa commit và tiếp tục ghép qua các lần `Reset`.
+- Chốt an toàn: (a) phải đã từng nhận snapshot trong phiên focus (ứng dụng đã chỉ ra ô nhập) — chưa từng có snapshot thì **không đoán**; (b) bộ đệm chỉ chứa chữ engine vừa commit, không literal/Ctrl-freeze, không span chờ; (c) **snapshot đầu tiên** sau đó phải khớp từ (đúng nội dung, con trỏ, không bóng chọn) thì mới giữ, sai ⇒ xoá bộ đệm và **không sửa gì**; (d) xoá bộ đệm khi FocusOut/Destroy, đổi ContentType, hoặc phím không in được/Ctrl/Escape.
+- Rủi ro Hà đã chấp nhận: ứng dụng không báo click/đổi con trỏ ⇒ engine có thể xoá nhầm vài chữ trong chính từ vừa gõ. Không mở rộng cho mật khẩu/TERMINAL/protected.
+- Đo: `native/tests/accept_silent_context.py` trên engine ĐÃ CÀI — `tieengs→tiếng`, `mowis→mới`, `remove>0`; đối chứng ngược cùng lượt: không snapshot ⇒ `tieengs`, 0 delete. `scripts/accept-installed.sh` 5/5 GATE 0.
+
 ## Nghiệm thu bắt buộc trước đóng P0
 
 1. Input thường trên trình duyệt: kiểm giá trị/input event của ứng dụng thay đổi theo phím, không chỉ quan sát IME.

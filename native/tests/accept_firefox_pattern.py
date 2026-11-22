@@ -175,7 +175,10 @@ def main():
         content = GLib.Variant("(uu)", (0, 0))
         client.call(engine, PROPERTIES, "Set",
                     GLib.Variant("(ssv)", (ENGINE, "ContentType", content)))
-        client.surrounding(engine)
+        if not SKIP_SURROUNDING:
+            # Reverse control: with the snapshot skipped entirely the client never
+            # shows the engine the field, so the engine must keep its hands off.
+            client.surrounding(engine)
         for char in WORD:
             if not client.key(engine, char):
                 print(f"FAIL: engine did not handle {char!r}; text={client.text!r}")

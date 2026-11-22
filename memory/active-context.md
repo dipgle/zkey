@@ -1,11 +1,11 @@
-# zkey/core — native (21/11 chiều)
+# zkey/core — native (22/11)
 
-ĐÃ CÀI + ĐO trên engine ĐÃ CÀI (21/11):
-(1) **Nhận dấu cho từ có sẵn** (Hà chốt CÓ): phím `s f r x j z` áp vào từ ngay trước con trỏ, kể cả chữ dán; chốt an toàn (chỉ phím dấu, không bóng chọn, ≤ `max_keys`, chỉ dãy chữ cái, mật khẩu/terminal bypass, Ctrl/Escape đóng băng chỉ thêm). `scripts/accept-installed.sh` **4/4 GATE 0**: `laj nhi`+4×BS+`s`→`lá`, `lạ`(dán)+`s`→`lá`, `săc`+space+BS+`s`→`sắc`, đối chứng `săc s`.
-(2) **Chính tả 5 nguyên âm** (`compose.rs` `valid_syllable`): `ư/ô/ơ/ă/â`+`m/n` luôn đúng (`ưn, ưm, ôn, ôm, ăn, ăm`); +`c/p/t` phải có dấu (`ứt, ộc, ắt`; `ưt, ôc, ăt` sai); +`nh/ch` luôn sai (`ănh, ânh`); `ng` giữ đúng (`ông, măng, cưng, vâng`). Rust **60+7+5+2 PASS**, clippy 0, release 0.
-(3) **Sự cố env (đã sửa):** activation env bus phiên giữ `IBUS_ADDRESS=` rỗng ⇒ app do bus sinh ra (Text Editor) **không ra chữ**. `native-ime.py` gỡ `IBUS_ADDRESS(_FILE)` khỏi user manager trước restart + SET địa chỉ mới vào activation env sau restart. **Text Editor cũ phải đóng hẳn rồi mở lại.**
-(4) **Dataset chính tả:** `vietnameselanguage/syllable` (7.884, `.tmp/vi-syllables-raw.txt`) lệch Hà hai chiều (`ưm` thiếu, `ưt` có) ⇒ không làm chuẩn; chỉ sinh bảng khác biệt cho Hà tích.
+ĐÃ LÀM + ĐÃ CÀI (engine cài = build `7013c097…`, `native-ime.py` disable/enable 0/0):
+(1) **Bộ đệm từ đầu tiên** (Hà duyệt 22/11, `session.rs`): `published`/`reports_caret`/`blind` — `Reset` sau commit chỉ xoá từ khi app **đã từng** gửi lại snapshot; ngữ cảnh câm (ô Files, Telegram web) giữ bộ đệm riêng của engine và ghép tiếp (`tieengs→tiếng`, `mowis→mới`); snapshot sai `owns()`/FocusOut/đổi ContentType/phím không in ⇒ xoá bộ đệm, không sửa gì; app **chưa từng** gửi snapshot ⇒ không đoán (0 delete). Test RED→GREEN 4 bài + 3 chốt an toàn; cổng `native/tests/accept_silent_context.py` (2 chiều trong 1 lượt) — `accept-installed.sh` **5/5 GATE 0**.
+(2) **Terminal `sawc`:** `compose.rs` tách `valid_syllable` (hình thái, dùng ghép) ↔ `spell_ok` (bảng chính tả Hà `ư/ô/ơ/ă/â`+`c/p/t`, không `nh/ch`) ⇒ `sawc→săc`, `sawcs→sắc`, `uwt→ưt` (đổi có chủ ý); `status`/`git` nguyên văn. `accept-shell-tmux.sh` 10/10.
+(3) Đo: Rust **69+8+5+2** PASS · clippy 0 · release 0 · Python 90 OK · matrix **9/9 lane** exit 0 (`harm=0`) · QG xanh fmt/clippy/test (đã fmt crate CŨ `src/`) — đỏ còn lại chỉ là "tệp chưa commit" ở lượt trước commit.
+(4) Firefox THẬT vẫn KHÔNG ĐO ĐƯỢC trong Xvfb (WM vẫn `DOM keys=0`, lỗi môi trường); WebKit `tiee→tieê` (N01) chưa sửa.
 
-VIỆC KẾ: (1) Hà mở lại Text Editor ⇒ đo env tiến trình mới, xác nhận ra chữ; (2) bảng khác biệt dataset vs quy tắc cho Hà tích; (3) Firefox thật bằng mắt; (4) «từ đầu tiên» Files — chờ Hà duyệt bộ đệm riêng; (5) TUI terminal + bỏ cấm Backspace — chờ Hà.
-
-Nền: KHÔNG. Hòm thư huba phiên: `/tmp/claude-1000/-mnt-data-projects/ses_e06f09837ffedkvJJi0ZBam657/scratchpad/huba-run.txt`. Luật: nhãn `zkey`, CẤM `cd` trần; env phiên có `ZKEY_MODE=off` + `XDG_CONFIG_HOME` của opencode ⇒ chạy tay phải `env -u`.
+CHƯA ĐO (cần mắt/tay Hà): gõ thật `tieengs`/`mowis` ở Files + Telegram web sau khi cài bản mới; N05 key→pixel; TUI terminal.
+VIỆC KẾ: (1) Hà gõ thật ⇒ sai thì lấy `engine-trace.log` + `surrounding-event`; (2) bảng khác biệt dataset chờ Hà tích; (3) TUI + bỏ cấm Backspace chờ Hà chốt; (4) Firefox thật khi có WM/máy thật.
+Nền: KHÔNG. Luật: nhãn `zkey`, CẤM `cd` trần; env phiên có `XDG_*=…/.opencode-acc8/*` + `ZKEY_MODE=off` ⇒ chạy tay/cài phải `env -u` các biến ấy.

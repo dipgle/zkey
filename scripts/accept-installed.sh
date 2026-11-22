@@ -23,6 +23,7 @@ run() {  # label expected-exit command...
 
 run firefox-pattern        0  "$PY" "$ROOT/native/tests/accept_firefox_pattern.py"
 run firefox-control        1  env ZKEY_FIREFOX_SKIP_SURROUNDING=1 "$PY" "$ROOT/native/tests/accept_firefox_pattern.py"
+run silent-context         0  "$PY" "$ROOT/native/tests/accept_silent_context.py"
 run gtk3-entry             0  "$PY" "$ROOT/native/tests/accept_installed_gtk3.py"
 run gtk3-control           0  env ZKEY_INSTALLED_SKIP_ENGINE=1 "$PY" "$ROOT/native/tests/accept_installed_gtk3.py"
 
