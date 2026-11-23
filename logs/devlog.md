@@ -384,3 +384,11 @@
 - Nguyên nhân: phiên 22/11 **bỏ bước** «phiên kế nhiệm mở xong ⇒ kiểm rồi đóng phiên cũ của chính module» — không phải huba mở trùng.
 - Đo đủ 3 điều kiện trước khi đóng: cây `zkey` sạch, HEAD = origin/master (`993747f`); không job nền/hàng đợi (`.cmd-queue` trống, daemon file-queue không chạy); tiến trình idle. Đã `kill 1781347` + `tmux kill-window huba:15`; đo lại: `ps -t pts/41` = «TTY could not be found», còn đúng 1 phiên zkey.
 
+## 2026-11-23 08:5x — Hà hỏi cách đặt tên phiên/tệp: đo ra gốc, viết phiếu, chuyển phiên huba
+
+- Ảnh Hà gửi là danh sách 11 phiên của huba; phiên zkey hiện `[projects]·dfef9718`. Đo (`huba sessions`, chỉ-đọc): `folder_label_seed_refused` với `dong_y=1, quet_luot=12, scope=null` — phiên opencode có **172 record assistant**, mỗi lượt 10–20 record (reasoning/tool/text) nên cửa sổ 12 record chỉ chứa 1 lời khai `[zkey]` ⇒ bị từ chối ⇒ rơi về scope `projects` (mọi phiên mở ở gốc workspace: `huba lenh-mo` in `cd '/mnt/data/projects'`) ⇒ phải gắn `·id8` vì có phiên thứ hai cùng gốc. Kèm bất nhất: `huba sessions` in TIÊU ĐỀ («Zkey project handoff continuation»), dòng Telegram in `label`.
+- Tệp `.inbox`: `telegram.rs:4180` đặt `anh-<file_unique_id>.jpg` (không ngày/phiên/dự án/người gửi); caption chỉ đẩy thành tin nhắn, không ghi cạnh tệp; thư mục dùng `focus.split('-').next()` nên id Claude = 8 hex còn id opencode = nguyên `ses_…` (2 kiểu trong 33 thư mục); `std::fs::write` (`telegram.rs:1796`) **ghi đè im lặng** khi trùng tên tài liệu.
+- Sản phẩm: `.tmp/phieu-huba-dat-ten-20261123.md` (gốc + `file:line` + đề xuất + phép đo ĐỎ được). **Không sửa mã huba** (khác dự án).
+- Hà chọn «chuyển phiếu cho phiên huba» ⇒ đã gõ thẳng vào ô nhập phiên huba (`tmux send-keys -t huba:1`, phiên `ses_df863a01afffrQwD89Xqy1PdHU`), đo lại: phiên nhận tin và đang đọc phiếu («Exploring: 1 read»).
+
+
