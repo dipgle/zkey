@@ -161,6 +161,29 @@ try:
     time.sleep(0.15)
     Atspi, editor = document(application["pid"])
     bounds = Atspi.Component.get_extents(editor.get_component_iface(), Atspi.CoordType.SCREEN)
+    # AT-SPI is a D-Bus service outside this process. Measured 23/11: it dropped a
+    # reply mid-run and the old code raised a traceback => exit 1, i.e. the gate
+    # called a HARNESS outage a product failure. A dead bridge is NOT_MEASURABLE
+    # (exit 2), and the retry proves it either answers or is honestly unmeasurable.
+    ATSPI_FAULT = os.environ.get("ZKEY_EDITOR_ATSPI_FAULT") == "1"
+
+    def read_text():
+        from gi.repository import GLib
+
+        last = None
+        for attempt in range(20):
+            if ATSPI_FAULT and attempt == 0:
+                last = "cấy lỗi ZKEY_EDITOR_ATSPI_FAULT=1"
+                break
+            try:
+                return Atspi.Text.get_text(editor.get_text_iface(), 0, -1).rstrip("\n")
+            except GLib.GError as error:
+                last = error
+                time.sleep(0.1)
+        print(f"NOT_MEASURABLE: AT-SPI không trả lời sau 20 lượt đọc ({last}); "
+              f"đây là lỗi cầu trợ năng, không phải kết quả của bộ gõ", flush=True)
+        raise SystemExit(2)
+
     if bounds.width <= 0 or bounds.height <= 0:
         raise RuntimeError("Document UI has no visible bounds")
     gx, gy, width, height, border, depth = C.c_int(), C.c_int(), C.c_uint(), C.c_uint(), C.c_uint(), C.c_uint()
@@ -183,10 +206,10 @@ try:
     print(f"DOCUMENT_UI bounds=({bounds.x},{bounds.y},{bounds.width},{bounds.height}) focused={editor.get_state_set().contains(Atspi.StateType.FOCUSED)}", flush=True)
     def expect(text):
         deadline = time.monotonic() + 3
-        actual = Atspi.Text.get_text(editor.get_text_iface(), 0, -1).rstrip("\n")
+        actual = read_text()
         while actual != text and time.monotonic() < deadline:
             time.sleep(0.01)
-            actual = Atspi.Text.get_text(editor.get_text_iface(), 0, -1).rstrip("\n")
+            actual = read_text()
         if actual != text:
             raise AssertionError(f"Editor UI differs after real key: expected={text!r}, actual={actual!r}")
     send("a", "Control_L")
@@ -202,7 +225,7 @@ try:
     # document. Reference = same keys typed slowly; two references pinned by
     # hand. Every mismatch is collected, with its round (same cases as GTK3).
     def shown():
-        return Atspi.Text.get_text(editor.get_text_iface(), 0, -1).rstrip("\n")
+        return read_text()
     def settle(seconds=3):
         last, since, until = shown(), time.monotonic(), time.monotonic() + seconds
         while time.monotonic() < until:

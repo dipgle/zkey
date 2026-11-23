@@ -78,10 +78,16 @@ code=$?
 echo "accept-editor exit=$code"
 grep -v '^dbus-daemon' "$ROOT/.tmp/native-acceptance.log"
 if [ -n "$engine_log" ] && [ -e "$ROOT/.tmp/$engine_log.log" ]; then
-  seen=$(grep -c 'key-state' "$ROOT/.tmp/$engine_log.log")
-  echo "editor engine key-state=$seen ($engine_log.log)"
-  # Correct text without our engine seeing the keys proves nothing about zkey.
-  if [ "$seen" -lt 7 ]; then echo "WRONG ENGINE: private zkey saw $seen key calls"; code=1; fi
+  if [ "$code" = 2 ]; then
+    # Không đo được nội dung tài liệu thì số lần engine nhận phím cũng chưa có
+    # nghĩa: đếm nó ra "WRONG ENGINE" là biến lỗi cầu trợ năng thành ĐỎ sản phẩm.
+    echo "editor engine trace: bỏ kiểm vì accept-editor KHÔNG ĐO ĐƯỢC (exit 2)"
+  else
+    seen=$(grep -c 'key-state' "$ROOT/.tmp/$engine_log.log")
+    echo "editor engine key-state=$seen ($engine_log.log)"
+    # Correct text without our engine seeing the keys proves nothing about zkey.
+    if [ "$seen" -lt 7 ]; then echo "WRONG ENGINE: private zkey saw $seen key calls"; code=1; fi
+  fi
 else
   echo "editor engine trace: NOT FOUND"
   [ "$code" = 0 ] && code=2
