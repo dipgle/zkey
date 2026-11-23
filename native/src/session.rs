@@ -932,6 +932,33 @@ mod tests {
         assert_eq!(text, "sắc");
     }
     #[test]
+    fn a_terminal_that_stops_confirming_is_left_alone() {
+        // TERMINAL composes only while a snapshot proves the field. The silent
+        // buffer must never keep a terminal open (VTE/readline give no snapshot).
+        let mut s = Session::new(ToneStyle::Modern, true, 256, true);
+        s.capabilities(32);
+        s.content(10, 0);
+        s.snapshot("", 0, 0);
+        assert!(s.key('t').handled);
+        s.client_reset();
+        assert!(
+            !s.key('i').handled,
+            "no snapshot => terminal stays bypassed"
+        );
+    }
+    #[test]
+    fn a_selection_never_lets_the_silent_buffer_rewrite() {
+        let (mut s, mut text) = silent_client();
+        silent_keys(&mut s, &mut text, "ti");
+        // A selection is not a caret we may edit around.
+        assert_eq!(s.snapshot("ti", 2, 0), Edit::default());
+        let edit = s.key('e');
+        assert_eq!(
+            edit.remove, 0,
+            "selection => never delete what we did not see"
+        );
+    }
+    #[test]
     fn client_reset_after_every_commit_keeps_the_word_composable() {
         // Measured behaviour of Firefox's GTK IM context (19/11): after each key it
         // applies the edit, calls Reset on the engine, then republishes the text.
