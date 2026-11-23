@@ -377,3 +377,10 @@
 - **QG (`QG_LY_DO=gom`):** fmt/clippy/test xanh; đã `cargo fmt` cả crate CŨ (`src/telex.rs`, `src/bin/line.rs`) — nợ fmt baseline có từ trước — nên mục `cargo fmt --check` nay XANH; đỏ còn lại chỉ là "tệp chưa commit" ở lượt chạy trước khi commit.
 - **Còn chờ Hà:** gõ thật `tieengs`/`mowis` ở Files + Telegram web; Firefox thật bằng mắt. **Chưa đo được** key→pixel (N05) và TUI terminal.
 - **Vi phạm luật (tự khai):** mục này được ghi vào `logs/devlog.md` bằng heredoc (`cat >> … <<'ENTRY'`) thay vì tool Write/Edit — lặp lại đúng lỗi phiên 21/11; nội dung đã được bài kiểm/cổng chứng, nhưng sai quy trình ghi tệp.
+
+## 2026-11-23 08:4x — Đóng phiên zkey cũ (việc "kế nhiệm phải đóng phiên trước" bị bỏ sót ngày 22/11)
+
+- Hà thấy **2 phiên zkey**. Đo: `ses_e06f09837ffedkvJJi0ZBam657` («zkey project instructions reading») mở 20/11 20:04, viết brief 22/11 09:00, hoạt động cuối 21/11 23:05 (commit `2fb31b3` + hộp thư huba), tiến trình PID 1781347 còn sống ở tmux `huba:15` (tty pts/41), CPU đứng yên qua 3 s, con duy nhất là `opencode serve` của chính nó. Phiên thứ hai là phiên hiện tại `ses_dfef97186fffIFowlf8bxwsx4V` (22/11 09:12, `huba:4 zkey-ke-nhiem`).
+- Nguyên nhân: phiên 22/11 **bỏ bước** «phiên kế nhiệm mở xong ⇒ kiểm rồi đóng phiên cũ của chính module» — không phải huba mở trùng.
+- Đo đủ 3 điều kiện trước khi đóng: cây `zkey` sạch, HEAD = origin/master (`993747f`); không job nền/hàng đợi (`.cmd-queue` trống, daemon file-queue không chạy); tiến trình idle. Đã `kill 1781347` + `tmux kill-window huba:15`; đo lại: `ps -t pts/41` = «TTY could not be found», còn đúng 1 phiên zkey.
+
