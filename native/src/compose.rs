@@ -204,6 +204,22 @@ impl Composer {
                     return true;
                 }
             }
+            // Hà 23/11 (Firefox): the shape key also finishes a vowel CLUSTER —
+            // "đau" + `a` ⇒ "đâu" — by shaping the nearest earlier matching vowel.
+            // Both sides must be spellable Vietnamese, which keeps English words
+            // alone: "queue" stays "queue", "aoa" stays "aoa".
+            let before: String = self.letters.iter().map(|letter| letter.plain).collect();
+            if valid_syllable(&before)
+                && let Some(at) = self.letters.iter().rposition(|letter| letter.plain == from)
+            {
+                let mut candidate = self.letters.clone();
+                candidate[at].plain = shaped;
+                let text: String = candidate.iter().map(|letter| letter.plain).collect();
+                if valid_syllable(&text) {
+                    self.letters[at].plain = shaped;
+                    return true;
+                }
+            }
         }
         if key.plain != 'w' {
             return false;
@@ -572,6 +588,25 @@ mod tests {
         assert!(!spell_ok("ưt"));
         assert!(!spell_ok("ănh"));
         assert!(spell_ok("sắc"));
+    }
+    #[test]
+    fn a_late_shape_key_reaches_the_matching_vowel_of_the_cluster() {
+        // Hà 23/11 (Firefox): "đaua" must become "đâu" — the trailing `a` is the
+        // shape key for the `a` already inside the syllable, the same way
+        // "ban"+"a" gives "bân" across a coda.
+        assert_eq!(word("ddaua", ToneStyle::Modern), "đâu");
+        assert_eq!(word("ddaau", ToneStyle::Modern), "đâu");
+        // The same rule finishes other clusters: "aua"⇒"âu", "oio"⇒"ôi".
+        assert_eq!(word("aua", ToneStyle::Modern), "âu");
+        assert_eq!(word("oio", ToneStyle::Modern), "ôi");
+        // …but only inside a word Vietnamese can spell, on both sides, which is
+        // what keeps English alone and stops invented nuclei.
+        for raw in ["aoa", "eae", "iao", "oua", "eue", "queue"] {
+            assert_eq!(word(raw, ToneStyle::Modern), raw);
+        }
+        // A shape already applied is not undone from a distance: "đâu" + "a"
+        // appends, exactly like before this rule.
+        assert_eq!(word("ddaaua", ToneStyle::Modern), "đâua");
     }
     #[test]
     fn invalid_input_is_rejected_without_mutating_the_word() {

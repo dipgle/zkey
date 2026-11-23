@@ -26,7 +26,7 @@ import gi
 gi.require_version("Gio", "2.0")
 from gi.repository import Gio, GLib  # noqa: E402
 
-CASES = [("tieengs", "tiếng"), ("mowis", "mới")]
+CASES = [("tieengs", "tiếng"), ("mowis", "mới"), ("ddaua", "đâu")]
 COMPONENT = "org.freedesktop.IBus.ZkeyNative"
 FACTORY_PATH = "/org/freedesktop/IBus/Factory"
 FACTORY = "org.freedesktop.IBus.Factory"

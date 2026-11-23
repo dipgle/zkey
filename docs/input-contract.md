@@ -42,6 +42,12 @@ Hướng tiếp cần đo: tích hợp hợp tác với terminal/toolkit để c
 - Rủi ro Hà đã chấp nhận: ứng dụng không báo click/đổi con trỏ ⇒ engine có thể xoá nhầm vài chữ trong chính từ vừa gõ. Không mở rộng cho mật khẩu/TERMINAL/protected.
 - Đo: `native/tests/accept_silent_context.py` trên engine ĐÃ CÀI — `tieengs→tiếng`, `mowis→mới`, `remove>0`; đối chứng ngược cùng lượt: không snapshot ⇒ `tieengs`, 0 delete. `scripts/accept-installed.sh` 5/5 GATE 0.
 
+## Hà chốt 23/11 — phím hình áp vào nguyên âm trong cụm («đaua» → «đâu», Firefox)
+
+- Báo cáo của Hà: gõ `ddaua` trên Firefox ra `đaua`, mong `đâu`. Gốc (`compose.rs` `reshape`): phím hình `a/e/o` chỉ áp vào **nguyên âm cuối** (hoặc xuyên một phụ âm cuối); với cụm `au`, phím `a` cuối bị coi là chữ mới nên cả app lẫn terminal đều không ghép (không phải lỗi riêng Firefox — Firefox chỉ là nơi Hà thử).
+- Luật mới: phím hình áp vào **nguyên âm khớp gần nhất phía trước**, nhưng chỉ khi **cả từ trước phím và từ sau khi áp đều đánh vần được** (`valid_syllable`). Hệ quả đo được: `đau+a ⇒ đâu`, `au+a ⇒ âu`, `oi+o ⇒ ôi`; giữ nguyên `aoa`, `eue`, `queue` (tiếng Anh), `iao`, `oua`. Không đảo ngược hình đã áp từ xa (`đâu`+`a ⇒ đâua`).
+- Đo: unit `a_late_shape_key_reaches_the_matching_vowel_of_the_cluster` (RED `đaua` → GREEN `đâu`); cổng trên engine ĐÃ CÀI `accept_firefox_pattern.py` và `accept_silent_context.py` thêm ca `ddaua ⇒ đâu` (`removes=2`), đối chứng không snapshot ⇒ `ddaua`, 0 delete; `accept-installed.sh` 5/5; `accept-shell-tmux.sh` 10/10; matrix 9/9.
+
 ## Nghiệm thu bắt buộc trước đóng P0
 
 1. Input thường trên trình duyệt: kiểm giá trị/input event của ứng dụng thay đổi theo phím, không chỉ quan sát IME.

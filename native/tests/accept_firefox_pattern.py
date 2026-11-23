@@ -27,6 +27,8 @@ from gi.repository import Gio, GLib  # noqa: E402
 
 WORD = "tieengs"
 EXPECTED = "tiếng"
+# Hà 23/11: the shape key may finish a vowel cluster — "đau"+"a" ⇒ "đâu".
+CASES = [(WORD, EXPECTED), ("ddaua", "đâu")]
 # Reverse control: a client that resets and never republishes its text must come
 # out raw. Turns this gate RED if the assertion stops noticing lost composition.
 SKIP_SURROUNDING = os.environ.get("ZKEY_FIREFOX_SKIP_SURROUNDING") == "1"
@@ -167,39 +169,59 @@ def main():
     except GLib.Error as error:
         return not_measurable(f"installed engine does not serve CreateEngine: {error.message}")
 
-    client = Client(connection)
-    client.subscribe(engine)
-    try:
-        # Same capabilities Firefox advertises (32 = surrounding text, plus preedit bits).
-        client.call(engine, ENGINE, "SetCapabilities", GLib.Variant("(u)", (41,)))
-        content = GLib.Variant("(uu)", (0, 0))
-        client.call(engine, PROPERTIES, "Set",
-                    GLib.Variant("(ssv)", (ENGINE, "ContentType", content)))
-        if not SKIP_SURROUNDING:
-            # Reverse control: with the snapshot skipped entirely the client never
-            # shows the engine the field, so the engine must keep its hands off.
-            client.surrounding(engine)
-        for char in WORD:
-            if not client.key(engine, char):
-                print(f"FAIL: engine did not handle {char!r}; text={client.text!r}")
-                return 1
-            client.handled += 1
-    finally:
-        client.connection.signal_unsubscribe(client.subscription)
+    failures = 0
+    for keys, expected in CASES:
+        engine = connection.call_sync(
+            COMPONENT, FACTORY_PATH, FACTORY, "CreateEngine",
+            GLib.Variant("(s)", ("zkey-native",)), GLib.VariantType("(o)"), 0, 5000, None,
+        ).unpack()[0]
+        client = Client(connection)
+        client.subscribe(engine)
         try:
-            client.call(engine, ENGINE, "Destroy", None)
-        except GLib.Error:
-            pass
+            # Same capabilities Firefox advertises (32 = surrounding text, plus preedit bits).
+            client.call(engine, ENGINE, "SetCapabilities", GLib.Variant("(u)", (41,)))
+            content = GLib.Variant("(uu)", (0, 0))
+            client.call(engine, PROPERTIES, "Set",
+                        GLib.Variant("(ssv)", (ENGINE, "ContentType", content)))
+            if not SKIP_SURROUNDING:
+                # Reverse control: with the snapshot skipped entirely the client never
+                # shows the engine the field, so the engine must keep its hands off.
+                client.surrounding(engine)
+            for char in keys:
+                if not client.key(engine, char):
+                    print(f"FAIL: engine did not handle {char!r}; text={client.text!r}")
+                    return 1
+                client.handled += 1
+        finally:
+            client.connection.signal_unsubscribe(client.subscription)
+            try:
+                client.call(engine, ENGINE, "Destroy", None)
+            except GLib.Error:
+                pass
 
-    print(f"RESULT text={client.text!r} expected={EXPECTED!r} "
-          f"keys={client.handled} removes={client.removes} commits={client.commits}")
-    if client.text == EXPECTED and client.removes > 0:
+        want = keys if SKIP_SURROUNDING else expected
+        print(f"RESULT keys={keys!r} text={client.text!r} expected={want!r} "
+              f"removes={client.removes} commits={client.commits}")
+        if client.text != want:
+            print(f"FAIL firefox-pattern: {keys!r} became {client.text!r}, wanted {want!r}")
+            failures += 1
+        elif SKIP_SURROUNDING and client.removes:
+            print("FAIL firefox-control: engine deleted text it was never shown")
+            failures += 1
+        elif not SKIP_SURROUNDING and not client.removes:
+            print(f"FAIL firefox-pattern: {keys!r} composed without a single rewrite")
+            failures += 1
+
+    if failures:
+        print("FAIL firefox-pattern: engine lost composition across client Reset")
+        print("GATE_EXIT=1")
+        return 1
+    if SKIP_SURROUNDING:
+        print("PASS firefox-control: without a snapshot every key stays a literal insert")
+    else:
         print("PASS firefox-pattern: installed engine composes across Reset after every commit")
-        print("GATE_EXIT=0")
-        return 0
-    print("FAIL firefox-pattern: engine lost composition across client Reset")
-    print("GATE_EXIT=1")
-    return 1
+    print("GATE_EXIT=0")
+    return 0
 
 
 if __name__ == "__main__":

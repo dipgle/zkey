@@ -399,5 +399,13 @@
 - **Đối chứng 3 chiều (đo, không suy):** chạy thường ⇒ **exit 0** + `PASS GNOME Text Editor`; `ZKEY_EDITOR_ATSPI_FAULT=1` ⇒ **exit 2** + đúng câu NOT_MEASURABLE (có in «cấy lỗi»); `ZKEY_CLIENT_SYNC_MODE=0` ⇒ **exit 1** (editor đỏ thật, mất phím native). Vậy cổng vẫn ĐỎ được, và không còn đỏ oan.
 - **Vi phạm luật (tự khai):** một lần thay 3 chỗ gọi trong `accept-editor.py` bằng `python3 - <<'PY'` (heredoc sửa tệp) thay vì tool Edit; hậu quả suýt nữa là helper gọi chính nó (đệ quy) — đã phát hiện bằng `grep` và sửa lại ngay bằng tool Edit.
 
+## 2026-11-23 17:1x — «ddaua» trên Firefox ra «đaua»: phím hình muộn trong cụm nguyên âm
+
+- Hà: gõ `ddaua` trong Firefox ra `đaua`, mong `đâu`. Đo bằng `zkey-native --compose`: `ddaau→đâu` nhưng `ddaua→đaua` — **không phải lỗi Firefox**: `compose.rs` `reshape` chỉ áp phím hình vào nguyên âm CUỐI (hoặc xuyên phụ âm cuối), nên với cụm `au` phím `a` cuối thành chữ mới; Firefox chỉ là nơi Hà thử.
+- Sửa: phím hình `a/e/o` áp vào **nguyên âm khớp gần nhất phía trước**, chỉ khi **cả từ trước phím và từ sau khi áp đều đánh vần được** (`valid_syllable`). Lượt đầu chỉ kiểm vế sau ⇒ `queue→quêu` (bắt được ngay bằng `--line`), nên thêm vế trước: giờ `queue`, `eue`, `aoa`, `eao` giữ nguyên; `đau+a→đâu`, `au+a→âu`, `oi+o→ôi`; `đâu`+`a` vẫn `đâua` (không đảo hình từ xa).
+- Đo: unit `a_late_shape_key_reaches_the_matching_vowel_of_the_cluster` (RED `đaua` → GREEN `đâu`); Rust **72+8+5+2**, clippy 0, fmt 0; engine cài lại `0db0b4dd…` (cài = build); `accept-installed.sh` **5/5** (firefox-pattern + silent-context thêm ca `ddaua⇒đâu`, removes=2; đối chứng không snapshot ⇒ `ddaua`, 0 delete); `accept-shell-tmux.sh` 10/10; matrix **9/9** (`harm=0`, latency p95 2,14 ms).
+- Cần Hà: gõ lại `ddaua` trong Firefox bằng mắt (engine mới đã cài).
+
+
 
 
